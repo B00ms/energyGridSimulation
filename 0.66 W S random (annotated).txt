@@ -1,3 +1,4 @@
+number of time periods, daily max load demand, total number of nodes, number of convential plants, number of renewable plants, number of loads, number of storage systems, duration of each step, charge and discharge efficiency of storages.
 96 9716 218 42 27 51 10 0.25 0.87 0.87
 generators
 16.00 40.00 70.00 T

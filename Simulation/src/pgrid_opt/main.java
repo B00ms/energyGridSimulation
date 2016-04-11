@@ -20,14 +20,14 @@ public class main {
 		graph[] gdays = null;
 		parser p = new parser();
 		String[] s = p.parseArg(args);
-		String path = s[1];
+		String path = s[1]; //path to the input
 		String outpath1 = "input";
 		String outpath2 = ".mod";
 		String solpath1 = "glpsol -d ";
 		String solpath2 = " -m ";
 		String solpath3 = "sol";
-		String model = s[0];
-		String dirpath = s[2];
+		String model = s[0]; //path to the model
+		String dirpath = s[2]; //path to the output
 		Object[] o = p.parseData(path);
 		graph g = (graph) o[0];
 		solar = (float[]) o[1];

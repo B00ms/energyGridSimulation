@@ -27,7 +27,6 @@ public class parser {
 			System.out.println("ERROR: wrong raw data input file path");
 			return null;
 		}
-
 		graph g = parseNetSize(scanner.next());
 		float[] dsolar = new float[this.ngraph];
 		float[] dwind = new float[this.ngraph];
@@ -221,6 +220,12 @@ public class parser {
 		return g;
 	}
 
+	/**
+	 * Iterate through program arguments to split the arguments into separate pieces
+	 * in order to set the model path, input path and output path.
+	 * @param s
+	 * @return array with the paths to the model, input file and, output file.
+	 */
 	public String[] parseArg(String[] s) {
 		boolean m = false;
 		boolean i = false;

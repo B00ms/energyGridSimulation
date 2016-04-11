@@ -1,17 +1,17 @@
 package pgrid_opt;
 
 public class graph implements Cloneable {
-	private int nnode;
-	private int ngenerators;
-	private int nconsumers;
-	private int nrgenetarors;
-	private int loadmax;
-	private int nstorage;
-	private int efficency;
-	private float ccurt;
-	private float etac;
-	private float etad;
-	private float delta;
+	private int nnode; //Total Number of nodes in the graph
+	private int ngenerators; //Number of convential generators
+	private int nconsumers; //Number of loads
+	private int nrgenetarors; //Number of renewable generators
+	private int loadmax; //Daily max load demand
+	private int nstorage; //Number of storage systems
+	private int efficency; //TODO: determine what this variable represents(capacity of real edges?), it's hardcoded to 75
+	private float ccurt; //TODO: Determine what this variable is, it's hardcoded to 200.0F
+	private float etac; //Duration of each time step
+	private float etad; //Charge and discharge efficiency of storages
+	private float delta; //Number of storage systems.
 	private node[] nodelist;
 	private edge[][] network;
 
