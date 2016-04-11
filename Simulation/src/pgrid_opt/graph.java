@@ -8,7 +8,7 @@ public class graph implements Cloneable {
 	private int loadmax; //Daily max load demand
 	private int nstorage; //Number of storage systems
 	private int efficency; //TODO: determine what this variable represents(capacity of real edges?), it's hardcoded to 75
-	private float ccurt; //TODO: Determine what this variable is, it's hardcoded to 200.0F
+	private float ccurt; //Renewable cut costs
 	private float etac; //Duration of each time step
 	private float etad; //Charge and discharge efficiency of storages
 	private float delta; //Number of storage systems.
