@@ -40,7 +40,7 @@ public class main {
 		Process proc = null;
 		int i = 0;
 		while (i < gdays.length - 1) {
-			mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i));
+			mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 			try {
 				StringBuffer output = new StringBuffer();
 				String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
