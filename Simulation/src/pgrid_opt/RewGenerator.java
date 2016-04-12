@@ -1,9 +1,9 @@
 package pgrid_opt;
 
-public class rewGenerator extends generator {
+public class RewGenerator extends Generator {
 	private float production;
 
-	public rewGenerator(float max, float min, float cost, String type) {
+	public RewGenerator(float max, float min, float cost, String type) {
 		super(min, max, cost, type);
 		this.production = (max / 2.0F);
 	}

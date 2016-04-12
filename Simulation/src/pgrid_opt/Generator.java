@@ -1,6 +1,6 @@
 package pgrid_opt;
 
-public class generator extends node {
+public class Generator extends Node {
 	private float maxp;
 
 	private float minp;
@@ -8,7 +8,7 @@ public class generator extends node {
 	private float coef;
 	private String type;
 
-	public generator(float min, float max, float coef, String type) {
+	public Generator(float min, float max, float coef, String type) {
 		this.maxp = max;
 		this.minp = min;
 		this.coef = coef;

@@ -5,7 +5,7 @@ import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-public class parser {
+public class Parser {
 	private String gen = "generators";
 	private String cons = "consumers";
 	private String net = "network";
@@ -27,7 +27,7 @@ public class parser {
 			System.out.println("ERROR: wrong raw data input file path");
 			return null;
 		}
-		graph g = parseNetSize(scanner.next());
+		Graph g = parseNetSize(scanner.next());
 		float[] dsolar = new float[this.ngraph];
 		float[] dwind = new float[this.ngraph];
 		float[] dloads = new float[this.ngraph];
@@ -35,7 +35,7 @@ public class parser {
 		float scost = 0.0F;
 		float ccurt = 200.0F;
 
-		node[] n = new node[g.getNNode()];
+		Node[] n = new Node[g.getNNode()];
 		String token = scanner.next();
 		if ((token.compareTo(this.gen) == 1) || (token.compareTo(this.gen) == 0)) {
 			System.out.println("parsing gen");
@@ -97,7 +97,7 @@ public class parser {
 				n[i] = parseStorage(scanner.next());
 			}
 		}
-		edge[][] e = new edge[g.getNNode()][g.getNNode()];
+		Edge[][] e = new Edge[g.getNNode()][g.getNNode()];
 		token = scanner.next();
 		if ((token.compareTo(this.net) == 1) || (token.compareTo(this.net) == 0)) {
 			System.out.println("parsing net");
@@ -116,21 +116,21 @@ public class parser {
 		return o;
 	}
 
-	private node parseRGenerators(String next, float wcost, float scost) {
+	private Node parseRGenerators(String next, float wcost, float scost) {
 		Scanner scanner = new Scanner(next);
 		float max = scanner.nextFloat();
 		String type = scanner.next();
 		scanner.close();
 		if (("S".compareTo(type) == 0) && ("S".compareTo(type) == 1)) {
-			return new rewGenerator(0.0F, max, scost, type);
+			return new RewGenerator(0.0F, max, scost, type);
 		}
-		return new rewGenerator(0.0F, max, wcost, type);
+		return new RewGenerator(0.0F, max, wcost, type);
 	}
 
-	private void parseEdge(edge[][] e, Scanner scan) {
+	private void parseEdge(Edge[][] e, Scanner scan) {
 		for (int i = 0; i < e.length; i++) {
 			for (int j = 0; j < e.length; j++) {
-				e[i][j] = new edge();
+				e[i][j] = new Edge();
 				e[i][j].setCapacity(0.0F);
 				e[i][j].setWeight(0.0F);
 				e[i][j].setFlow(0.0F);
@@ -146,11 +146,11 @@ public class parser {
 		}
 	}
 
-	private node parseConsumer(String next) {
+	private Node parseConsumer(String next) {
 		Scanner scanner = new Scanner(next);
 		float load = scanner.nextFloat();
 		scanner.close();
-		return new consumer(load);
+		return new Consumer(load);
 	}
 
 	private float parsefloat(String next) {
@@ -160,17 +160,17 @@ public class parser {
 		return num;
 	}
 
-	private generator parseGenerator(String next) {
+	private Generator parseGenerator(String next) {
 		Scanner scanner = new Scanner(next);
 		float min = scanner.nextFloat();
 		float max = scanner.nextFloat();
 		float coef = scanner.nextFloat();
 		String type = scanner.next();
 		scanner.close();
-		return new generator(min, max, coef, type);
+		return new Generator(min, max, coef, type);
 	}
 
-	private graph parseNetSize(String next) {
+	private Graph parseNetSize(String next) {
 		Scanner s = new Scanner(next);
 		s.useDelimiter("\\s");
 		this.ngraph = Integer.parseInt(s.next());
@@ -184,20 +184,20 @@ public class parser {
 		float etac = (float) s.nextDouble();
 		float etad = (float) s.nextDouble();
 		s.close();
-		return new graph(nNode, nGenerators, nRGenerators, nConsumers, loadmax, nStorage, delta, etac, etad);
+		return new Graph(nNode, nGenerators, nRGenerators, nConsumers, loadmax, nStorage, delta, etac, etad);
 	}
 
-	private storage parseStorage(String next) {
+	private Storage parseStorage(String next) {
 		Scanner s = new Scanner(next);
 		float aval = s.nextFloat();
 		float cap = s.nextFloat();
 		float min = s.nextFloat();
 
 		s.close();
-		return new storage(aval, cap, min);
+		return new Storage(aval, cap, min);
 	}
 
-	public graph parseUpdates(String path, graph g) {
+	public Graph parseUpdates(String path, Graph g) {
 		boolean goon = true;
 		Scanner scanner;
 		try {

@@ -4,12 +4,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import pgrid_opt.dataModelPrint;
-import pgrid_opt.graph;
-import pgrid_opt.instanceRandomizer;
-import pgrid_opt.parser;
+import pgrid_opt.DataModelPrint;
+import pgrid_opt.Graph;
+import pgrid_opt.InstanceRandomizer;
+import pgrid_opt.Parser;
 
-public class main {
+public class Main {
 	public static void main(String[] args) {
 		long starttime = System.nanoTime();
 		float[] wind = null;
@@ -17,8 +17,8 @@ public class main {
 		float[] loads = null;
 		float wcost = 0.0f;
 		float scost = 0.0f;
-		graph[] gdays = null;
-		parser p = new parser();
+		Graph[] gdays = null;
+		Parser p = new Parser();
 		String[] s = p.parseArg(args);
 		String path = s[1]; //path to the input
 		String outpath1 = "input";
@@ -29,14 +29,14 @@ public class main {
 		String model = s[0]; //path to the model
 		String dirpath = s[2]; //path to the output
 		Object[] o = p.parseData(path);
-		graph g = (graph) o[0];
+		Graph g = (Graph) o[0];
 		solar = (float[]) o[1];
 		wind = (float[]) o[2];
 		loads = (float[]) o[3];
-		instanceRandomizer r = new instanceRandomizer();
-		gdays = new graph[loads.length + 1];
+		InstanceRandomizer r = new InstanceRandomizer();
+		gdays = new Graph[loads.length + 1];
 		gdays = r.creategraphs(g, gdays, solar, wind, loads);
-		dataModelPrint mp = new dataModelPrint();
+		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
 		int i = 0;
 		while (i < gdays.length - 1) {

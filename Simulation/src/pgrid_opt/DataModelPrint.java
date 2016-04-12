@@ -4,15 +4,15 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-public class dataModelPrint {
-	public void printStorageData(graph[] gdays, String filename) {
+public class DataModelPrint {
+	public void printStorageData(Graph[] gdays, String filename) {
 		try {
 			PrintWriter writer = new PrintWriter(filename, "UTF-8");
 
 			for (int i = gdays[0].getNNode() - gdays[0].getNstorage(); i < gdays[0].getNNode(); i++) {
 				writer.print(i + " ");
 				for (int j = 0; j < gdays.length; j++) {
-					writer.print(((storage) gdays[j].getNodeList()[i]).getAvaliability() + " ");
+					writer.print(((Storage) gdays[j].getNodeList()[i]).getAvaliability() + " ");
 				}
 				writer.println();
 				writer.flush();
@@ -23,7 +23,7 @@ public class dataModelPrint {
 		}
 	}
 
-	public void printData(graph g, String filename, String outname) {
+	public void printData(Graph g, String filename, String outname) {
 		float etac = g.getEtac();
 		float etad = g.getEtad();
 		float delta = g.getDelta();
@@ -68,32 +68,32 @@ public class dataModelPrint {
 			writer.println("param costs :=");
 			for (int i = 0; i < g.getNGenerators(); i++) {
 				if (i == g.getNGenerators() - 1)
-					writer.println(i + " " + ((generator) g.getNodeList()[i]).getCoef() + ";");
+					writer.println(i + " " + ((Generator) g.getNodeList()[i]).getCoef() + ";");
 				else
-					writer.println(i + " " + ((generator) g.getNodeList()[i]).getCoef());
+					writer.println(i + " " + ((Generator) g.getNodeList()[i]).getCoef());
 			}
 			writer.println("param mintprod :=");
 			for (int i = 0; i < g.getNGenerators(); i++) {
 				if (i == g.getNGenerators() - 1)
-					writer.println(i + " " + ((generator) g.getNodeList()[i]).getMinP() + ";");
+					writer.println(i + " " + ((Generator) g.getNodeList()[i]).getMinP() + ";");
 				else
-					writer.println(i + " " + ((generator) g.getNodeList()[i]).getMinP());
+					writer.println(i + " " + ((Generator) g.getNodeList()[i]).getMinP());
 			}
 			writer.println("param maxtprod :=");
 			for (int i = 0; i < g.getNGenerators(); i++) {
 				if (i == g.getNGenerators() - 1)
-					writer.println(i + " " + ((generator) g.getNodeList()[i]).getMaxP() + ";");
+					writer.println(i + " " + ((Generator) g.getNodeList()[i]).getMaxP() + ";");
 				else
-					writer.println(i + " " + ((generator) g.getNodeList()[i]).getMaxP());
+					writer.println(i + " " + ((Generator) g.getNodeList()[i]).getMaxP());
 			}
 			if (g.getNrgenetarors() != 0) {
 				writer.println("param rprodmax :=");
 				for (int i = g.getNNode() - g.getNrgenetarors() - g.getNstorage(); i < g.getNNode()
 						- g.getNstorage(); i++) {
 					if (i == g.getNNode() - (g.getNstorage() + 1))
-						writer.println(i + " " + ((rewGenerator) g.getNodeList()[i]).getProduction() + ";");
+						writer.println(i + " " + ((RewGenerator) g.getNodeList()[i]).getProduction() + ";");
 					else
-						writer.println(i + " " + ((rewGenerator) g.getNodeList()[i]).getProduction());
+						writer.println(i + " " + ((RewGenerator) g.getNodeList()[i]).getProduction());
 				}
 			}
 			if (g.getNrgenetarors() != 0) {
@@ -101,9 +101,9 @@ public class dataModelPrint {
 				for (int i = g.getNNode() - g.getNrgenetarors() - g.getNstorage(); i < g.getNNode()
 						- g.getNstorage(); i++) {
 					if (i == g.getNNode() - (g.getNstorage() + 1))
-						writer.println(i + " " + ((rewGenerator) g.getNodeList()[i]).getMinP() + ";");
+						writer.println(i + " " + ((RewGenerator) g.getNodeList()[i]).getMinP() + ";");
 					else
-						writer.println(i + " " + ((rewGenerator) g.getNodeList()[i]).getMinP());
+						writer.println(i + " " + ((RewGenerator) g.getNodeList()[i]).getMinP());
 				}
 			}
 			if (g.getNrgenetarors() != 0) {
@@ -111,28 +111,28 @@ public class dataModelPrint {
 				for (int i = g.getNNode() - g.getNrgenetarors() - g.getNstorage(); i < g.getNNode()
 						- g.getNstorage(); i++) {
 					if (i == g.getNNode() - (g.getNstorage() + 1))
-						writer.println(i + " " + ((rewGenerator) g.getNodeList()[i]).getCoef() + ";");
+						writer.println(i + " " + ((RewGenerator) g.getNodeList()[i]).getCoef() + ";");
 					else
-						writer.println(i + " " + ((rewGenerator) g.getNodeList()[i]).getCoef());
+						writer.println(i + " " + ((RewGenerator) g.getNodeList()[i]).getCoef());
 				}
 			}
 			writer.println("param loads :=");
 			for (int i = g.getNGenerators(); i < g.getNGenerators() + g.getNConsumers(); i++) {
 				if (i == g.getNGenerators() + g.getNConsumers() - 1)
-					writer.println(i + " " + ((consumer) g.getNodeList()[i]).getLoad() + ";");
+					writer.println(i + " " + ((Consumer) g.getNodeList()[i]).getLoad() + ";");
 				else
-					writer.println(i + " " + ((consumer) g.getNodeList()[i]).getLoad());
+					writer.println(i + " " + ((Consumer) g.getNodeList()[i]).getLoad());
 			}
 			if (g.getNstorage() != 0) {
 				writer.println("param storagemax :=");
 				for (int i = g.getNNode() - g.getNstorage(); i < g.getNNode(); i++) {
 					float cap = 0.0F;
 
-					if (((storage) g.getNodeList()[i]).getMincap() > ((storage) g.getNodeList()[i]).getAvaliability()) {
-						((storage) g.getNodeList()[i]).setAvaliability(((storage) g.getNodeList()[i]).getMincap());
+					if (((Storage) g.getNodeList()[i]).getMincap() > ((Storage) g.getNodeList()[i]).getAvaliability()) {
+						((Storage) g.getNodeList()[i]).setAvaliability(((Storage) g.getNodeList()[i]).getMincap());
 					}
-					float val = (((storage) g.getNodeList()[i]).getAvaliability()
-							- ((storage) g.getNodeList()[i]).getMincap()) / delta * etad;
+					float val = (((Storage) g.getNodeList()[i]).getAvaliability()
+							- ((Storage) g.getNodeList()[i]).getMincap()) / delta * etad;
 					for (int j = 0; j < g.getNNode(); j++) {
 						if (g.getNetwork()[i][j].getCapacity() != 0.0F) {
 							cap = g.getNetwork()[i][j].getCapacity();
@@ -158,12 +158,12 @@ public class dataModelPrint {
 					float cap = 0.0F;
 					float eps = 0.001F;
 
-					if (((storage) g.getNodeList()[i]).getCapacity() < ((storage) g.getNodeList()[i])
+					if (((Storage) g.getNodeList()[i]).getCapacity() < ((Storage) g.getNodeList()[i])
 							.getAvaliability()) {
-						((storage) g.getNodeList()[i]).setAvaliability(((storage) g.getNodeList()[i]).getCapacity());
+						((Storage) g.getNodeList()[i]).setAvaliability(((Storage) g.getNodeList()[i]).getCapacity());
 					}
-					float val = (((storage) g.getNodeList()[i]).getCapacity()
-							- ((storage) g.getNodeList()[i]).getAvaliability()) / delta / etac;
+					float val = (((Storage) g.getNodeList()[i]).getCapacity()
+							- ((Storage) g.getNodeList()[i]).getAvaliability()) / delta / etac;
 					for (int j = g.getNGenerators() + g.getNConsumers(); j < g.getNNode()
 							- (g.getNstorage() + g.getNrgenetarors()); j++) {
 						if (g.getNetwork()[i][j].getCapacity() != 0.0F) {

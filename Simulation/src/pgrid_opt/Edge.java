@@ -1,6 +1,6 @@
 package pgrid_opt;
 
-public class edge {
+public class Edge {
 	private float weight;
 
 	private float capacity;

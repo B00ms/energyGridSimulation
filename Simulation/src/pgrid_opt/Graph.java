@@ -1,6 +1,6 @@
 package pgrid_opt;
 
-public class graph implements Cloneable {
+public class Graph implements Cloneable {
 	private int nnode; //Total Number of nodes in the graph
 	private int ngenerators; //Number of conventional generators
 	private int nconsumers; //Number of loads
@@ -12,13 +12,13 @@ public class graph implements Cloneable {
 	private float etac; //Duration of each time step
 	private float etad; //Charge and discharge efficiency of storages
 	private float delta; //Number of storage systems.
-	private node[] nodelist;
-	private edge[][] network;
+	private Node[] nodelist;
+	private Edge[][] network;
 
-	public graph(int nnode, int ngenerators, int nrgenerators, int nconsumers, int loadmax, int nstorage, float delta,
+	public Graph(int nnode, int ngenerators, int nrgenerators, int nconsumers, int loadmax, int nstorage, float delta,
 			float etac, float etad) {
-		setNodeList(new node[nnode]);
-		this.network = new edge[nnode][nnode];
+		setNodeList(new Node[nnode]);
+		this.network = new Edge[nnode][nnode];
 		setLoadmax(loadmax);
 		setNNode(nnode);
 		setNGenerators(ngenerators);
@@ -32,19 +32,19 @@ public class graph implements Cloneable {
 		setEtad(etad);
 	}
 
-	public edge[][] getNetwork() {
+	public Edge[][] getNetwork() {
 		return this.network;
 	}
 
-	public void setNetwork(edge[][] network) {
+	public void setNetwork(Edge[][] network) {
 		this.network = network;
 	}
 
-	public node[] getNodeList() {
+	public Node[] getNodeList() {
 		return this.nodelist;
 	}
 
-	public void setNodeList(node[] nodelist) {
+	public void setNodeList(Node[] nodelist) {
 		this.nodelist = nodelist;
 	}
 
@@ -98,29 +98,29 @@ public class graph implements Cloneable {
 	/**
 	 * @return A copy of the graph.
 	 */
-	public graph clone() {
-		graph g = new graph(this.nnode, this.ngenerators, this.nrgenetarors, this.nconsumers, this.loadmax,
+	public Graph clone() {
+		Graph g = new Graph(this.nnode, this.ngenerators, this.nrgenetarors, this.nconsumers, this.loadmax,
 				this.nstorage, this.delta, this.etac, this.etad);
 		for (int i = 0; i < g.ngenerators; i++) {
-			g.nodelist[i] = new generator(((generator) this.nodelist[i]).getMinP(),
-					((generator) this.nodelist[i]).getMaxP(), ((generator) this.nodelist[i]).getCoef(),
-					((generator) this.nodelist[i]).getType());
+			g.nodelist[i] = new Generator(((Generator) this.nodelist[i]).getMinP(),
+					((Generator) this.nodelist[i]).getMaxP(), ((Generator) this.nodelist[i]).getCoef(),
+					((Generator) this.nodelist[i]).getType());
 		}
 		for (int i = g.getNGenerators(); i < g.ngenerators + g.getNConsumers(); i++) {
-			g.nodelist[i] = new consumer(((consumer) this.nodelist[i]).getLoad());
+			g.nodelist[i] = new Consumer(((Consumer) this.nodelist[i]).getLoad());
 		}
 		for (int i = g.getNNode() - g.getNrgenetarors() - g.getNstorage(); i < g.getNNode() - g.getNstorage(); i++) {
-			g.nodelist[i] = new rewGenerator(((rewGenerator) this.nodelist[i]).getMinP(),
-					((rewGenerator) this.nodelist[i]).getMaxP(), ((rewGenerator) this.nodelist[i]).getCoef(),
-					((rewGenerator) this.nodelist[i]).getType());
+			g.nodelist[i] = new RewGenerator(((RewGenerator) this.nodelist[i]).getMinP(),
+					((RewGenerator) this.nodelist[i]).getMaxP(), ((RewGenerator) this.nodelist[i]).getCoef(),
+					((RewGenerator) this.nodelist[i]).getType());
 		}
 		for (int i = g.getNNode() - g.getNstorage(); i < g.getNNode(); i++) {
-			g.nodelist[i] = new storage(((storage) this.nodelist[i]).getAvaliability(),
-					((storage) this.nodelist[i]).getCapacity(), ((storage) this.nodelist[i]).getMincap());
+			g.nodelist[i] = new Storage(((Storage) this.nodelist[i]).getAvaliability(),
+					((Storage) this.nodelist[i]).getCapacity(), ((Storage) this.nodelist[i]).getMincap());
 		}
 		for (int i = 0; i < g.getNNode(); i++)
 			for (int j = 0; j < g.getNNode(); j++) {
-				g.network[i][j] = new edge();
+				g.network[i][j] = new Edge();
 				g.network[i][j].setCapacity(this.network[i][j].getCapacity());
 				g.network[i][j].setWeight(this.network[i][j].getWeight());
 				g.network[i][j].setFlow(this.network[i][j].getFlow());

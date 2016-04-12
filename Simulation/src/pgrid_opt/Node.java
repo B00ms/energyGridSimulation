@@ -1,5 +1,5 @@
 package pgrid_opt;
 
-public abstract class node {
+public abstract class Node {
 	public abstract boolean isRenew();
 }

@@ -1,11 +1,11 @@
 package pgrid_opt;
 
-public class storage extends node {
+public class Storage extends Node {
 	private float avaliability;
 	private float capacity;
 	private float mincap;
 
-	public storage(float aval, float cap, float min) {
+	public Storage(float aval, float cap, float min) {
 		setAvaliability(aval);
 		setCapacity(cap);
 		setMincap(min);

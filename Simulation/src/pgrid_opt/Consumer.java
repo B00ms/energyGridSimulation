@@ -1,9 +1,9 @@
 package pgrid_opt;
 
-public class consumer extends node {
+public class Consumer extends Node {
 	private float load;
 
-	public consumer(float load) {
+	public Consumer(float load) {
 		this.load = load;
 	}
 
