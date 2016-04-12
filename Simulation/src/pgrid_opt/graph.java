@@ -2,11 +2,11 @@ package pgrid_opt;
 
 public class graph implements Cloneable {
 	private int nnode; //Total Number of nodes in the graph
-	private int ngenerators; //Number of convential generators
+	private int ngenerators; //Number of conventional generators
 	private int nconsumers; //Number of loads
 	private int nrgenetarors; //Number of renewable generators
 	private int loadmax; //Daily max load demand
-	private int nstorage; //Number of storage systems
+	private int nstorage; //Number of loads
 	private int efficency; //TODO: determine what this variable represents(capacity of real edges?), it's hardcoded to 75
 	private float ccurt; //Renewable cut costs
 	private float etac; //Duration of each time step
@@ -64,10 +64,17 @@ public class graph implements Cloneable {
 		this.nconsumers = nconsumers;
 	}
 
+	/**
+	 * @return Total number of nodes in the graph
+	 */
 	public int getNNode() {
 		return this.nnode;
 	}
 
+	/**
+	 * Sets the total amount of nodes in the graph
+	 * @param nnode
+	 */
 	public void setNNode(int nnode) {
 		this.nnode = nnode;
 	}
@@ -88,6 +95,9 @@ public class graph implements Cloneable {
 		this.loadmax = loadmax;
 	}
 
+	/**
+	 * @return A copy of the graph.
+	 */
 	public graph clone() {
 		graph g = new graph(this.nnode, this.ngenerators, this.nrgenetarors, this.nconsumers, this.loadmax,
 				this.nstorage, this.delta, this.etac, this.etad);
@@ -118,10 +128,18 @@ public class graph implements Cloneable {
 		return g;
 	}
 
+	/**
+	 *
+	 * @return number of loads in graph
+	 */
 	public int getNstorage() {
 		return this.nstorage;
 	}
 
+	/**
+	 * Sets the number of loads in the graph
+	 * @param nstorage
+	 */
 	public void setNstorage(int nstorage) {
 		this.nstorage = nstorage;
 	}
@@ -142,26 +160,51 @@ public class graph implements Cloneable {
 		this.ccurt = ccurt;
 	}
 
+	/**
+	 *
+	 * @return Number of storage systems
+	 */
 	public float getDelta() {
 		return this.delta;
 	}
 
+	/**
+	 * Set the Number of storage systems
+	 * @param delta
+	 */
 	public void setDelta(float delta) {
 		this.delta = delta;
 	}
 
+	/**
+	 *
+	 * @return Charge and discharge efficiency of storages
+	 */
 	public float getEtad() {
 		return this.etad;
 	}
+
+	/**
+	 * Set the Charge and discharge efficiency of storages
+	 * @param etad
+	 */
 
 	public void setEtad(float etad) {
 		this.etad = etad;
 	}
 
+	/**
+	 *
+	 * @return the duration of each time step.
+	 */
 	public float getEtac() {
 		return this.etac;
 	}
 
+	/**
+	 * Sets the duration of a time step.
+	 * @param etac
+	 */
 	public void setEtac(float etac) {
 		this.etac = etac;
 	}

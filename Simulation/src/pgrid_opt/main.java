@@ -47,15 +47,15 @@ public class main {
 				System.out.println(command);
 				proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 				proc.waitFor();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); //Using the new input file, we apply the model to solve the cost function given the new state of the grid.
 				String line = "";
 				while ((line = reader.readLine()) != null) {
 					output.append(String.valueOf(line) + "\n");
 				}
 				System.out.println(output);
 				if (g.getNstorage() > 0) {
-					gdays[i] = p.parseUpdates(String.valueOf(dirpath) + "update.txt", gdays[i]);
-					gdays[i + 1] = r.updateStorages(gdays[i], gdays[i + 1]);
+					gdays[i] = p.parseUpdates(String.valueOf(dirpath) + "update.txt", gdays[i]); //Keeps track of the new state for storages.
+					gdays[i + 1] = r.updateStorages(gdays[i], gdays[i + 1]); //Apply the new state of the storage for the next time step.
 				}
 			} catch (IOException | InterruptedException e) {
 				e.printStackTrace();

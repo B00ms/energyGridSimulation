@@ -30,9 +30,10 @@ param mintprod {tgen} >=0;
 param maxtprod {tgen} >=0;
 param loads {consumers} >=0;
 
+#phase angle constraint
 var theta {nodes} >= -pi/2, <= pi/2;
 
-#The function to minimize
+#The function to minimize daily system cost.
 minimize obj :	(sum{i in tgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*costs[i])) + 
 		(sum{i in rgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*rcost[i])) + 
 		(sum{i in rgen} c_curt*(rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])));
