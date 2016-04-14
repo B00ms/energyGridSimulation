@@ -11,6 +11,15 @@ public class InstanceRandomizer {
 
 	private float[] loads;
 
+	/**
+	 * Greate graphs for every timestep and apply load initialization
+	 * @param g
+	 * @param gDay	timestep
+	 * @param solar	solar production
+	 * @param wind	wind production
+	 * @param loads	load
+	 * @return	list of graph for each timestep
+	 */
 	public Graph[] creategraphs(Graph g, Graph[] gDay, float[] solar, float[] wind, float[] loads) {
 		this.g = g;
 		this.gDay = gDay;
@@ -26,6 +35,12 @@ public class InstanceRandomizer {
 		return gDay;
 	}
 
+	/**
+	 * Update storage nodes
+	 * @param oldg
+	 * @param newg
+	 * @return
+	 */
 	public Graph updateStorages(Graph oldg, Graph newg) {
 		for (int i = oldg.getNNode() - oldg.getNstorage(); i < oldg.getNNode(); i++) {
 			float etac = oldg.getEtac();
@@ -44,12 +59,19 @@ public class InstanceRandomizer {
 		return newg;
 	}
 
+	/**
+	 * For each of the timestep checks if the current load is higher than 70% of the maximum load
+	 * 70% of maximum load > load demand = disable hydro plant;
+	 */
 	private void checkGen() {
 		for (int i = 0; i < this.gDay.length - 1; i++) {
+
 			if (this.g.getLoadmax() / 100 * 70 > this.loads[i]) {
+
 				for (int j = 0; j < this.g.getNGenerators(); j++) {
-					if (("H".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 0)
-							|| ("H".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 1)) {
+					if (	("H".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 0)
+						||  ("H".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 1))
+					{
 						((Generator) this.gDay[i].getNodeList()[j]).setMaxP(0.0F);
 						((Generator) this.gDay[i].getNodeList()[j]).setMinP(0.0F);
 					}
@@ -58,6 +80,11 @@ public class InstanceRandomizer {
 		}
 	}
 
+	/**
+	 * Calculates the max/min production of renewable generators
+	 * "S" solar
+	 * "W" wind
+	 */
 	private void calculateRewProd() {
 		for (int i = 0; i < this.gDay.length - 1; i++) {
 			for (int j = this.g.getNNode() - this.g.getNrgenetarors() - this.g.getNstorage(); j < this.g.getNNode()
@@ -74,6 +101,11 @@ public class InstanceRandomizer {
 		}
 	}
 
+	/**
+	 * Calculates the load on current time step for each consumer in the grid
+	 * Uses total load for timestep i (totloads)
+	 * Consumer has percentage of total load predefined (perloads)
+	 */
 	private void calculateLoads() {
 		for (int i = 0; i < this.gDay.length - 1; i++) {
 			for (int j = this.g.getNGenerators(); j < this.g.getNGenerators() + this.g.getNConsumers(); j++) {
