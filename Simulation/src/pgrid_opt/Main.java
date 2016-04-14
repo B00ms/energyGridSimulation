@@ -18,6 +18,7 @@ public class Main {
 		//For weibull distribution: alpha = 1.6, beta = 8
 		//For normal distribution: mean = 0, sigma = 0.05
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
+		int[][][][][] convGeneratorStatus = new int[42][0][0][0][0]; //Generator[Id][status][min prod][max prod][timesteps since failure]
 
 		long starttime = System.nanoTime();
 		float[] wind = null;
@@ -26,8 +27,8 @@ public class Main {
 		float wcost = 0.0f;  //wind cost
 		float scost = 0.0f; //solar cost
 		Graph[] gdays = null;
-		Parser p = new Parser();
-		String[] s = p.parseArg(args);
+		Parser parser = new Parser();
+		String[] s = parser.parseArg(args);
 		String path = s[1]; //path to the input
 		String outpath1 = "input";
 		String outpath2 = ".mod";
@@ -36,11 +37,15 @@ public class Main {
 		String solpath3 = "sol";
 		String model = s[0]; //path to the model
 		String dirpath = s[2]; //path to the output
-		Object[] o = p.parseData(path);
+		Object[] o = parser.parseData(path);
 		Graph g = (Graph) o[0];
 		solar = (float[]) o[1];
 		wind = (float[]) o[2];
 		loads = (float[]) o[3];
+
+		//Get the number of generators in the system  and create an array to keep track of their status.
+		convGeneratorStatus = new int[g.getNGenerators()][0][0][0][0];
+
 		InstanceRandomizer r = new InstanceRandomizer();
 		gdays = new Graph[loads.length + 1];
 		gdays = r.creategraphs(g, gdays, solar, wind, loads);
@@ -65,7 +70,7 @@ public class Main {
 				}
 				System.out.println(output);
 				if (g.getNstorage() > 0) {
-					gdays[i] = p.parseUpdates(String.valueOf(dirpath) + "update.txt", gdays[i]); //Keeps track of the new state for storages.
+					gdays[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", gdays[i]); //Keeps track of the new state for storages.
 					gdays[i + 1] = r.updateStorages(gdays[i], gdays[i + 1]); //Apply the new state of the storage for the next time step.
 				}
 			} catch (IOException | InterruptedException e) {

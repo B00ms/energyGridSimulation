@@ -17,6 +17,12 @@ public class Parser {
 	private String stor = "storage";
 	private int ngraph;
 
+	/**
+	 * Parsers the initial input file and returns its contents as a java object that contains:
+	 * The graph representing the grid, production values of solar and wind, the consumption value of the loads
+	 * @param path to the input file.
+	 * @return
+	 */
 	public Object[] parseData(String path) {
 		Scanner scanner;
 		try {
@@ -28,9 +34,9 @@ public class Parser {
 			return null;
 		}
 		Graph g = parseNetSize(scanner.next());
-		float[] dsolar = new float[this.ngraph];
-		float[] dwind = new float[this.ngraph];
-		float[] dloads = new float[this.ngraph];
+		float[] dsolar = new float[this.ngraph]; //Production values for solar for each time step
+		float[] dwind = new float[this.ngraph]; //Production values for wind for each time step
+		float[] dloads = new float[this.ngraph]; //Load demand for each time step
 		float wcost = 0.0F;
 		float scost = 0.0F;
 		float ccurt = 200.0F;
