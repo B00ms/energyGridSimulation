@@ -54,6 +54,7 @@ public class Main {
 				String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
 				System.out.println(command);
 				//TODO: Do a Monte Carlo draw for conventional and renewable generators and set their state.
+				//TODO: Determine the probability of failure for conventional generators
 				//TODO: Do a Monto Carlo draw for the load.
 				proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 				proc.waitFor();
