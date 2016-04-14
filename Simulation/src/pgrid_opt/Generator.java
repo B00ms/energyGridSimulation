@@ -72,7 +72,7 @@ public class Generator extends Node {
 
 	/**
 	 *
-	 * @return The type of the generator (renewable or convential)
+	 * @return The type of the generator (T = thermal, H = Hydroeletric, W = Wind, S = Solar)
 	 */
 	public String getType() {
 		return this.type;
