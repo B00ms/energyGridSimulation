@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import org.apache.commons.math3.distribution.WeibullDistribution;
+
 import pgrid_opt.DataModelPrint;
 import pgrid_opt.Graph;
 import pgrid_opt.InstanceRandomizer;
@@ -11,12 +14,17 @@ import pgrid_opt.Parser;
 
 public class Main {
 	public static void main(String[] args) {
+
+		//For weibull distribution: alpha = 1.6, beta = 8
+		//For normal distribution: mean = 0, sigma = 0.05
+		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
+
 		long starttime = System.nanoTime();
 		float[] wind = null;
 		float[] solar = null;
 		float[] loads = null;
-		float wcost = 0.0f;
-		float scost = 0.0f;
+		float wcost = 0.0f;  //wind cost
+		float scost = 0.0f; //solar cost
 		Graph[] gdays = null;
 		Parser p = new Parser();
 		String[] s = p.parseArg(args);
@@ -45,6 +53,8 @@ public class Main {
 				StringBuffer output = new StringBuffer();
 				String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
 				System.out.println(command);
+				//TODO: Do a Monte Carlo draw for conventional and renewable generators and set their state.
+				//TODO: Do a Monto Carlo draw for the load.
 				proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 				proc.waitFor();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); //Using the new input file, we apply the model to solve the cost function given the new state of the grid.
