@@ -7,6 +7,7 @@ public class Generator extends Node {
 
 	private float coef;
 	private String type;
+	private int reactiveteAtTimeStep;
 
 	public Generator(float min, float max, float coef, String type) {
 		this.maxp = max;
@@ -84,5 +85,19 @@ public class Generator extends Node {
 	 */
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	/**
+	 * @return the time step at which this generator must come back online
+	 */
+	public int getReactiveteAtTimeStep() {
+		return reactiveteAtTimeStep;
+	}
+
+	/**
+	 * @param sets the time step at which this generator must be back online
+	 */
+	public void setReactiveteAtTimeStep(int currentTime) {
+		this.reactiveteAtTimeStep = reactiveteAtTimeStep;
 	}
 }

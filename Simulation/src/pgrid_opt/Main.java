@@ -14,12 +14,6 @@ import pgrid_opt.Parser;
 
 public class Main {
 	public static void main(String[] args) {
-
-		//For weibull distribution: alpha = 1.6, beta = 8
-		//For normal distribution: mean = 0, sigma = 0.05
-		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
-		int[][][][][] convGeneratorStatus = new int[42][0][0][0][0]; //Generator[Id][status][min prod][max prod][timesteps since failure]
-
 		long starttime = System.nanoTime();
 		float[] wind = null;
 		float[] solar = null;
@@ -43,8 +37,7 @@ public class Main {
 		wind = (float[]) o[2];
 		loads = (float[]) o[3];
 
-		//Get the number of generators in the system  and create an array to keep track of their status.
-		convGeneratorStatus = new int[g.getNGenerators()][0][0][0][0];
+
 
 		InstanceRandomizer r = new InstanceRandomizer();
 		gdays = new Graph[loads.length + 1];
@@ -53,6 +46,9 @@ public class Main {
 		Process proc = null;
 		int i = 0;
 		while (i < gdays.length - 1) {
+			
+			//gdays = setGridState(gdays, i);
+			
 			mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 			try {
 				StringBuffer output = new StringBuffer();
@@ -84,5 +80,74 @@ public class Main {
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
+	}
+
+	/**
+	 * Set the state of generators and loads.
+	 * @return
+	 */
+	private static Graph[] setGridState(Graph graph, int currentTimeStep){
+		// TODO Auto-generated method stub
+		
+		//For weibull distribution: alpha = 1.6, beta = 8
+		//For normal distribution: mean = 0, sigma = 0.05
+		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
+		int[][][][][] convGeneratorStatus = new int[42][0][0][0][0]; //Generator[Id][status][min prod][max prod][timesteps since failure]
+		
+		//Get the number of generators in the system  and create an array to keep track of their status.
+		convGeneratorStatus = new int[graph.getNGenerators()][0][0][0][0];
+
+		double convGeneratorProb = 0.0; //Probability of failure for conventional generators
+		double windSpeedVariance = 0.0; //Variance for wind speed
+		double loadVariance = 0; //Variance for load
+		
+		//Loop through all nodes in the graph
+		for(int i = 0; i < graph.getNNode(); i ++){
+			
+			//Check the class of the current node and deal with it accordingly. 
+			if(graph.getNodeList()[i].getClass() == Generator.class){ 
+				String generatorType = ((Generator) graph.getNodeList()[i]).getType();
+				double mcDraw = 0; //This will hold our Monte Carlo draw (hahaha mac draw)
+				switch (generatorType) {
+				case "H" : //Hydro-eletric generator
+					//Ignore this for now, might be added at a later stage
+					break;
+				case "T": //Thermal generator
+					mcDraw = monteCarloHelper.getRandomNormDist();
+					if(((Generator) graph.getNodeList()[i]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
+						if(mcDraw < convGeneratorProb){
+							//Our draw is smaller meaning that the generator has failed.
+								((Generator) graph.getNodeList()[i]).setMaxP(0);
+								((Generator) graph.getNodeList()[i]).setMinP(0);
+
+								//Set the point at which the generator must be reactivated
+								//since we have a 15 minute resolution we want to add 4 time steps for a period of 24
+								((Generator) graph.getNodeList()[i]).setReactiveteAtTimeStep(currentTimeStep+4);
+							}
+						}else if(((Generator) graph.getNodeList()[i]).getReactiveteAtTimeStep() < currentTimeStep) {
+							//We have to reactivate the generator because it's been offline for enough steps.
+							//TODO: setmaxP to previous reported value
+							//TODO: setminP to previous reported value
+						}
+					break;
+				case "W": //Wind park generator
+					mcDraw = monteCarloHelper.getRandomWeibull();						
+					break;
+				case "S": //Solar generator
+					//Let's ignore the sun as well for now...
+					break;
+				}
+			}
+			else if(graph.getNodeList()[i].getClass() == Consumer.class){
+				loadVariance = monteCarloHelper.getRandomUniformDist();
+				
+			}
+			else if(graph.getNodeList()[i].getClass() == Storage.class){
+				
+			}
+			
+		}
+		
+		return null;
 	}
 }
