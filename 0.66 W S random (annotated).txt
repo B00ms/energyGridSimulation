@@ -44,7 +44,7 @@ generators
 155.00 310.00 45.00 T
 175.00 350.00 40.00 T
 consumers
-totloads
+totloads | Maximum load of consumers
 6926
 6828
 6730
@@ -141,7 +141,7 @@ totloads
 7366
 7219
 7073
-perloads
+perloads | Percentage of the maximum load that is being consumed.
 1.27
 1.13
 2.10

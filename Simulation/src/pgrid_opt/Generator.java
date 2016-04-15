@@ -2,8 +2,9 @@ package pgrid_opt;
 
 public class Generator extends Node {
 	private float maxp;
-
 	private float minp;
+
+	private float lastmaxp,lastminp;
 
 	private float coef;
 	private String type;
@@ -99,5 +100,21 @@ public class Generator extends Node {
 	 */
 	public void setReactiveteAtTimeStep(int currentTime) {
 		this.reactiveteAtTimeStep = reactiveteAtTimeStep;
+	}
+
+	public float getLastmaxp() {
+		return lastmaxp;
+	}
+
+	public void setLastmaxp(float lastmaxp) {
+		this.lastmaxp = lastmaxp;
+	}
+
+	public float getLastminp() {
+		return lastminp;
+	}
+
+	public void setLastminp(float lastminp) {
+		this.lastminp = lastminp;
 	}
 }
