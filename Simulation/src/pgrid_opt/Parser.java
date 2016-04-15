@@ -122,6 +122,13 @@ public class Parser {
 		return o;
 	}
 
+	/**
+	 * Parse renewable generators from input file
+	 * @param next
+	 * @param wcost
+	 * @param scost
+	 * @return
+	 */
 	private Node parseRGenerators(String next, float wcost, float scost) {
 		Scanner scanner = new Scanner(next);
 		float max = scanner.nextFloat();
@@ -133,6 +140,11 @@ public class Parser {
 		return new RewGenerator(0.0F, max, wcost, type);
 	}
 
+	/**
+	 * Par
+	 * @param e
+	 * @param scan
+	 */
 	private void parseEdge(Edge[][] e, Scanner scan) {
 		for (int i = 0; i < e.length; i++) {
 			for (int j = 0; j < e.length; j++) {
@@ -152,6 +164,11 @@ public class Parser {
 		}
 	}
 
+	/**
+	 * Parse consumer node
+	 * @param next input String
+	 * @return Consumer node
+	 */
 	private Node parseConsumer(String next) {
 		Scanner scanner = new Scanner(next);
 		float load = scanner.nextFloat();
@@ -166,6 +183,11 @@ public class Parser {
 		return num;
 	}
 
+	/**
+	 * Parse initial values for Generator node
+	 * @param next input String
+	 * @return
+	 */
 	private Generator parseGenerator(String next) {
 		Scanner scanner = new Scanner(next);
 		float min = scanner.nextFloat();
@@ -176,6 +198,11 @@ public class Parser {
 		return new Generator(min, max, coef, type);
 	}
 
+	/**
+	 * Parse initial parameters for construction of energy grid
+	 * @param next input line
+	 * @return Graph of energy grid
+	 */
 	private Graph parseNetSize(String next) {
 		Scanner s = new Scanner(next);
 		s.useDelimiter("\\s");
@@ -193,6 +220,11 @@ public class Parser {
 		return new Graph(nNode, nGenerators, nRGenerators, nConsumers, loadmax, nStorage, delta, etac, etad);
 	}
 
+	/**
+	 * Parse and create new Storage node
+	 * @param next
+	 * @return Storage node
+	 */
 	private Storage parseStorage(String next) {
 		Scanner s = new Scanner(next);
 		float aval = s.nextFloat();
@@ -203,6 +235,12 @@ public class Parser {
 		return new Storage(aval, cap, min);
 	}
 
+	/**
+	 * Parses update.txt file for current timestep with current flow of storage node
+	 * @param path update.txt file
+	 * @param g graph of timestep i
+	 * @return updated graph at timestep i
+	 */
 	public Graph parseUpdates(String path, Graph g) {
 		boolean goon = true;
 		Scanner scanner;

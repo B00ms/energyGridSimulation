@@ -16,8 +16,8 @@ public class MontoCarloHelper {
 	private NormalDistribution normalDistribution;
 	private Random random; //Random uses a uniform distribution.
 
-	public MontoCarloHelper(double alpha, double beta, double mean, double  sigma){
-		weibullDistribution = new WeibullDistribution(alpha, beta);
+	public MontoCarloHelper(double shape, double scale, double mean, double  sigma){
+		weibullDistribution = new WeibullDistribution(shape, scale);
 		normalDistribution = new NormalDistribution(mean, sigma);
 		random = new Random();
 	}

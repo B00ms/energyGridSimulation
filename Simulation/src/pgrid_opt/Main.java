@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.apache.commons.math3.distribution.WeibullDistribution;
+import org.apache.commons.math3.stat.descriptive.summary.Product;
 
 import pgrid_opt.DataModelPrint;
 import pgrid_opt.Graph;
@@ -13,6 +13,11 @@ import pgrid_opt.InstanceRandomizer;
 import pgrid_opt.Parser;
 
 public class Main {
+
+	private static double V_CUT_IN = 4;
+	private static double V_CUT_OFF = 25;
+	private static double V_RATED = 12;
+
 	public static void main(String[] args) {
 		long starttime = System.nanoTime();
 		float[] wind = null;
@@ -37,8 +42,6 @@ public class Main {
 		wind = (float[]) o[2];
 		loads = (float[]) o[3];
 
-
-
 		InstanceRandomizer r = new InstanceRandomizer();
 		gdays = new Graph[loads.length + 1];
 		gdays = r.creategraphs(g, gdays, solar, wind, loads);
@@ -46,9 +49,9 @@ public class Main {
 		Process proc = null;
 		int i = 0;
 		while (i < gdays.length - 1) {
-			
-			//gdays = setGridState(gdays, i);
-			
+
+			setGridState(gdays, i);
+
 			mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 			try {
 				StringBuffer output = new StringBuffer();
@@ -86,68 +89,89 @@ public class Main {
 	 * Set the state of generators and loads.
 	 * @return
 	 */
-	private static Graph[] setGridState(Graph graph, int currentTimeStep){
-		// TODO Auto-generated method stub
-		
+	private static Graph[] setGridState(Graph[] graphs, int currentTimeStep){
 		//For weibull distribution: alpha = 1.6, beta = 8
 		//For normal distribution: mean = 0, sigma = 0.05
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
 		int[][][][][] convGeneratorStatus = new int[42][0][0][0][0]; //Generator[Id][status][min prod][max prod][timesteps since failure]
-		
+
 		//Get the number of generators in the system  and create an array to keep track of their status.
-		convGeneratorStatus = new int[graph.getNGenerators()][0][0][0][0];
+		//convGeneratorStatus = new int[graphs.getNGenerators()][0][0][0][0];
 
 		double convGeneratorProb = 0.0; //Probability of failure for conventional generators
 		double windSpeedVariance = 0.0; //Variance for wind speed
 		double loadVariance = 0; //Variance for load
-		
+
 		//Loop through all nodes in the graph
-		for(int i = 0; i < graph.getNNode(); i ++){
-			
-			//Check the class of the current node and deal with it accordingly. 
-			if(graph.getNodeList()[i].getClass() == Generator.class){ 
-				String generatorType = ((Generator) graph.getNodeList()[i]).getType();
-				double mcDraw = 0; //This will hold our Monte Carlo draw (hahaha mac draw)
-				switch (generatorType) {
-				case "H" : //Hydro-eletric generator
-					//Ignore this for now, might be added at a later stage
-					break;
-				case "T": //Thermal generator
-					mcDraw = monteCarloHelper.getRandomNormDist();
-					if(((Generator) graph.getNodeList()[i]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
-						if(mcDraw < convGeneratorProb){
-							//Our draw is smaller meaning that the generator has failed.
-								((Generator) graph.getNodeList()[i]).setMaxP(0);
-								((Generator) graph.getNodeList()[i]).setMinP(0);
+		for(int i = 0; i < graphs.length-1; i ++){
+			for (int j=0; j < graphs[i].getNodeList().length-1; j++){
+				//Check the class of the current node and deal with it accordingly.
+				if(graphs[i].getNodeList()[j] != null && (graphs[i].getNodeList()[j].getClass() == Generator.class ||
+						graphs[i].getNodeList()[j].getClass() ==  RewGenerator.class)){
+					String generatorType = ((Generator) graphs[i].getNodeList()[j]).getType();
+					double mcDraw = 0; //This will hold our Monte Carlo draw (hahaha mac draw)
+					switch (generatorType) {
+					case "H" : //Hydro-eletric generator
+						//Ignore this for now, might be added at a later stage
+						break;
+					case "T": //Thermal generator
+						mcDraw = monteCarloHelper.getRandomNormDist();
+						if(((Generator) graphs[i].getNodeList()[j]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
+							if(mcDraw < convGeneratorProb){
+								//Our draw is smaller meaning that the generator has failed.
+								float lastminp = ((Generator) graphs[i].getNodeList()[j]).getMinP();
+								float lastmaxp = ((Generator) graphs[i].getNodeList()[j]).getMaxP();
+
+								((Generator) graphs[i].getNodeList()[j]).setLastminp(lastminp);
+								((Generator) graphs[i].getNodeList()[j]).setLastmaxp(lastmaxp);
+
+								((Generator) graphs[i].getNodeList()[j]).setMinP(0);
+								((Generator) graphs[i].getNodeList()[j]).setMaxP(0);
 
 								//Set the point at which the generator must be reactivated
 								//since we have a 15 minute resolution we want to add 4 time steps for a period of 24
-								((Generator) graph.getNodeList()[i]).setReactiveteAtTimeStep(currentTimeStep+4);
+								((Generator) graphs[i].getNodeList()[j]).setReactiveteAtTimeStep(currentTimeStep+4);
+
+								}
+							}else if(((Generator) graphs[i].getNodeList()[j]).getReactiveteAtTimeStep() < currentTimeStep) {
+								//We have to reactivate the generator because it's been offline for enough steps.
+								float minp = ((Generator) graphs[i].getNodeList()[j]).getLastminp();
+								float maxp = ((Generator) graphs[i].getNodeList()[j]).getLastmaxp();
+								((Generator) graphs[i].getNodeList()[j]).setMinP(minp);
+								((Generator) graphs[i].getNodeList()[j]).setMaxP(maxp);
 							}
-						}else if(((Generator) graph.getNodeList()[i]).getReactiveteAtTimeStep() < currentTimeStep) {
-							//We have to reactivate the generator because it's been offline for enough steps.
-							//TODO: setmaxP to previous reported value
-							//TODO: setminP to previous reported value
+						break;
+					case "W": //Wind park generator
+						mcDraw = monteCarloHelper.getRandomWeibull();
+
+						if(mcDraw <= V_CUT_IN || mcDraw >= V_CUT_OFF){
+							//Wind speed is outside the margins
+							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(0);
+						} else if(mcDraw >= V_CUT_IN && mcDraw <= V_RATED){
+							//In a sweet spot for max wind production?
+							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getProduction();
+							production = (float) (production*(Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3)/Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3)));//Should be the same as the matlab from Laura
+							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
+						} else if(mcDraw >= V_CUT_IN && mcDraw <= V_CUT_OFF){
+							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getMinP();
+							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
 						}
-					break;
-				case "W": //Wind park generator
-					mcDraw = monteCarloHelper.getRandomWeibull();						
-					break;
-				case "S": //Solar generator
-					//Let's ignore the sun as well for now...
-					break;
+						break;
+					case "S": //Solar generator
+						//Let's ignore the sun as well for now...
+						break;
+					}
+				}
+				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Consumer.class){
+					loadVariance = monteCarloHelper.getRandomUniformDist();
+
+				}
+				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Storage.class){
+
 				}
 			}
-			else if(graph.getNodeList()[i].getClass() == Consumer.class){
-				loadVariance = monteCarloHelper.getRandomUniformDist();
-				
-			}
-			else if(graph.getNodeList()[i].getClass() == Storage.class){
-				
-			}
-			
 		}
-		
+
 		return null;
 	}
 }

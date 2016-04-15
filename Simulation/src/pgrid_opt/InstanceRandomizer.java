@@ -2,13 +2,9 @@ package pgrid_opt;
 
 public class InstanceRandomizer {
 	private Graph g;
-
 	private Graph[] gDay;
-
 	private float[] solar;
-
 	private float[] wind;
-
 	private float[] loads;
 
 	/**
