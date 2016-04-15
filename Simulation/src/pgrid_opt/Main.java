@@ -163,8 +163,10 @@ public class Main {
 					}
 				}
 				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Consumer.class){
-					loadVariance = monteCarloHelper.getRandomUniformDist();
-
+					//Consumer so we want to caculate and set the real demand using the load error.
+					double mcDraw = monteCarloHelper.getRandomUniformDist();
+					float realLoad = (float) (((Consumer) graphs[i].getNodeList()[j]).getLoad() * (1+mcDraw));
+					((Consumer) graphs[i].getNodeList()[j]).setLoad(realLoad);
 				}
 				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Storage.class){
 
