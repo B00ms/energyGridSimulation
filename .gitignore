@@ -55,6 +55,7 @@ local.properties
 .idea/
 *.iml
 *.iws
+/out/
 
 # Mac
 .DS_Store
@@ -62,3 +63,6 @@ local.properties
 # Maven
 log/
 target/
+
+# Project
+/output/

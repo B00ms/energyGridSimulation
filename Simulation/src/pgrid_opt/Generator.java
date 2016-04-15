@@ -96,7 +96,8 @@ public class Generator extends Node {
 	}
 
 	/**
-	 * @param sets the time step at which this generator must be back online
+	 *
+	 * @param currentTime sets the time step at which this generator must be back online
 	 */
 	public void setReactiveteAtTimeStep(int currentTime) {
 		this.reactiveteAtTimeStep = reactiveteAtTimeStep;

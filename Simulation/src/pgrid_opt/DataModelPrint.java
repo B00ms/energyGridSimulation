@@ -5,6 +5,12 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
 public class DataModelPrint {
+
+	/**
+	 * Write storage nodes to txt file
+	 * @param gdays	full graph contained for each timestep
+	 * @param filename output filename
+	 */
 	public void printStorageData(Graph[] gdays, String filename) {
 		try {
 			PrintWriter writer = new PrintWriter(filename, "UTF-8");
@@ -23,6 +29,12 @@ public class DataModelPrint {
 		}
 	}
 
+	/**
+	 * Write graph information to file for usage with glpsol
+	 * @param g input graph
+	 * @param filename output filename
+	 * @param outname current timestep
+	 */
 	public void printData(Graph g, String filename, String outname) {
 		float etac = g.getEtac();
 		float etad = g.getEtad();
