@@ -1,5 +1,8 @@
 package pgrid_opt;
 
+/**
+ * Renewable generator
+ */
 public class RewGenerator extends Generator {
 	private float production;
 
