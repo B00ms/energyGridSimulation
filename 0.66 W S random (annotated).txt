@@ -1,6 +1,6 @@
 number of time periods, daily max load demand, total number of nodes, number of convential plants, number of renewable plants, number of loads, number of storage systems, duration of each step, charge and discharge efficiency of storages.
 96 9716 218 42 27 51 10 0.25 0.87 0.87
-generators
+generators T means a thermal plant, H means a hydro plant.
 16.00 40.00 70.00 T
 76.00 152.00 55.00 T
 16.00 40.00 70.00 T
@@ -194,10 +194,10 @@ perloads
 2.13
 1.50
 rgenerators
-300
-0.5
-1.25
-350 W
+300 | cost of renewable cut
+0.5 | production cost of wind
+1.25 | production cost of solar
+350 W | maximum production, followed by a tag W/S for Wind or Solar.
 350 W
 350 W
 350 W
@@ -224,7 +224,7 @@ rgenerators
 55 S
 55 S
 55 S
-wind
+wind | Wind production for each time period.
 0.43
 0.43
 0.43
@@ -321,7 +321,7 @@ wind
 0.37
 0.37
 0.37
-solar
+solar | Solar production for each time period.
 0.00
 0.00
 0.00
