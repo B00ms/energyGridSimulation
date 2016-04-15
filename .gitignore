@@ -55,7 +55,7 @@ local.properties
 .idea/
 *.iml
 *.iws
-out/
+/out/
 
 # Mac
 .DS_Store
@@ -65,4 +65,4 @@ log/
 target/
 
 # Project
-output/ #contains generated files
+/output/
