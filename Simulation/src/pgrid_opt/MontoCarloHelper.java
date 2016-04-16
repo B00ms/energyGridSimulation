@@ -14,12 +14,10 @@ public class MontoCarloHelper {
 
 	private WeibullDistribution weibullDistribution;
 	private NormalDistribution normalDistribution;
-	private Random random; //Random uses a uniform distribution.
 
 	public MontoCarloHelper(double shape, double scale, double mean, double  sigma){
 		weibullDistribution = new WeibullDistribution(shape, scale);
 		normalDistribution = new NormalDistribution(mean, sigma);
-		random = new Random();
 	}
 
 	/**
@@ -50,7 +48,8 @@ public class MontoCarloHelper {
 	 * @return A random number from a uniform distribution
 	 */
 	public double getRandomUniformDist(){
-		return random.nextInt();
+		//Comes for an approximate uniform distribution
+		return Math.random();
 	}
 
 }
