@@ -50,7 +50,7 @@ public class Main {
 		int i = 0;
 		while (i < gdays.length - 1) {
 
-			setGridState(gdays, i);
+			//setGridState(gdays, i);
 
 			mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 			try {
