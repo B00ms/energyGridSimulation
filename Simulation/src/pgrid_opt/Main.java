@@ -54,7 +54,7 @@ public class Main {
 			// glp_mpl_build_prob: row obj; constant term 85000134.76 ignored
 			// LP HAS NO PRIMAL FEASIBLE SOLUTION
 			// glp_simplex: unable to recover undefined or non-optimal solution
-//			setGridState(gdays, i);
+			setGridState(gdays, i);
 
 			mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 			try {
@@ -123,30 +123,30 @@ public class Main {
 						break;
 					case "T": //Thermal generator
 						mcDraw = monteCarloHelper.getRandomNormDist();
-						if(((Generator) graphs[i].getNodeList()[j]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
-							if(mcDraw < convGeneratorProb){
-								//Our draw is smaller meaning that the generator has failed.
-								float lastminp = ((Generator) graphs[i].getNodeList()[j]).getMinP();
-								float lastmaxp = ((Generator) graphs[i].getNodeList()[j]).getMaxP();
-
-								((Generator) graphs[i].getNodeList()[j]).setLastminp(lastminp);
-								((Generator) graphs[i].getNodeList()[j]).setLastmaxp(lastmaxp);
-
-								((Generator) graphs[i].getNodeList()[j]).setMinP(0);
-								((Generator) graphs[i].getNodeList()[j]).setMaxP(0);
-
-								//Set the point at which the generator must be reactivated
-								//since we have a 15 minute resolution we want to add 4 time steps for a period of 24
-								((Generator) graphs[i].getNodeList()[j]).setReactiveteAtTimeStep(currentTimeStep+4);
-
-								}
-							}else if(((Generator) graphs[i].getNodeList()[j]).getReactiveteAtTimeStep() < currentTimeStep) {
-								//We have to reactivate the generator because it's been offline for enough steps.
-								float minp = ((Generator) graphs[i].getNodeList()[j]).getLastminp();
-								float maxp = ((Generator) graphs[i].getNodeList()[j]).getLastmaxp();
-								((Generator) graphs[i].getNodeList()[j]).setMinP(minp);
-								((Generator) graphs[i].getNodeList()[j]).setMaxP(maxp);
-							}
+//						if(((Generator) graphs[i].getNodeList()[j]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
+//							if(mcDraw < convGeneratorProb){
+//								//Our draw is smaller meaning that the generator has failed.
+//								float lastminp = ((Generator) graphs[i].getNodeList()[j]).getMinP();
+//								float lastmaxp = ((Generator) graphs[i].getNodeList()[j]).getMaxP();
+//
+//								((Generator) graphs[i].getNodeList()[j]).setLastminp(lastminp);
+//								((Generator) graphs[i].getNodeList()[j]).setLastmaxp(lastmaxp);
+//
+//								((Generator) graphs[i].getNodeList()[j]).setMinP(0);
+//								((Generator) graphs[i].getNodeList()[j]).setMaxP(0);
+//
+//								//Set the point at which the generator must be reactivated
+//								//since we have a 15 minute resolution we want to add 4 time steps for a period of 24
+//								((Generator) graphs[i].getNodeList()[j]).setReactiveteAtTimeStep(currentTimeStep+4);
+//
+//								}
+//							}else if(((Generator) graphs[i].getNodeList()[j]).getReactiveteAtTimeStep() < currentTimeStep) {
+//								//We have to reactivate the generator because it's been offline for enough steps.
+//								float minp = ((Generator) graphs[i].getNodeList()[j]).getLastminp();
+//								float maxp = ((Generator) graphs[i].getNodeList()[j]).getLastmaxp();
+//								((Generator) graphs[i].getNodeList()[j]).setMinP(minp);
+//								((Generator) graphs[i].getNodeList()[j]).setMaxP(maxp);
+//							}
 						break;
 					case "W": //Wind park generator
 						mcDraw = monteCarloHelper.getRandomWeibull();
@@ -171,9 +171,9 @@ public class Main {
 				}
 				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Consumer.class){
 					//Consumer so we want to caculate and set the real demand using the load error.
-					double mcDraw = monteCarloHelper.getRandomUniformDist();
-					float realLoad = (float) (((Consumer) graphs[i].getNodeList()[j]).getLoad() * (1+mcDraw));
-					((Consumer) graphs[i].getNodeList()[j]).setLoad(realLoad);
+//					double mcDraw = monteCarloHelper.getRandomUniformDist();
+//					float realLoad = (float) (((Consumer) graphs[i].getNodeList()[j]).getLoad() * (1+mcDraw));
+//					((Consumer) graphs[i].getNodeList()[j]).setLoad(realLoad);
 				}
 				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Storage.class){
 
