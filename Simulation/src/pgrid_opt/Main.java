@@ -50,7 +50,11 @@ public class Main {
 		int i = 0;
 		while (i < gdays.length - 1) {
 
-			setGridState(gdays, i);
+			// breaks glpsol
+			// glp_mpl_build_prob: row obj; constant term 85000134.76 ignored
+			// LP HAS NO PRIMAL FEASIBLE SOLUTION
+			// glp_simplex: unable to recover undefined or non-optimal solution
+//			setGridState(gdays, i);
 
 			mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 			try {
@@ -85,11 +89,14 @@ public class Main {
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
 
+
+
+
 	/**
 	 * Set the state of generators and loads.
 	 * @return
 	 */
-	private static Graph[] setGridState(Graph[] graphs, int currentTimeStep){
+	private static void setGridState(Graph[] graphs, int currentTimeStep){
 		//For weibull distribution: alpha = 1.6, beta = 8
 		//For normal distribution: mean = 0, sigma = 0.05
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
@@ -173,7 +180,5 @@ public class Main {
 				}
 			}
 		}
-
-		return null;
 	}
 }
