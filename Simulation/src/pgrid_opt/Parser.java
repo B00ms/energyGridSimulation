@@ -268,13 +268,14 @@ public class Parser {
 	 * Iterate through program arguments to split the arguments into separate pieces
 	 * in order to set the model path, input path and output path.
 	 * @param s
-	 * @return array with the paths to the model, input file and, output file.
+	 * @return array with the paths to the model, input file and, output file, the amount of simulations to run.
 	 */
 	public String[] parseArg(String[] s) {
 		boolean m = false;
 		boolean i = false;
 		boolean o = false;
-		String[] out = new String[3];
+		boolean simNumber = false;
+		String[] out = new String[4];
 		for (int j = 0; j < s.length; j++) {
 			if ((s[j].compareTo("-m") == 0) && (j + 1 < s.length)) {
 				out[0] = s[(j + 1)];
@@ -288,8 +289,13 @@ public class Parser {
 				out[2] = s[(j + 1)];
 				o = true;
 			}
+			if((s[j].compareTo("-s") == 0) && (j + 1 < s.length)){
+				out[3] = s[(j + 1)];
+				simNumber = true;
+
+			}
 		}
-		if ((m) && (i) && (o)) {
+		if (m && i && o && simNumber) {
 			return out;
 		}
 		if (!m) {
@@ -300,6 +306,9 @@ public class Parser {
 		}
 		if (!o) {
 			System.out.println("output path missing");
+		}
+		if(!simNumber){
+			System.out.println("Number of simulations not specified.");
 		}
 		System.exit(0);
 

@@ -4,6 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import org.apache.commons.math3.stat.descriptive.summary.Product;
 
@@ -14,6 +19,10 @@ import pgrid_opt.Parser;
 
 public class Main {
 
+	/*
+	 * Cut in and cut out margins for wind energy
+	 * V_rated is the optimal value for wind... I think.
+	 */
 	private static double V_CUT_IN = 4;
 	private static double V_CUT_OFF = 25;
 	private static double V_RATED = 12;
@@ -42,52 +51,64 @@ public class Main {
 		wind = (float[]) o[2];
 		loads = (float[]) o[3];
 
-		InstanceRandomizer r = new InstanceRandomizer();
-		gdays = new Graph[loads.length + 1];
-		gdays = r.creategraphs(g, gdays, solar, wind, loads);
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
-		int i = 0;
-		while (i < gdays.length - 1) {
 
-			setGridState(gdays, i);
+		for ( int numOfSim=0; numOfSim <= Integer.parseInt(s[3]); numOfSim++){
+			InstanceRandomizer r = new InstanceRandomizer();
+			gdays = new Graph[loads.length + 1];
+			gdays = r.creategraphs(g, gdays, solar, wind, loads);
+			int i = 0;
 
-			mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
+			String solutionPath = dirpath+"simRes"+numOfSim+"";
 			try {
-				StringBuffer output = new StringBuffer();
-				String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
-				System.out.println(command);
-				//TODO: Do a Monte Carlo draw for conventional and renewable generators and set their state.
-				//TODO: Determine the probability of failure for conventional generators
-				//TODO: Do a Monto Carlo draw for the load.
-				proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
-				proc.waitFor();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); //Using the new input file, we apply the model to solve the cost function given the new state of the grid.
-				String line = "";
-				while ((line = reader.readLine()) != null) {
-					output.append(String.valueOf(line) + "\n");
-				}
-				System.out.println(output);
-				if (g.getNstorage() > 0) {
-					gdays[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", gdays[i]); //Keeps track of the new state for storages.
-					gdays[i + 1] = r.updateStorages(gdays[i], gdays[i + 1]); //Apply the new state of the storage for the next time step.
-				}
-			} catch (IOException | InterruptedException e) {
-				e.printStackTrace();
+				Files.createDirectories(Paths.get(solutionPath)); //create a new directory to safe the output in
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
-			++i;
+
+			while (i < gdays.length - 1) {
+
+				//setGridState(gdays, i);
+
+				mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
+				try {
+					StringBuffer output = new StringBuffer();
+					String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
+					System.out.println(command);
+
+					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
+					proc.waitFor();
+
+					Files.move(Paths.get(dirpath+"/sol"+i+".txt"), Paths.get(solutionPath+"/sol"+i+".txt"), StandardCopyOption.REPLACE_EXISTING);
+
+					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); //Using the new input file, we apply the model to solve the cost function given the new state of the grid.
+					String line = "";
+					while ((line = reader.readLine()) != null) {
+						output.append(String.valueOf(line) + "\n");
+					}
+					System.out.println(output);
+					if (g.getNstorage() > 0) {
+						gdays[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", gdays[i]); //Keeps track of the new state for storages.
+						gdays[i + 1] = r.updateStorages(gdays[i], gdays[i + 1]); //Apply the new state of the storage for the next time step.
+					}
+				} catch (IOException | InterruptedException e) {
+					e.printStackTrace();
+				}
+				++i;
+			}
+			if (g.getNstorage() > 0) {
+				mp.printStorageData(gdays, String.valueOf(dirpath) + "storage.txt");
+			}
 		}
-		if (g.getNstorage() > 0) {
-			mp.printStorageData(gdays, String.valueOf(dirpath) + "storage.txt");
-		}
-		long endtime = System.nanoTime();
-		long duration = endtime - starttime;
-		System.out.println("Time used:" + duration / 1000000 + " millisecond");
+			long endtime = System.nanoTime();
+			long duration = endtime - starttime;
+			System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
 
 	/**
 	 * Set the state of generators and loads.
-	 * @return
+	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
 	private static Graph[] setGridState(Graph[] graphs, int currentTimeStep){
 		//For weibull distribution: alpha = 1.6, beta = 8
