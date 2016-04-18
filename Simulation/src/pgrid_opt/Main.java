@@ -159,7 +159,8 @@ public class Main {
 							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getProduction();
 							production = (float) (production*(Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3)/Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3)));//Should be the same as the matlab from Laura
 							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
-						} else if(mcDraw >= V_CUT_IN && mcDraw <= V_CUT_OFF){
+						} else if(mcDraw >= V_RATED && mcDraw <= V_CUT_OFF){
+							// klopt dit? laura gebruikt Prated(MW) of is dit gelijk aan minP?
 							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getMinP();
 							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
 						}
