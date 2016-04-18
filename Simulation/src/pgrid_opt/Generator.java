@@ -4,6 +4,9 @@ public class Generator extends Node {
 	private float maxp;
 	private float minp;
 
+	private int mttf;
+	private int mttr;
+
 	private float lastmaxp,lastminp;
 
 	private float coef;
@@ -14,6 +17,10 @@ public class Generator extends Node {
 		this.maxp = max;
 		this.minp = min;
 		this.coef = coef;
+
+		// only used with conventional generator.
+		this.mttf = 630;
+		this.mttr = 60;
 		setType(type);
 	}
 
@@ -117,5 +124,21 @@ public class Generator extends Node {
 
 	public void setLastminp(float lastminp) {
 		this.lastminp = lastminp;
+	}
+
+	public void setMTTF(int mttf){
+		this.mttf = mttf;
+	}
+
+	public void setMTTR(int mttr){
+		this.mttr = mttr;
+	}
+
+	public int getMTTF(){
+		return this.mttf;
+	}
+
+	public int getMTTR(){
+		return this.mttr;
 	}
 }

@@ -68,7 +68,7 @@ public class Main {
 			}
 
 			while (i < gdays.length - 1) {
-
+			
 				//setGridState(gdays, i);
 
 				mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
@@ -106,11 +106,14 @@ public class Main {
 			System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
 
+
+
+
 	/**
 	 * Set the state of generators and loads.
 	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
-	private static Graph[] setGridState(Graph[] graphs, int currentTimeStep){
+	private static void setGridState(Graph[] graphs, int currentTimeStep){
 		//For weibull distribution: alpha = 1.6, beta = 8
 		//For normal distribution: mean = 0, sigma = 0.05
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
@@ -194,7 +197,5 @@ public class Main {
 				}
 			}
 		}
-
-		return null;
 	}
 }
