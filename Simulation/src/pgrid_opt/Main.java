@@ -68,7 +68,7 @@ public class Main {
 			}
 
 			while (i < gdays.length - 1) {
-			
+
 				//setGridState(gdays, i);
 
 				mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
@@ -176,7 +176,7 @@ public class Main {
 							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getProduction();
 							production = (float) (production*(Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3)/Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3)));//Should be the same as the matlab from Laura
 							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
-						} else if(mcDraw >= V_CUT_IN && mcDraw <= V_CUT_OFF){
+						} else if(mcDraw <= V_CUT_IN && mcDraw <= V_CUT_OFF){
 							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getMinP();
 							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
 						}
