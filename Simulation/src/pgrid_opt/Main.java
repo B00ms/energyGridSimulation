@@ -54,7 +54,7 @@ public class Main {
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
 
-		for ( int numOfSim=0; numOfSim <= Integer.parseInt(s[3]); numOfSim++){
+		for ( int numOfSim=0; numOfSim < Integer.parseInt(s[3]); numOfSim++){
 			InstanceRandomizer r = new InstanceRandomizer();
 			gdays = new Graph[loads.length + 1];
 			gdays = r.creategraphs(g, gdays, solar, wind, loads);
@@ -69,18 +69,20 @@ public class Main {
 
 			while (i < gdays.length - 1) {
 
-				//setGridState(gdays, i);
+				setGridState(gdays, i);
 
 				mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
 					StringBuffer output = new StringBuffer();
 					String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
+					//command = command + " --nopresol --output filename.out ";
 					System.out.println(command);
 
 					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 					proc.waitFor();
 
-					Files.move(Paths.get(dirpath+"/sol"+i+".txt"), Paths.get(solutionPath+"/sol"+i+".txt"), StandardCopyOption.REPLACE_EXISTING);
+					if(new File(dirpath+"/sol"+i+".txt").exists())
+						Files.move(Paths.get(dirpath+"/sol"+i+".txt"), Paths.get(solutionPath+"/sol"+i+".txt"), StandardCopyOption.REPLACE_EXISTING);
 
 					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); //Using the new input file, we apply the model to solve the cost function given the new state of the grid.
 					String line = "";
