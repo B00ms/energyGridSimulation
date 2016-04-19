@@ -58,19 +58,19 @@ subject to flowcons { i in inner } :
 subject to rgenmin { i in rgen } :
 	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= rprodmin[i];
 
-#Minimum generation of a conventional node
+#Minimum generation of a renewable node
 subject to rgenmax { i in rgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= rprodmax[i];
 
-#Maximum generation of a conventional node
+#Minimum generation of a conventional generation node
 subject to genmin { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= mintprod[i];
 
-#Minimum dischage of storage nodes
+#maximum dischage of conventional generation nodes
 subject to genmax { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= maxtprod[i];
 
-#Maximum discharge of storage nodes
+#Minimum discharge of storage nodes
 subject to sgenmin { i in storage } :
 	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= storagemin[i];
 
