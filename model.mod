@@ -80,10 +80,12 @@ subject to sgenmin { i in storage } :
 subject to sgenmax { i in storage } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
 
-# problem here
+
+# problem here, capacity should equal the load of a consumer? no idea why...
 subject to loadfix {i in consumers} :
 	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, = loads[i];
-	
+
+
 #Balance supply and demand of energy.
 subject to prodloadeq :
 	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum { i in consumers, j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
@@ -98,6 +100,8 @@ printf : "\n" >> "sol" & outname & ".txt";
 printf {i in rgen} : "R, %d, %.4f\n", i, (rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
 #printf {i in nodes,j in nodes : capacity[j,i] <> 0} : " flow in [ %d , %d ] = %.6f \n", j, i, ((theta[j] - theta[i])/ weight[j,i])*m_factor;
 #printf {i in nodes} : "theta %d = %.6f\n", i, theta[i] >> "sol" & outname & ".txt"; 
+printf {i in consumers} : "Result theta: %d loads: %d \n", sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor,  loads[i];
+
 end;
 
 

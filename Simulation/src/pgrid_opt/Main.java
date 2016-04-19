@@ -69,13 +69,13 @@ public class Main {
 
 			while (i < gdays.length - 1) {
 
-				setGridState(gdays, i);
+				//setGridState(gdays, i);
 
 				mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
 					StringBuffer output = new StringBuffer();
 					String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
-					//command = command + " --nopresol --output filename.out ";
+					command = command + " --nopresol --output filename.out ";
 					System.out.println(command);
 
 					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
@@ -83,6 +83,10 @@ public class Main {
 
 					if(new File(dirpath+"/sol"+i+".txt").exists())
 						Files.move(Paths.get(dirpath+"/sol"+i+".txt"), Paths.get(solutionPath+"/sol"+i+".txt"), StandardCopyOption.REPLACE_EXISTING);
+
+					if(new File(dirpath+"/filename.out").exists())
+						Files.move(Paths.get(dirpath+"/filename.out"), Paths.get(solutionPath+"/filename.out"), StandardCopyOption.REPLACE_EXISTING);
+
 
 					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); //Using the new input file, we apply the model to solve the cost function given the new state of the grid.
 					String line = "";
@@ -192,7 +196,11 @@ public class Main {
 					//Consumer so we want to caculate and set the real demand using the load error.
 					double mcDraw = monteCarloHelper.getRandomUniformDist();
 					float realLoad = (float) (((Consumer) graphs[i].getNodeList()[j]).getLoad() * (1+mcDraw));
-					((Consumer) graphs[i].getNodeList()[j]).setLoad(realLoad);
+
+					if (realLoad >= 0)
+						((Consumer) graphs[i].getNodeList()[j]).setLoad(realLoad);
+					else
+						((Consumer) graphs[i].getNodeList()[j]).setLoad(0);
 				}
 				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Storage.class){
 
