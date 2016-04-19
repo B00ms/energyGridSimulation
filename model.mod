@@ -38,9 +38,11 @@ minimize obj :	(sum{i in tgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-
 		(sum{i in rgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*rcost[i])) + 
 		(sum{i in rgen} c_curt*(rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])));
 
+
 #Subject to these constrains
 subject to anglestability :
 	theta[46], = 0; 
+
 
 #Maximum flow rate
 subject to flowcapmax { i in nodes,j in nodes : capacity[i,j] <> 0} :
@@ -77,12 +79,15 @@ subject to sgenmin { i in storage } :
 #Demand of consumer nodes.
 subject to sgenmax { i in storage } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
+
+# problem here
 subject to loadfix {i in consumers} :
 	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, = loads[i];
-
-#Balance supply and demand of energy. 
+	
+#Balance supply and demand of energy.
 subject to prodloadeq :
 	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum { i in consumers, j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
+	
 
 #go ahead and solve the equation/model
 solve;
