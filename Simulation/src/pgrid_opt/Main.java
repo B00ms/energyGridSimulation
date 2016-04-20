@@ -34,7 +34,7 @@ public class Main {
 		float[] loads = null;
 		float wcost = 0.0f;  //wind cost
 		float scost = 0.0f; //solar cost
-		Graph[] gdays = null;
+		Graph[] timestepsGraph = null;
 		Parser parser = new Parser();
 		String[] s = parser.parseArg(args);
 		String path = s[1]; //path to the input
@@ -56,8 +56,8 @@ public class Main {
 
 		for ( int numOfSim=0; numOfSim < Integer.parseInt(s[3]); numOfSim++){
 			InstanceRandomizer r = new InstanceRandomizer();
-			gdays = new Graph[loads.length + 1];
-			gdays = r.creategraphs(g, gdays, solar, wind, loads);
+			timestepsGraph = new Graph[loads.length + 1];
+			timestepsGraph = r.creategraphs(g, timestepsGraph, solar, wind, loads);
 			int i = 0;
 
 			String solutionPath = dirpath+"simRes"+numOfSim+"";
@@ -67,11 +67,11 @@ public class Main {
 				e1.printStackTrace();
 			}
 
-			while (i < gdays.length - 1) {
+			while (i < timestepsGraph.length - 1) {
 
-				//setGridState(gdays, i);
+				//setGridState(timestepsGraph, i);
 
-				mp.printData(gdays[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
+				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
 					StringBuffer output = new StringBuffer();
 					String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
@@ -95,8 +95,8 @@ public class Main {
 					}
 					System.out.println(output);
 					if (g.getNstorage() > 0) {
-						gdays[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", gdays[i]); //Keeps track of the new state for storages.
-						gdays[i + 1] = r.updateStorages(gdays[i], gdays[i + 1]); //Apply the new state of the storage for the next time step.
+						timestepsGraph[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", timestepsGraph[i]); //Keeps track of the new state for storages.
+						timestepsGraph[i + 1] = r.updateStorages(timestepsGraph[i], timestepsGraph[i + 1]); //Apply the new state of the storage for the next time step.
 					}
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
@@ -104,7 +104,7 @@ public class Main {
 				++i;
 			}
 			if (g.getNstorage() > 0) {
-				mp.printStorageData(gdays, String.valueOf(dirpath) + "storage.txt");
+				mp.printStorageData(timestepsGraph, String.valueOf(dirpath) + "storage.txt");
 			}
 		}
 			long endtime = System.nanoTime();
@@ -193,7 +193,7 @@ public class Main {
 					}
 				}
 				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Consumer.class){
-					//Consumer so we want to caculate and set the real demand using the load error.
+					//Consumer so we want to calculate and set the real demand using the load error.
 					double mcDraw = monteCarloHelper.getRandomUniformDist();
 					float realLoad = (float) (((Consumer) graphs[i].getNodeList()[j]).getLoad() * (1+mcDraw));
 
