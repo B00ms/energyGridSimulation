@@ -95,12 +95,26 @@ subject to prodloadeq :
 solve;
 #display {i in nodes,j in nodes : capacity[i,j] <> 0}: i,j, ((theta[i] - theta[j])/ weight[i,j])*m_factor;
 printf {i in storage,j in nodes : capacity [i,j] <> 0 } : "%d %d %.3f\n", i, j, ((theta[i] - theta[j])/ weight[i,j])*m_factor > "update.txt";
+
+#For consumer nodes, generator nodes, renewable generator nodes
 printf {i in nodes,j in nodes : capacity[i,j] <> 0} : "%d,%d,%.4f,%.4f,%.4f \n", i, j, ((theta[i] - theta[j])/ weight[i,j])*m_factor, (abs(((theta[i] - theta[j])/ weight[i,j])*m_factor)/capacity[i,j])*100, (abs(((theta[i] - theta[j])/ weight[i,j])*m_factor)/totload)*100 > "sol" & outname & ".txt";
 printf : "\n" >> "sol" & outname & ".txt";
-printf {i in rgen} : "R, %d, %.4f\n", i, (rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
+
+#Renewable energy curtailment
+printf {i in rgen} : "R,%d,%.4f\n", i, (rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
+printf : "\n" >> "sol" & outname & ".txt";
+
+#Traditional generators
+printf {i in tgen} : "TG,%d \n", i >> "sol" & outname & ".txt";
+printf : "\n" >> "sol" & outname & ".txt";
+
+#Consumers
+printf {i in consumers} : "C,%d \n", i >> "sol" & outname & ".txt";
 #printf {i in nodes,j in nodes : capacity[j,i] <> 0} : " flow in [ %d , %d ] = %.6f \n", j, i, ((theta[j] - theta[i])/ weight[j,i])*m_factor;
 #printf {i in nodes} : "theta %d = %.6f\n", i, theta[i] >> "sol" & outname & ".txt"; 
-printf {i in consumers} : "Result theta: %d loads: %d \n", sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor,  loads[i];
+
+#prints theta and the load for debugging purposes
+#printf {i in consumers} : "Result theta: %d loads: %d \n", sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor,  loads[i];
 
 end;
 
