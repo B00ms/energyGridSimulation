@@ -208,4 +208,39 @@ public class Main {
 			}
 		}
 	}
+
+	/**
+	 * check if emergency procedure is needed for current timestep
+	 * @param graphs
+	 * @param currentTimeStep
+	 */
+	private static void checkEmergencyProcedure(Graph[] graphs, int currentTimeStep){
+
+		float deltaP =0, reserveInStorage = 0;
+
+		Graph g = graphs[currentTimeStep];
+		Node[] graphNodes = graphs[currentTimeStep].getNodeList();
+
+		// get total current reserve in storage nodes
+		for (int j=0; j < graphNodes.length-1; j++){
+			if(graphNodes[j] != null && graphNodes[j].getClass() == Storage.class) {
+				reserveInStorage += ((Storage) graphNodes[j]).getCapacity();
+			}
+		}
+
+
+
+		// is the system balanced or smaller than the available reserve
+		if(Math.abs(deltaP) < reserveInStorage){
+
+
+		// current load is higher than production
+		}else if(deltaP>reserveInStorage){
+
+		// load lower than production
+		}else if(deltaP<=reserveInStorage){
+
+		}
+
+	}
 }
