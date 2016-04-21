@@ -69,7 +69,7 @@ public class Main {
 
 			while (i < timestepsGraph.length - 1) {
 
-				//setGridState(timestepsGraph, i);
+				setGridState(timestepsGraph, i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
@@ -128,7 +128,6 @@ public class Main {
 		//Get the number of generators in the system  and create an array to keep track of their status.
 		//convGeneratorStatus = new int[graphs.getNGenerators()][0][0][0][0];
 
-		double convGeneratorProb = 0.0; //Probability of failure for conventional generators
 		double windSpeedVariance = 0.0; //Variance for wind speed
 		double loadVariance = 0; //Variance for load
 
@@ -144,33 +143,12 @@ public class Main {
 					case "H" : //Hydro-eletric generator
 						//Ignore this for now, might be added at a later stage
 						break;
-					case "T": //Thermal generator
-						mcDraw = monteCarloHelper.getRandomNormDist();
-						if(((Generator) graphs[i].getNodeList()[j]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
-							if(mcDraw < convGeneratorProb){
-								//Our draw is smaller meaning that the generator has failed.
-								float lastminp = ((Generator) graphs[i].getNodeList()[j]).getMinP();
-								float lastmaxp = ((Generator) graphs[i].getNodeList()[j]).getMaxP();
-
-								((Generator) graphs[i].getNodeList()[j]).setLastminp(lastminp);
-								((Generator) graphs[i].getNodeList()[j]).setLastmaxp(lastmaxp);
-
-								((Generator) graphs[i].getNodeList()[j]).setMinP(0);
-								((Generator) graphs[i].getNodeList()[j]).setMaxP(0);
-
-								//Set the point at which the generator must be reactivated
-								//since we have a 15 minute resolution we want to add 4 time steps for a period of 24
-								((Generator) graphs[i].getNodeList()[j]).setReactiveteAtTimeStep(currentTimeStep+4);
-
-								}
-							}else if(((Generator) graphs[i].getNodeList()[j]).getReactiveteAtTimeStep() < currentTimeStep) {
-								//We have to reactivate the generator because it's been offline for enough steps.
-								float minp = ((Generator) graphs[i].getNodeList()[j]).getLastminp();
-								float maxp = ((Generator) graphs[i].getNodeList()[j]).getLastmaxp();
-								((Generator) graphs[i].getNodeList()[j]).setMinP(minp);
-								((Generator) graphs[i].getNodeList()[j]).setMaxP(maxp);
-							}
-						break;
+					case "O": // Oil Thermal generator
+						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep);
+					case "N": // Nuclear Thermal generator
+						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep);
+					case "C": // Coal Thermal generator
+						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep);
 					case "W": //Wind park generator
 						mcDraw = monteCarloHelper.getRandomWeibull();
 
@@ -207,6 +185,40 @@ public class Main {
 				}
 			}
 		}
+	}
+
+	private static Graph[] handleThermalGenerator(Graph[] graphs, int timestep, int node, int currentTimeStep){
+		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
+		double mcDraw = 0; //This will hold our Monte Carlo draw (hahaha mac draw)
+		double convGeneratorProb = 0.0; //Probability of failure for conventional generators
+
+		mcDraw = monteCarloHelper.getRandomNormDist();
+		if(((Generator) graphs[timestep].getNodeList()[node]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
+			if(mcDraw < convGeneratorProb){
+				//Our draw is smaller meaning that the generator has failed.
+				float lastminp = ((Generator) graphs[timestep].getNodeList()[node]).getMinP();
+				float lastmaxp = ((Generator) graphs[timestep].getNodeList()[node]).getMaxP();
+
+				((Generator) graphs[timestep].getNodeList()[node]).setLastminp(lastminp);
+				((Generator) graphs[timestep].getNodeList()[node]).setLastmaxp(lastmaxp);
+
+				((Generator) graphs[timestep].getNodeList()[node]).setMinP(0);
+				((Generator) graphs[timestep].getNodeList()[node]).setMaxP(0);
+
+				//Set the point at which the generator must be reactivated
+				//since we have a 15 minute resolution we want to add 4 time steps for a period of 24
+				((Generator) graphs[timestep].getNodeList()[node]).setReactiveteAtTimeStep(currentTimeStep + 4);
+
+			}
+		}else if(((Generator) graphs[timestep].getNodeList()[node]).getReactiveteAtTimeStep() < currentTimeStep) {
+			//We have to reactivate the generator because it's been offline for enough steps.
+			float minp = ((Generator) graphs[timestep].getNodeList()[node]).getLastminp();
+			float maxp = ((Generator) graphs[timestep].getNodeList()[node]).getLastmaxp();
+			((Generator) graphs[timestep].getNodeList()[node]).setMinP(minp);
+			((Generator) graphs[timestep].getNodeList()[node]).setMaxP(maxp);
+		}
+
+		return graphs;
 	}
 
 	/**
