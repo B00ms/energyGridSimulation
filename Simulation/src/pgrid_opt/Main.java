@@ -69,7 +69,7 @@ public class Main {
 
 			while (i < timestepsGraph.length - 1) {
 
-				setGridState(gdays, i);
+				setGridState(timestepsGraph, i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
