@@ -83,7 +83,7 @@ subject to sgenmax { i in storage } :
 
 # problem here, capacity should equal the load of a consumer? no idea why...
 subject to loadfix {i in consumers} :
-	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, = loads[i];
+	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, <= loads[i];
 
 
 #Balance supply and demand of energy.
@@ -114,7 +114,7 @@ printf {i in consumers} : "C,%d \n", i >> "sol" & outname & ".txt";
 #printf {i in nodes} : "theta %d = %.6f\n", i, theta[i] >> "sol" & outname & ".txt"; 
 
 #prints theta and the load for debugging purposes
-#printf {i in consumers} : "Result theta: %d loads: %d \n", sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor,  loads[i];
+printf {i in consumers} : "Result theta: %d loads: %d \n", sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor,  loads[i];
 
 end;
 
