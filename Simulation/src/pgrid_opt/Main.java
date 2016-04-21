@@ -146,12 +146,15 @@ public class Main {
 					case "O": // Oil Thermal generator
 						mcDraw = monteCarloHelper.getRandomNormDist();
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
+						break;
 					case "N": // Nuclear Thermal generator
 						mcDraw = monteCarloHelper.getRandomNormDist();
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
+						break;
 					case "C": // Coal Thermal generator
 						mcDraw = monteCarloHelper.getRandomNormDist();
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
+						break;
 					case "W": //Wind park generator
 						mcDraw = monteCarloHelper.getRandomWeibull();
 
