@@ -144,11 +144,14 @@ public class Main {
 						//Ignore this for now, might be added at a later stage
 						break;
 					case "O": // Oil Thermal generator
-						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep);
+						mcDraw = monteCarloHelper.getRandomNormDist();
+						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 					case "N": // Nuclear Thermal generator
-						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep);
+						mcDraw = monteCarloHelper.getRandomNormDist();
+						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 					case "C": // Coal Thermal generator
-						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep);
+						mcDraw = monteCarloHelper.getRandomNormDist();
+						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 					case "W": //Wind park generator
 						mcDraw = monteCarloHelper.getRandomWeibull();
 
@@ -187,12 +190,10 @@ public class Main {
 		}
 	}
 
-	private static Graph[] handleThermalGenerator(Graph[] graphs, int timestep, int node, int currentTimeStep){
+	private static Graph[] handleThermalGenerator(Graph[] graphs, int timestep, int node, int currentTimeStep, double mcDraw){
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
-		double mcDraw = 0; //This will hold our Monte Carlo draw (hahaha mac draw)
-		double convGeneratorProb = 0.0; //Probability of failure for conventional generators
+		double convGeneratorProb = 0.5; //Probability of failure for conventional generators
 
-		mcDraw = monteCarloHelper.getRandomNormDist();
 		if(((Generator) graphs[timestep].getNodeList()[node]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
 			if(mcDraw < convGeneratorProb){
 				//Our draw is smaller meaning that the generator has failed.
