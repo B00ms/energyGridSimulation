@@ -134,6 +134,8 @@ public class Parser {
 		float max = scanner.nextFloat();
 		String type = scanner.next();
 		scanner.close();
+
+		// doesn't seem to do anything same as normal renewable generator
 		if (("S".compareTo(type) == 0) && ("S".compareTo(type) == 1)) {
 			return new RewGenerator(0.0F, max, scost, type);
 		}
