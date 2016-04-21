@@ -193,8 +193,30 @@ public class Parser {
 		float min = scanner.nextFloat();
 		float max = scanner.nextFloat();
 		float coef = scanner.nextFloat();
+
+		// returns type from input file
 		String type = scanner.next();
 		scanner.close();
+
+		// set type of traditional plant based on coef.
+		if(coef == 10){
+			type = "H"; // Hydro
+		}else if(coef == 35) {
+			type = "N";//nuclear
+		}else if(coef == 40 && max == 350){
+			type = "C";// coal
+		}else if(coef == 45 && min == 155 || max == 155){
+			type = "C";// coal
+		}else if(coef == 55 && min == 76){
+			type = "C";// coal
+		}else if(coef == 55 && min > 100) {
+			type = "O";// oil, not sure minp 236 maxp 591 not in thesis
+		}else if(coef > 55 && coef <=80){
+			type = "O";
+		}else{
+			type = "unknown";
+		}
+
 		return new Generator(min, max, coef, type);
 	}
 
