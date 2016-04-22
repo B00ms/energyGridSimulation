@@ -9,6 +9,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.math3.stat.descriptive.summary.Product;
 
@@ -23,9 +30,28 @@ public class Main {
 	 * Cut in and cut out margins for wind energy
 	 * V_rated is the optimal value for wind... I think.
 	 */
-	private static double V_CUT_IN = 4;
-	private static double V_CUT_OFF = 25;
-	private static double V_RATED = 12;
+	private final static double V_CUT_IN = 4;
+	private final static double V_CUT_OFF = 25;
+	private final static double V_RATED = 12;
+
+	//Path to the summer load curve
+	private final static String SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
+
+	//From cheapest to most expensive.
+	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
+	private final static Map<String, Double[]> PRICE_INDEX;
+	static {
+		//Production prices for 4 different levels of production 25%, 50%, 75%, 100%
+		Double[] nuclearPrices = 	{1.0, 2.0, 3.0, 4.0};
+		Double[] oilPrices = 		{1.0, 2.0, 3.0, 4.0};
+		Double[] coalPrices = 		{1.0, 2.0, 3.0, 4.0};
+
+		Map<String, Double[]> tempMap = new HashMap<>();
+		tempMap.put("nuclear", nuclearPrices);
+		tempMap.put("oil", oilPrices);
+		tempMap.put("coal", coalPrices);
+		PRICE_INDEX = Collections.unmodifiableMap(tempMap);
+		}
 
 	public static void main(String[] args) {
 		long starttime = System.nanoTime();
@@ -53,6 +79,12 @@ public class Main {
 
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
+
+		//Hashmap for the 4 different seasonal curves
+		HashMap<String, Double[]> seasonalLoadCurve = new HashMap<>();
+		seasonalLoadCurve.put("summer", parser.parseDayLoadCurve(SUMMER_LOAD_CURVE));
+		//
+		seasonalLoadCurve = setSeasonalVariety(seasonalLoadCurve);
 
 		for ( int numOfSim=0; numOfSim < Integer.parseInt(s[3]); numOfSim++){
 			InstanceRandomizer r = new InstanceRandomizer();
@@ -113,7 +145,27 @@ public class Main {
 	}
 
 
+	/**
+	 * Increases or decreases the high of the seasonal curve according to some random double.
+	 *@param seasonalLoadCurve
+	 * @return the seasonal curve adjuste up or down.
+	 */
+	private static HashMap<String, Double[]> setSeasonalVariety(HashMap<String, Double[]> seasonalLoadCurve) {
 
+		Iterator<String> it = seasonalLoadCurve.keySet().iterator();
+
+		while(it.hasNext()){
+			String key = it.next();
+			Double[] seasoncurve  = seasonalLoadCurve.get(key);
+
+			double multiplicationFactor = ThreadLocalRandom.current().nextDouble(3);
+			for(int i = 0; i < seasoncurve.length-1; i++){
+				seasoncurve[i] = seasoncurve[i] * (multiplicationFactor);
+			}
+			seasonalLoadCurve.put(key, seasoncurve);
+		}
+		return seasonalLoadCurve;
+	}
 
 	/**
 	 * Set the state of generators and loads.
@@ -193,8 +245,16 @@ public class Main {
 		}
 	}
 
+	/**
+	 * Sets the state of conventional generators to on or off.
+	 * @param graphs
+	 * @param timestep
+	 * @param node
+	 * @param currentTimeStep
+	 * @param mcDraw
+	 * @return
+	 */
 	private static Graph[] handleThermalGenerator(Graph[] graphs, int timestep, int node, int currentTimeStep, double mcDraw){
-		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
 		double convGeneratorProb = 0.5; //Probability of failure for conventional generators
 
 		if(((Generator) graphs[timestep].getNodeList()[node]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
@@ -244,8 +304,6 @@ public class Main {
 			}
 		}
 
-
-
 		// is the system balanced or smaller than the available reserve
 		if(Math.abs(deltaP) < reserveInStorage){
 
@@ -257,6 +315,5 @@ public class Main {
 		}else if(deltaP<=reserveInStorage){
 
 		}
-
 	}
 }
