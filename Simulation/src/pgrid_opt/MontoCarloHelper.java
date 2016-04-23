@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.WeibullDistribution;
+import org.apache.commons.math3.random.RandomDataGenerator;
 
 /**
  * Helper class to generate random numbers from a Weibell distribution, a Normal distribution and, a Uniform distribution.
@@ -12,12 +13,15 @@ import org.apache.commons.math3.distribution.WeibullDistribution;
  */
 public class MontoCarloHelper {
 
-	private WeibullDistribution weibullDistribution;
-	private NormalDistribution normalDistribution;
+	private RandomDataGenerator rand = new RandomDataGenerator();
+	private double shape, scale, mean, sigma;
 
 	public MontoCarloHelper(double shape, double scale, double mean, double  sigma){
-		weibullDistribution = new WeibullDistribution(shape, scale);
-		normalDistribution = new NormalDistribution(mean, sigma);
+		this.shape = shape;
+		this.scale = scale;
+		this.mean = mean;
+		this.sigma = sigma;
+
 	}
 
 	/**
@@ -32,7 +36,7 @@ public class MontoCarloHelper {
 	 * @return A random double from a Weibull distribution
 	 */
 	public double getRandomWeibull(){
-		return weibullDistribution.sample();
+		return rand.nextWeibull(shape, scale);
 	}
 
 	/**
@@ -40,7 +44,7 @@ public class MontoCarloHelper {
 	 * @return A random number from a normal distribution
 	 */
 	public double getRandomNormDist(){
-		return normalDistribution.sample();
+		return rand.nextGaussian(mean, sigma);
 	}
 
 	/**
@@ -49,7 +53,7 @@ public class MontoCarloHelper {
 	 */
 	public double getRandomUniformDist(){
 		//Comes for an approximate uniform distribution
-		return Math.random();
+		return rand.nextUniform(0, 1);
 	}
 
 }

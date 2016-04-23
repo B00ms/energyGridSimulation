@@ -8,8 +8,8 @@ public class InstanceRandomizer {
 	private float[] loads;
 
 	/**
-	 * Greate graphs for every timestep and apply load initialization
-	 * @param g
+	 * Create graphs for every timestep and apply load initialization
+	 * @param g original graph
 	 * @param gDay	timestep
 	 * @param solar	solar production
 	 * @param wind	wind production

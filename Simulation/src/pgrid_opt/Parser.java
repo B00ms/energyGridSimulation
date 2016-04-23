@@ -3,6 +3,8 @@ package pgrid_opt;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Parser {
@@ -338,4 +340,32 @@ public class Parser {
 
 		return out;
 	}
+
+	/**
+	 * Reads
+	 * @param fileLocation
+	 * @return
+	 */
+	public Double[] parseDayLoadCurve(String fileLocation){
+
+		try {
+			Scanner scanner = new Scanner(Paths.get(fileLocation));
+			scanner.useDelimiter(",|\\s");
+			List<Double> loadCurve = new ArrayList<>();
+
+			while(scanner.hasNext()){
+				String curveValue = scanner.next();
+				if(!curveValue.isEmpty())
+					loadCurve.add(Double.parseDouble(curveValue));
+			}
+			scanner.close();
+
+			return loadCurve.toArray(new Double[loadCurve.size()]);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+
+		}
 }
