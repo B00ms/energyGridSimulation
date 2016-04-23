@@ -72,7 +72,7 @@ public class Main {
 		String model = s[0]; //path to the model
 		String dirpath = s[2]; //path to the output
 		Object[] o = parser.parseData(path);
-		Graph g = (Graph) o[0];
+		Graph graph = (Graph) o[0];
 		solar = (float[]) o[1];
 		wind = (float[]) o[2];
 		loads = (float[]) o[3];
@@ -83,13 +83,13 @@ public class Main {
 		//Hashmap for the 4 different seasonal curves
 		HashMap<String, Double[]> seasonalLoadCurve = new HashMap<>();
 		seasonalLoadCurve.put("summer", parser.parseDayLoadCurve(SUMMER_LOAD_CURVE));
-		//
+		//Set the seasonal curve
 		seasonalLoadCurve = setSeasonalVariety(seasonalLoadCurve);
 
 		for ( int numOfSim=0; numOfSim < Integer.parseInt(s[3]); numOfSim++){
-			InstanceRandomizer r = new InstanceRandomizer();
+			InstanceRandomizer instanceRandomizer = new InstanceRandomizer();
 			timestepsGraph = new Graph[loads.length + 1];
-			timestepsGraph = r.creategraphs(g, timestepsGraph, solar, wind, loads);
+			timestepsGraph = instanceRandomizer.creategraphs(graph, timestepsGraph, solar, wind, loads);
 			int i = 0;
 
 			String solutionPath = dirpath+"simRes"+numOfSim+"";
@@ -126,16 +126,16 @@ public class Main {
 						output.append(String.valueOf(line) + "\n");
 					}
 					System.out.println(output);
-					if (g.getNstorage() > 0) {
+					if (graph.getNstorage() > 0) {
 						timestepsGraph[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", timestepsGraph[i]); //Keeps track of the new state for storages.
-						timestepsGraph[i + 1] = r.updateStorages(timestepsGraph[i], timestepsGraph[i + 1]); //Apply the new state of the storage for the next time step.
+						timestepsGraph[i + 1] = instanceRandomizer.updateStorages(timestepsGraph[i], timestepsGraph[i + 1]); //Apply the new state of the storage for the next time step.
 					}
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
 				}
 				++i;
 			}
-			if (g.getNstorage() > 0) {
+			if (graph.getNstorage() > 0) {
 				mp.printStorageData(timestepsGraph, String.valueOf(dirpath) + "storage.txt");
 			}
 		}
@@ -175,16 +175,10 @@ public class Main {
 		//For weibull distribution: alpha = 1.6, beta = 8
 		//For normal distribution: mean = 0, sigma = 0.05
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
-		int[][][][][] convGeneratorStatus = new int[42][0][0][0][0]; //Generator[Id][status][min prod][max prod][timesteps since failure]
-
-		//Get the number of generators in the system  and create an array to keep track of their status.
-		//convGeneratorStatus = new int[graphs.getNGenerators()][0][0][0][0];
-
-		double windSpeedVariance = 0.0; //Variance for wind speed
-		double loadVariance = 0; //Variance for load
 
 		//Loop through all nodes in the graph
-		for(int i = 0; i < graphs.length-1; i ++){
+		//for(int i = 0; i < graphs.length-1; i ++){
+		int i = currentTimeStep;
 			for (int j=0; j < graphs[i].getNodeList().length-1; j++){
 				//Check the class of the current node and deal with it accordingly.
 				if(graphs[i].getNodeList()[j] != null && (graphs[i].getNodeList()[j].getClass() == Generator.class ||
@@ -197,18 +191,22 @@ public class Main {
 						break;
 					case "O": // Oil Thermal generator
 						mcDraw = monteCarloHelper.getRandomNormDist();
+						//System.out.println(mcDraw);
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 						break;
 					case "N": // Nuclear Thermal generator
 						mcDraw = monteCarloHelper.getRandomNormDist();
+						//System.out.println(mcDraw);
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 						break;
 					case "C": // Coal Thermal generator
 						mcDraw = monteCarloHelper.getRandomNormDist();
+						//System.out.println(mcDraw);
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 						break;
 					case "W": //Wind park generator
 						mcDraw = monteCarloHelper.getRandomWeibull();
+						//System.out.println(mcDraw);
 
 						if(mcDraw <= V_CUT_IN || mcDraw >= V_CUT_OFF){
 							//Wind speed is outside the margins
@@ -242,7 +240,7 @@ public class Main {
 
 				}
 			}
-		}
+		//}
 	}
 
 	/**
@@ -255,10 +253,11 @@ public class Main {
 	 * @return
 	 */
 	private static Graph[] handleThermalGenerator(Graph[] graphs, int timestep, int node, int currentTimeStep, double mcDraw){
-		double convGeneratorProb = 0.5; //Probability of failure for conventional generators
+		double convGeneratorProb = 0.1; //Probability of failure for conventional generators
 
-		if(((Generator) graphs[timestep].getNodeList()[node]).getReactiveteAtTimeStep() == 0){//0 means that the reactor can fail.
+		if(((Generator) graphs[timestep].getNodeList()[node]).getReactivateAtTimeStep() == 0){//0 means that the reactor can fail.
 			if(mcDraw < convGeneratorProb){
+				//System.out.println(mcDraw);
 				//Our draw is smaller meaning that the generator has failed.
 				float lastminp = ((Generator) graphs[timestep].getNodeList()[node]).getMinP();
 				float lastmaxp = ((Generator) graphs[timestep].getNodeList()[node]).getMaxP();
@@ -271,10 +270,10 @@ public class Main {
 
 				//Set the point at which the generator must be reactivated
 				//since we have a 15 minute resolution we want to add 4 time steps for a period of 24
-				((Generator) graphs[timestep].getNodeList()[node]).setReactiveteAtTimeStep(currentTimeStep + 4);
+				((Generator) graphs[timestep].getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 4);
 
 			}
-		}else if(((Generator) graphs[timestep].getNodeList()[node]).getReactiveteAtTimeStep() < currentTimeStep) {
+		}else if(((Generator) graphs[timestep].getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
 			//We have to reactivate the generator because it's been offline for enough steps.
 			float minp = ((Generator) graphs[timestep].getNodeList()[node]).getLastminp();
 			float maxp = ((Generator) graphs[timestep].getNodeList()[node]).getLastmaxp();
@@ -307,13 +306,38 @@ public class Main {
 		// is the system balanced or smaller than the available reserve
 		if(Math.abs(deltaP) < reserveInStorage){
 
-
 		// current load is higher than production
 		}else if(deltaP>reserveInStorage){
 
 		// load lower than production
 		}else if(deltaP<=reserveInStorage){
 
+		}
+	}
+
+	/**
+	 * Depending on the state of the grid this method will increase or decrease production in order to balance the system
+	 */
+	private static void checkGridEquilibrium(Graph grid){
+
+		Node[] nodeList = grid.getNodeList();
+		double sumLoads = 0;
+		double productionOutput = 0;
+
+		for(int i = 0; i > nodeList.length-1; i++){
+			if(nodeList[i] != null && nodeList[i].getClass() == Consumer.class){
+				sumLoads += ((Consumer)nodeList[i]).getLoad();
+			}
+			else if (nodeList[i] != null && nodeList[i].getClass() == Generator.class){
+				//How do we get the current power that is being produced? Maybe we can look at the edge connected to generators and get its load.
+				//productionOutput += ((Generator)nodeList[i]).getProduction();
+			}
+		}
+
+		if(productionOutput - sumLoads < 0){
+			//We need to increase the energy production!
+		} else if (productionOutput - sumLoads > 0) {
+			//we need to decrease energy production
 		}
 	}
 }
