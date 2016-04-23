@@ -105,7 +105,7 @@ printf {i in rgen} : "R,%d,%.4f\n", i, (rprodmax[i]-(sum{j in nodes : capacity[i
 printf : "\n" >> "sol" & outname & ".txt";
 
 #Traditional generators
-printf {i in tgen} : "TG,%d \n", i >> "sol" & outname & ".txt";
+printf {i in tgen} : "TG,%d, %.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor) >> "sol" & outname & ".txt";
 printf : "\n" >> "sol" & outname & ".txt";
 
 #Consumers
@@ -116,6 +116,7 @@ printf {i in consumers} : "C,%d \n", i >> "sol" & outname & ".txt";
 #prints theta and the load for debugging purposes
 #printf {i in consumers} : "Result theta: %d loads: %d \n", sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor,  loads[i];
 
+#printf {i in tgen, j in nodes : capacity[i,j] <> 0} : "Theta: %.4f, %.4f \n", theta[i], theta[j];
 end;
 
 
