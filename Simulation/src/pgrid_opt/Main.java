@@ -269,8 +269,8 @@ public class Main {
 				((Generator) graphs[timestep].getNodeList()[node]).setMaxP(0);
 
 				//Set the point at which the generator must be reactivated
-				//since we have a 15 minute resolution we want to add 4 time steps for a period of 24
-				((Generator) graphs[timestep].getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 4);
+				// time resultion has changed to hourly, still have to determine the proper rate fore reactivation
+				((Generator) graphs[timestep].getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 1);
 
 			}
 		}else if(((Generator) graphs[timestep].getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
