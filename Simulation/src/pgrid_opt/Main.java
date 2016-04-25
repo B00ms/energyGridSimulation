@@ -237,7 +237,7 @@ public class Main {
 						((Consumer) graphs[i].getNodeList()[j]).setLoad(0);
 				}
 				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Storage.class){
-
+					// storage node currenlty not being adapted
 				}
 			}
 		//}
