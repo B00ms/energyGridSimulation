@@ -35,7 +35,7 @@ public class Main {
 	private final static double V_RATED = 12;
 
 	//Path to the summer load curve
-	private final static String SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
+	private final static String SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
 
 	//From cheapest to most expensive.
 	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
@@ -148,7 +148,7 @@ public class Main {
 	/**
 	 * Increases or decreases the high of the seasonal curve according to some random double.
 	 *@param seasonalLoadCurve
-	 * @return the seasonal curve adjuste up or down.
+	 * @return the seasonal curve adjust up or down.
 	 */
 	private static HashMap<String, Double[]> setSeasonalVariety(HashMap<String, Double[]> seasonalLoadCurve) {
 
@@ -256,7 +256,7 @@ public class Main {
 		double convGeneratorProb = 0.1; //Probability of failure for conventional generators
 
 		if(((Generator) graphs[timestep].getNodeList()[node]).getReactivateAtTimeStep() == 0){//0 means that the reactor can fail.
-			if(mcDraw < convGeneratorProb){
+			if(Math.random() < convGeneratorProb){
 				//System.out.println(mcDraw);
 				//Our draw is smaller meaning that the generator has failed.
 				float lastminp = ((Generator) graphs[timestep].getNodeList()[node]).getMinP();
@@ -271,7 +271,6 @@ public class Main {
 				//Set the point at which the generator must be reactivated
 				// time resultion has changed to hourly, still have to determine the proper rate fore reactivation
 				((Generator) graphs[timestep].getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 1);
-
 			}
 		}else if(((Generator) graphs[timestep].getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
 			//We have to reactivate the generator because it's been offline for enough steps.
@@ -286,6 +285,8 @@ public class Main {
 
 	/**
 	 * check if emergency procedure is needed for current timestep
+	 *
+	 *
 	 * @param graphs
 	 * @param currentTimeStep
 	 */
@@ -303,8 +304,10 @@ public class Main {
 			}
 		}
 
+
 		// is the system balanced or smaller than the available reserve
 		if(Math.abs(deltaP) < reserveInStorage){
+
 
 		// current load is higher than production
 		}else if(deltaP>reserveInStorage){
