@@ -35,7 +35,7 @@ public class Main {
 	private final static double V_RATED = 12;
 
 	//Path to the summer load curve
-	private final static String SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
+	private final static String SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
 
 	//From cheapest to most expensive.
 	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
@@ -72,10 +72,10 @@ public class Main {
 		String model = s[0]; //path to the model
 		String dirpath = s[2]; //path to the output
 		Object[] o = parser.parseData(path);
-		Graph graph = (Graph) o[0];
-		solar = (float[]) o[1];
-		wind = (float[]) o[2];
-		loads = (float[]) o[3];
+		Graph graph = (Graph) o[0]; //Initial graph created from the input file
+		solar = (float[]) o[1]; //Hourly production values for solar
+		wind = (float[]) o[2]; //hourly production values for wind
+		loads = (float[]) o[3]; //Total hourly load of all sinks
 
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
@@ -101,7 +101,7 @@ public class Main {
 
 			while (i < timestepsGraph.length - 1) {
 
-				setGridState(timestepsGraph, i);
+				//setGridState(timestepsGraph, i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
