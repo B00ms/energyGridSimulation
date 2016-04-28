@@ -145,7 +145,7 @@ public class Parser {
 	}
 
 	/**
-	 * Par
+	 * Parse an edge
 	 * @param e
 	 * @param scan
 	 */
