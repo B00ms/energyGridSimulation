@@ -200,7 +200,7 @@ public class Main {
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 						break;
 					case "C": // Coal Thermal generator
-						mcDraw = monteCarloHelper.getRandomNormDist();
+						mcDraw = monteCarloHelper.getRandomUniformDist();
 						//System.out.println(mcDraw);
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 						break;
@@ -253,10 +253,10 @@ public class Main {
 	 * @return
 	 */
 	private static Graph[] handleThermalGenerator(Graph[] graphs, int timestep, int node, int currentTimeStep, double mcDraw){
-		double convGeneratorProb = 0.1; //Probability of failure for conventional generators
+		double convGeneratorProb = 0.5; //Probability of failure for conventional generators
 
 		if(((Generator) graphs[timestep].getNodeList()[node]).getReactivateAtTimeStep() == 0){//0 means that the reactor can fail.
-			if(Math.random() < convGeneratorProb){
+			if(mcDraw < convGeneratorProb){
 				//System.out.println(mcDraw);
 				//Our draw is smaller meaning that the generator has failed.
 				float lastminp = ((Generator) graphs[timestep].getNodeList()[node]).getMinP();
