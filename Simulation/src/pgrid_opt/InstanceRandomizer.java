@@ -65,11 +65,11 @@ public class InstanceRandomizer {
 			if (this.g.getLoadmax() / 100 * 70 > this.loads[i]) {
 
 				for (int j = 0; j < this.g.getNGenerators(); j++) {
-					if (	("H".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 0)
-						||  ("H".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 1))
+					if (	("H".compareTo(((ConventionalGenerator) this.g.getNodeList()[j]).getType()) == 0)
+						||  ("H".compareTo(((ConventionalGenerator) this.g.getNodeList()[j]).getType()) == 1))
 					{
-						((Generator) this.gDay[i].getNodeList()[j]).setMaxP(0.0F);
-						((Generator) this.gDay[i].getNodeList()[j]).setMinP(0.0F);
+						((ConventionalGenerator) this.gDay[i].getNodeList()[j]).setMaxP(0.0F);
+						((ConventionalGenerator) this.gDay[i].getNodeList()[j]).setMinP(0.0F);
 					}
 				}
 			}

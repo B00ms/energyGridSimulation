@@ -192,7 +192,7 @@ public class Parser {
 	 * @param next input String
 	 * @return
 	 */
-	private Generator parseGenerator(String next) {
+	private ConventionalGenerator parseGenerator(String next) {
 		Scanner scanner = new Scanner(next);
 		float min = scanner.nextFloat();
 		float max = scanner.nextFloat();
@@ -221,7 +221,7 @@ public class Parser {
 			type = "unknown";
 		}
 
-		return new Generator(min, max, coef, type, 0);
+		return new ConventionalGenerator(min, max, coef, type, 0);
 	}
 
 	/**
