@@ -101,7 +101,7 @@ printf {i in nodes,j in nodes : capacity[i,j] <> 0} : "%d,%d,%.4f,%.4f,%.4f \n",
 printf : "\n" >> "sol" & outname & ".txt";
 
 #Renewable energy curtailment
-printf {i in rgen} : "R,%d,%.4f\n", i, (rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
+printf {i in rgen} : "R,%d,%.4f\n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor) >> "sol" & outname & ".txt";
 printf : "\n" >> "sol" & outname & ".txt";
 
 #Traditional generators
