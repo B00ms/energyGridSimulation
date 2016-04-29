@@ -4,7 +4,7 @@ package pgrid_opt;
  * Renewable generator
  */
 public class RewGenerator extends Generator {
-	private float production;
+	private double production;
 
 	public RewGenerator(float max, float min, float cost, String type) {
 		super(min, max, cost, type);
@@ -15,11 +15,11 @@ public class RewGenerator extends Generator {
 		return true;
 	}
 
-	public float getProduction() {
+	public double getProduction() {
 		return this.production;
 	}
 
-	public void setProduction(float production) {
+	public void setProduction(double production) {
 		this.production = production;
 	}
 }
