@@ -30,9 +30,10 @@ public class Main {
 	 * Cut in and cut out margins for wind energy
 	 * V_rated is the optimal value for wind... I think.
 	 */
-	private final static double V_CUT_IN = 4;
+	private final static double V_CUT_IN = 3;
 	private final static double V_CUT_OFF = 25;
 	private final static double V_RATED = 12;
+	private final static double P_RATED = 220;
 
 	//Path to the summer load curve
 	private final static String SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
@@ -101,7 +102,8 @@ public class Main {
 
 			while (i < timestepsGraph.length - 1) {
 
-				//setGridState(timestepsGraph, i);
+				//Graph[] test = timestepsGraph;
+				setGridState(timestepsGraph, i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
@@ -174,11 +176,10 @@ public class Main {
 	private static void setGridState(Graph[] graphs, int currentTimeStep){
 		//For weibull distribution: alpha = 1.6, beta = 8
 		//For normal distribution: mean = 0, sigma = 0.05
-		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.05);
+		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.04);
 
-		//Loop through all nodes in the graph
-		//for(int i = 0; i < graphs.length-1; i ++){
-		int i = currentTimeStep;
+		//int i = currentTimeStep;
+		for(int i = 0; i < graphs.length-1; i ++){
 			for (int j=0; j < graphs[i].getNodeList().length-1; j++){
 				//Check the class of the current node and deal with it accordingly.
 				if(graphs[i].getNodeList()[j] != null && (graphs[i].getNodeList()[j].getClass() == Generator.class ||
@@ -190,12 +191,12 @@ public class Main {
 						//Ignore this for now, might be added at a later stage
 						break;
 					case "O": // Oil Thermal generator
-						mcDraw = monteCarloHelper.getRandomNormDist();
+						mcDraw = monteCarloHelper.getRandomUniformDist();
 						//System.out.println(mcDraw);
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 						break;
 					case "N": // Nuclear Thermal generator
-						mcDraw = monteCarloHelper.getRandomNormDist();
+						mcDraw = monteCarloHelper.getRandomUniformDist();
 						//System.out.println(mcDraw);
 						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
 						break;
@@ -212,9 +213,8 @@ public class Main {
 							//Wind speed is outside the margins
 							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(0);
 						} else if(mcDraw >= V_CUT_IN && mcDraw <= V_RATED){
-							//In a sweet spot for max wind production?
-							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getProduction();
-							production = (float) (production*(Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3)/Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3)));//Should be the same as the matlab from Laura
+							//In a sweet spot for max wind production
+							double production = (P_RATED*((Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3))/(Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3))));//Should be the same as the matlab from Laura
 							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
 						} else if(mcDraw <= V_CUT_IN && mcDraw <= V_CUT_OFF){
 							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getMinP();
@@ -228,7 +228,7 @@ public class Main {
 				}
 				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Consumer.class){
 					//Consumer so we want to calculate and set the real demand using the load error.
-					double mcDraw = monteCarloHelper.getRandomUniformDist();
+					double mcDraw = monteCarloHelper.getRandomNormDist();
 					float realLoad = (float) (((Consumer) graphs[i].getNodeList()[j]).getLoad() * (1+mcDraw));
 
 					if (realLoad >= 0)
@@ -240,7 +240,7 @@ public class Main {
 					// storage node currenlty not being adapted
 				}
 			}
-		//}
+		}
 	}
 
 	/**
