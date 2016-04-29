@@ -1,27 +1,37 @@
 package pgrid_opt;
 
 public class Generator extends Node {
-	private float maxp;
-	private float minp;
 
-	private int mttf;
-	private int mttr;
-
+	private float maxp; //maximum production
+	private float minp; //minimum production
 	private float lastmaxp,lastminp;
-
-	private float coef;
-	private String type;
+	private float coef; //multiplication coefficient, used to get real production
+	private String type; // Oil, coal or nuclear, wind, solar
 	private int reactivateAtTimeStep;
+	private double production;
 
-	public Generator(float min, float max, float coef, String type) {
+	public Generator(float min, float max, float coef, String type, double production) {
 		this.maxp = max;
 		this.minp = min;
 		this.coef = coef;
+		this.type = type;
+		this.production = production;
+	}
 
-		// only used with conventional generator.
-		this.mttf = 630;
-		this.mttr = 60;
-		setType(type);
+	/**
+	 *
+	 * @return the production of this generator
+	 */
+	public double getProduction() {
+		return production;
+	}
+
+	/**
+	 * Set the production output of this generator
+	 * @param production
+	 */
+	public void setProduction(double production) {
+		this.production = production;
 	}
 
 	/**
@@ -124,21 +134,5 @@ public class Generator extends Node {
 
 	public void setLastminp(float lastminp) {
 		this.lastminp = lastminp;
-	}
-
-	public void setMTTF(int mttf){
-		this.mttf = mttf;
-	}
-
-	public void setMTTR(int mttr){
-		this.mttr = mttr;
-	}
-
-	public int getMTTF(){
-		return this.mttf;
-	}
-
-	public int getMTTR(){
-		return this.mttr;
 	}
 }

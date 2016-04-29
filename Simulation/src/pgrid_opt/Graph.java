@@ -104,7 +104,7 @@ public class Graph implements Cloneable {
 		for (int i = 0; i < g.ngenerators; i++) {
 			g.nodelist[i] = new Generator(((Generator) this.nodelist[i]).getMinP(),
 					((Generator) this.nodelist[i]).getMaxP(), ((Generator) this.nodelist[i]).getCoef(),
-					((Generator) this.nodelist[i]).getType());
+					((Generator) this.nodelist[i]).getType(), ((Generator) this.nodelist[i]).getProduction());
 		}
 		for (int i = g.getNGenerators(); i < g.ngenerators + g.getNConsumers(); i++) {
 			g.nodelist[i] = new Consumer(((Consumer) this.nodelist[i]).getLoad());

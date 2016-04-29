@@ -221,7 +221,7 @@ public class Parser {
 			type = "unknown";
 		}
 
-		return new Generator(min, max, coef, type);
+		return new Generator(min, max, coef, type, 0);
 	}
 
 	/**
