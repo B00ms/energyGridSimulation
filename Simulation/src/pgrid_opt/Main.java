@@ -103,9 +103,9 @@ public class Main {
 			while (i < timestepsGraph.length - 1) {
 
 				//Graph[] test = timestepsGraph;
-				setGridState(timestepsGraph, i);
+				setGridState(timestepsGraph[i], i);
 
-				checkGridEquilibrium(timestepsGraph[i]);
+				checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
@@ -175,75 +175,75 @@ public class Main {
 	 * Set the state of generators and loads.
 	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
-	private static void setGridState(Graph[] graphs, int currentTimeStep){
+	private static void setGridState(Graph graph, int currentTimeStep){
 		//For weibull distribution: alpha = 1.6, beta = 8
 		//For normal distribution: mean = 0, sigma = 0.05
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.04);
 
 		//int i = currentTimeStep;
-		for(int i = 0; i < graphs.length-1; i ++){
-			for (int j=0; j < graphs[i].getNodeList().length-1; j++){
-				//Check the class of the current node and deal with it accordingly.
-				if(graphs[i].getNodeList()[j] != null && (graphs[i].getNodeList()[j].getClass() == Generator.class ||
-						graphs[i].getNodeList()[j].getClass() ==  RewGenerator.class)){
-					String generatorType = ((Generator) graphs[i].getNodeList()[j]).getType();
-					double mcDraw = 0; //This will hold our Monte Carlo draw (hahaha mac draw)
-					switch (generatorType) {
-					case "H" : //Hydro-eletric generator
-						//Ignore this for now, might be added at a later stage
-						break;
-					case "O": // Oil Thermal generator
-						mcDraw = monteCarloHelper.getRandomUniformDist();
-						//System.out.println(mcDraw);
-						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
-						break;
-					case "N": // Nuclear Thermal generator
-						mcDraw = monteCarloHelper.getRandomUniformDist();
-						//System.out.println(mcDraw);
-						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
-						break;
-					case "C": // Coal Thermal generator
-						mcDraw = monteCarloHelper.getRandomUniformDist();
-						//System.out.println(mcDraw);
-						graphs = handleThermalGenerator(graphs, i, j, currentTimeStep, mcDraw);
-						break;
-					case "W": //Wind park generator
-						mcDraw = monteCarloHelper.getRandomWeibull();
-						//System.out.println(mcDraw);
+		//for(int i = 0; i < graphs.length-1; i ++){
+		for (int j=0; j < graph.getNodeList().length-1; j++){
+			//Check the class of the current node and deal with it accordingly.
+			if(graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class ||
+					graph.getNodeList()[j].getClass() ==  RewGenerator.class)){
+				String generatorType = ((Generator) graph.getNodeList()[j]).getType();
+				double mcDraw = 0; //This will hold our Monte Carlo draw (hahaha mac draw)
+				switch (generatorType) {
+				case "H" : //Hydro-eletric generator
+					//Ignore this for now, might be added at a later stage
+					break;
+				case "O": // Oil Thermal generator
+					mcDraw = monteCarloHelper.getRandomUniformDist();
+					//System.out.println(mcDraw);
+					graph = handleThermalGenerator(graph, j, currentTimeStep, mcDraw);
+					break;
+				case "N": // Nuclear Thermal generator
+					mcDraw = monteCarloHelper.getRandomUniformDist();
+					//System.out.println(mcDraw);
+					graph = handleThermalGenerator(graph, j, currentTimeStep, mcDraw);
+					break;
+				case "C": // Coal Thermal generator
+					mcDraw = monteCarloHelper.getRandomUniformDist();
+					//System.out.println(mcDraw);
+					graph = handleThermalGenerator(graph, j, currentTimeStep, mcDraw);
+					break;
+				case "W": //Wind park generator
+					mcDraw = monteCarloHelper.getRandomWeibull();
+					//System.out.println(mcDraw);
 
-						if(mcDraw <= V_CUT_IN || mcDraw >= V_CUT_OFF){
-							//Wind speed is outside the margins
-							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(0);
-						} else if(mcDraw >= V_CUT_IN && mcDraw <= V_RATED){
-							//In a sweet spot for max wind production
-							double production = (P_RATED*((Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3))/(Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3))));//Should be the same as the matlab from Laura
-							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
-						} else if(mcDraw <= V_CUT_IN && mcDraw <= V_CUT_OFF){
-							float production = ((RewGenerator) graphs[i].getNodeList()[j]).getMinP();
-							((RewGenerator) graphs[i].getNodeList()[j]).setProduction(production);
-						}
-						break;
-					case "S": //Solar generator
-						//Let's ignore the sun as well for now...
-						break;
+					if(mcDraw <= V_CUT_IN || mcDraw >= V_CUT_OFF){
+						//Wind speed is outside the margins
+						((RewGenerator) graph.getNodeList()[j]).setProduction(0);
+					} else if(mcDraw >= V_CUT_IN && mcDraw <= V_RATED){
+						//In a sweet spot for max wind production
+						double production = (P_RATED*((Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3))/(Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3))));//Should be the same as the matlab from Laura
+						((RewGenerator) graph.getNodeList()[j]).setProduction(production);
+					} else if(mcDraw <= V_CUT_IN && mcDraw <= V_CUT_OFF){
+						float production = ((RewGenerator) graph.getNodeList()[j]).getMinP();
+						((RewGenerator) graph.getNodeList()[j]).setProduction(production);
 					}
+					break;
+				case "S": //Solar generator
+					//Let's ignore the sun as well for now...
+					break;
 				}
-				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Consumer.class){
-					//Consumer so we want to calculate and set the real demand using the load error.
-					double mcDraw = monteCarloHelper.getRandomNormDist();
-					float realLoad = (float) (((Consumer) graphs[i].getNodeList()[j]).getLoad() * (1+mcDraw));
+			}
+			else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Consumer.class){
+				//Consumer so we want to calculate and set the real demand using the load error.
+				double mcDraw = monteCarloHelper.getRandomNormDist();
+				float realLoad = (float) (((Consumer) graph.getNodeList()[j]).getLoad() * (1+mcDraw));
 
-					if (realLoad >= 0)
-						((Consumer) graphs[i].getNodeList()[j]).setLoad(realLoad);
-					else
-						((Consumer) graphs[i].getNodeList()[j]).setLoad(0);
-				}
-				else if(graphs[i].getNodeList()[j] != null && graphs[i].getNodeList()[j].getClass() == Storage.class){
-					// storage node currenlty not being adapted
-				}
+				if (realLoad >= 0)
+					((Consumer) graph.getNodeList()[j]).setLoad(realLoad);
+				else
+					((Consumer) graph.getNodeList()[j]).setLoad(0);
+			}
+			else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Storage.class){
+				// storage node currenlty not being adapted
 			}
 		}
 	}
+
 
 	/**
 	 * Sets the state of conventional generators to on or off.
@@ -254,35 +254,35 @@ public class Main {
 	 * @param mcDraw
 	 * @return
 	 */
-	private static Graph[] handleThermalGenerator(Graph[] graphs, int timestep, int node, int currentTimeStep, double mcDraw){
+	private static Graph handleThermalGenerator(Graph graph, int node, int currentTimeStep, double mcDraw){
 		double convGeneratorProb = 0.5; //Probability of failure for conventional generators
 
-		if(((Generator) graphs[timestep].getNodeList()[node]).getReactivateAtTimeStep() == 0){//0 means that the reactor can fail.
+		if(((ConventionalGenerator) graph.getNodeList()[node]).getReactivateAtTimeStep() == 0){//0 means that the reactor can fail.
 			if(mcDraw < convGeneratorProb){
 				//System.out.println(mcDraw);
 				//Our draw is smaller meaning that the generator has failed.
-				float lastminp = ((Generator) graphs[timestep].getNodeList()[node]).getMinP();
-				float lastmaxp = ((Generator) graphs[timestep].getNodeList()[node]).getMaxP();
+				float lastminp = ((ConventionalGenerator) graph.getNodeList()[node]).getMinP();
+				float lastmaxp = ((ConventionalGenerator) graph.getNodeList()[node]).getMaxP();
 
-				((Generator) graphs[timestep].getNodeList()[node]).setLastminp(lastminp);
-				((Generator) graphs[timestep].getNodeList()[node]).setLastmaxp(lastmaxp);
+				((ConventionalGenerator) graph.getNodeList()[node]).setLastminp(lastminp);
+				((ConventionalGenerator) graph.getNodeList()[node]).setLastmaxp(lastmaxp);
 
-				((Generator) graphs[timestep].getNodeList()[node]).setMinP(0);
-				((Generator) graphs[timestep].getNodeList()[node]).setMaxP(0);
+				((ConventionalGenerator) graph.getNodeList()[node]).setMinP(0);
+				((ConventionalGenerator) graph.getNodeList()[node]).setMaxP(0);
 
 				//Set the point at which the generator must be reactivated
 				// time resultion has changed to hourly, still have to determine the proper rate fore reactivation
-				((Generator) graphs[timestep].getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 1);
+				((ConventionalGenerator) graph.getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 1);
 			}
-		}else if(((Generator) graphs[timestep].getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
+		}else if(((ConventionalGenerator) graph.getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
 			//We have to reactivate the generator because it's been offline for enough steps.
-			float minp = ((Generator) graphs[timestep].getNodeList()[node]).getLastminp();
-			float maxp = ((Generator) graphs[timestep].getNodeList()[node]).getLastmaxp();
-			((Generator) graphs[timestep].getNodeList()[node]).setMinP(minp);
-			((Generator) graphs[timestep].getNodeList()[node]).setMaxP(maxp);
+			float minp = ((ConventionalGenerator) graph.getNodeList()[node]).getLastminp();
+			float maxp = ((ConventionalGenerator) graph.getNodeList()[node]).getLastmaxp();
+			((ConventionalGenerator) graph.getNodeList()[node]).setMinP(minp);
+			((ConventionalGenerator) graph.getNodeList()[node]).setMaxP(maxp);
 		}
 
-		return graphs;
+		return graph;
 	}
 
 	/**
@@ -323,7 +323,7 @@ public class Main {
 	/**
 	 * Depending on the state of the grid this method will increase or decrease production in order to balance the system
 	 */
-	private static void checkGridEquilibrium(Graph grid){
+	private static void checkGridEquilibrium(Graph grid, int timestep){
 
 		Node[] nodeList = grid.getNodeList();
 		double sumLoads = 0;
@@ -334,12 +334,10 @@ public class Main {
 		{
 			if(nodeList[i] != null && nodeList[i].getClass() == Consumer.class){
 				sumLoads += ((Consumer)nodeList[i]).getLoad();
-			}
-			else if (nodeList[i] != null && nodeList[i].getClass() == Generator.class){
+			} else if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
 				//How do we get the current power that is being produced? Maybe we can look at the edge connected to generators and get its load.
-				//productionOutput += ((Generator)nodeList[i]).getProduction();
-			}
-			else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
+				productionOutput += ((Generator)nodeList[i]).getProduction();
+			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
 				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
 			}
 		}
@@ -348,6 +346,21 @@ public class Main {
 		if(totalProduction  - sumLoads < 0){
 			//We need to increase the energy production!
 			System.out.println("increase production!");
+
+			//Check if we're in the initial state, if true we can simply set the generators to meet demand without concerning oursolves with spin up/down times
+			if (timestep == 0){
+				for (int i = 0; i < grid.getNodeList().length-1; i++){
+					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
+
+					}
+				}
+			} else{
+
+
+			}
+
+
+
 		} else if (totalProduction  - sumLoads > 0) {
 			//we need to decrease energy production
 			System.out.println("decrease production!");
