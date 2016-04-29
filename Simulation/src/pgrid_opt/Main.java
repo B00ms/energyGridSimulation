@@ -105,6 +105,8 @@ public class Main {
 				//Graph[] test = timestepsGraph;
 				setGridState(timestepsGraph, i);
 
+				checkGridEquilibrium(timestepsGraph[i]);
+
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
 					StringBuffer output = new StringBuffer();
@@ -325,9 +327,11 @@ public class Main {
 
 		Node[] nodeList = grid.getNodeList();
 		double sumLoads = 0;
+		double renewableProduction = 0;
 		double productionOutput = 0;
 
-		for(int i = 0; i > nodeList.length-1; i++){
+		for(int i = 0; i < nodeList.length-1; i++)
+		{
 			if(nodeList[i] != null && nodeList[i].getClass() == Consumer.class){
 				sumLoads += ((Consumer)nodeList[i]).getLoad();
 			}
@@ -335,12 +339,18 @@ public class Main {
 				//How do we get the current power that is being produced? Maybe we can look at the edge connected to generators and get its load.
 				//productionOutput += ((Generator)nodeList[i]).getProduction();
 			}
+			else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
+				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
+			}
 		}
+		double totalProduction = productionOutput + renewableProduction;
 
-		if(productionOutput - sumLoads < 0){
+		if(totalProduction  - sumLoads < 0){
 			//We need to increase the energy production!
-		} else if (productionOutput - sumLoads > 0) {
+			System.out.println("increase production!");
+		} else if (totalProduction  - sumLoads > 0) {
 			//we need to decrease energy production
+			System.out.println("decrease production!");
 		}
 	}
 }
