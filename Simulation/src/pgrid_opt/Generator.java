@@ -27,11 +27,18 @@ public class Generator extends Node {
 	}
 
 	/**
-	 * Set the production output of this generator
+	 * Set the production output of this generator, includes a check so production cannot be set higher than max production
 	 * @param production
+	 * @return returns the value at which the production was set
 	 */
-	public void setProduction(double production) {
-		this.production = production;
+	public double setProduction(double production) {
+		if (maxp < production){
+			this.production = maxp;
+			return production - maxp;
+		} else {
+			this.production = production;
+			return production;
+		}
 	}
 
 	/**

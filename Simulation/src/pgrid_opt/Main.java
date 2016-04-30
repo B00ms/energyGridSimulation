@@ -195,17 +195,17 @@ public class Main {
 				case "O": // Oil Thermal generator
 					mcDraw = monteCarloHelper.getRandomUniformDist();
 					//System.out.println(mcDraw);
-					graph = handleThermalGenerator(graph, j, currentTimeStep, mcDraw);
+					graph = handleConventionalGenerator(graph, j, currentTimeStep, mcDraw);
 					break;
 				case "N": // Nuclear Thermal generator
 					mcDraw = monteCarloHelper.getRandomUniformDist();
 					//System.out.println(mcDraw);
-					graph = handleThermalGenerator(graph, j, currentTimeStep, mcDraw);
+					graph = handleConventionalGenerator(graph, j, currentTimeStep, mcDraw);
 					break;
 				case "C": // Coal Thermal generator
 					mcDraw = monteCarloHelper.getRandomUniformDist();
 					//System.out.println(mcDraw);
-					graph = handleThermalGenerator(graph, j, currentTimeStep, mcDraw);
+					graph = handleConventionalGenerator(graph, j, currentTimeStep, mcDraw);
 					break;
 				case "W": //Wind park generator
 					mcDraw = monteCarloHelper.getRandomWeibull();
@@ -254,7 +254,7 @@ public class Main {
 	 * @param mcDraw
 	 * @return
 	 */
-	private static Graph handleThermalGenerator(Graph graph, int node, int currentTimeStep, double mcDraw){
+	private static Graph handleConventionalGenerator(Graph graph, int node, int currentTimeStep, double mcDraw){
 		double convGeneratorProb = 0.5; //Probability of failure for conventional generators
 
 		if(((ConventionalGenerator) graph.getNodeList()[node]).getReactivateAtTimeStep() == 0){//0 means that the reactor can fail.
@@ -287,8 +287,6 @@ public class Main {
 
 	/**
 	 * check if emergency procedure is needed for current timestep
-	 *
-	 *
 	 * @param graphs
 	 * @param currentTimeStep
 	 */
@@ -328,42 +326,51 @@ public class Main {
 		Node[] nodeList = grid.getNodeList();
 		double sumLoads = 0;
 		double renewableProduction = 0;
-		double productionOutput = 0;
+		double conventionalProduction= 0;
 
 		for(int i = 0; i < nodeList.length-1; i++)
 		{
 			if(nodeList[i] != null && nodeList[i].getClass() == Consumer.class){
 				sumLoads += ((Consumer)nodeList[i]).getLoad();
 			} else if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-				//How do we get the current power that is being produced? Maybe we can look at the edge connected to generators and get its load.
-				productionOutput += ((Generator)nodeList[i]).getProduction();
+				conventionalProduction += ((ConventionalGenerator)nodeList[i]).getProduction();
 			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
 				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
 			}
 		}
-		double totalProduction = productionOutput + renewableProduction;
+		double totalProduction = conventionalProduction + renewableProduction;
+		double currentProduction = 0;
+		double maxProduction = 0;
 
-		if(totalProduction  - sumLoads < 0){
+		if((totalProduction  - sumLoads) < 0){
 			//We need to increase the energy production!
 			System.out.println("increase production!");
+			//Check if we're in the initial state, if true we can simply set the generators to meet demand without concerning ourselves with spin up/down times
 
-			//Check if we're in the initial state, if true we can simply set the generators to meet demand without concerning oursolves with spin up/down times
-			if (timestep == 0){
-				for (int i = 0; i < grid.getNodeList().length-1; i++){
-					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
 
+			for (int i = 0; i < grid.getNodeList().length-1; i++){
+				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
+					maxProduction += ((ConventionalGenerator)nodeList[i]).setProduction(((ConventionalGenerator)nodeList[i]).getMaxP());
 					}
-				}
-			} else{
-
-
 			}
-
-
-
-		} else if (totalProduction  - sumLoads > 0) {
+		} else if ((totalProduction  - sumLoads) > 0) {
 			//we need to decrease energy production
 			System.out.println("decrease production!");
+		}
+		if(maxProduction < sumLoads){
+			return;
+		} else {
+			balanceProduction(sumLoads, currentProduction, nodeList);
+
+		}
+	}
+
+	private static void balanceProduction(double sumLoads, double currentProduction, Node[] nodeList){
+		//TODO: Add code such that cheap generators are turned on first.
+		for(int i = 0; i < nodeList.length-1; i++){
+			currentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads);
+			if(currentProduction == sumLoads)
+				break;
 		}
 	}
 }
