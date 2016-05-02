@@ -1,6 +1,8 @@
 package pgrid_opt;
 
-public class ConventionalGenerator extends Generator{
+import java.util.Comparator;
+
+public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>{
 
 
 	private int mttf;//mean time to failure
@@ -32,5 +34,31 @@ public class ConventionalGenerator extends Generator{
 		return this.mttr;
 	}
 
+	@Override
+	public int compareTo(ConventionalGenerator o) {
 
+		if(this.getType().equals(o.getType())){
+			return 0; //Generator type are equal so we return 0.
+		}
+
+		/*
+		 * Nuclear followed by Oil followed by Coal, Hydro is dead last.
+		 */
+		switch (this.getType()){
+		case "N":
+			return -1; //Generators are not equal but this is a nuclear one so its always higher.
+		case "H":
+			if(o.getType().equals("C")){
+				return -1;
+			}
+			return 1;
+		case "O":
+			if(o.getType().equals("C")){
+				return -1;
+			} else
+				return 1;
+			default:
+				return 1;
+			}
+	}
 }

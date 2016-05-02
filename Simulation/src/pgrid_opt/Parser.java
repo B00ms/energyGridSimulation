@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -47,9 +49,13 @@ public class Parser {
 		String token = scanner.next();
 		if ((token.compareTo(this.gen) == 1) || (token.compareTo(this.gen) == 0)) {
 			System.out.println("parsing gen");
+			List<ConventionalGenerator> generatorList = new ArrayList<>();
 			for (int i = 0; i < g.getNGenerators(); i++) {
-				n[i] = parseGenerator(scanner.next());
+				//n[i] = parseGenerator(scanner.next());
+				generatorList.add(parseGenerator(scanner.next()));
 			}
+			Collections.sort(generatorList);
+			generatorList.toArray(n);
 		}
 		token = scanner.next();
 		if ((token.compareTo(this.cons) == 1) || (token.compareTo(this.cons) == 0)) {
