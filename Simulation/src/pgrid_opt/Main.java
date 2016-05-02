@@ -102,9 +102,7 @@ public class Main {
 
 			while (i < timestepsGraph.length - 1) {
 
-				//Graph[] test = timestepsGraph;
 				setGridState(timestepsGraph[i], i);
-
 				checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
@@ -328,6 +326,9 @@ public class Main {
 		double renewableProduction = 0;
 		double conventionalProduction= 0;
 
+		/*
+		 * In this loop we calculate the total demand, the total ->current<- production and, total ->current<- production of renewable generators.
+		 */
 		for(int i = 0; i < nodeList.length-1; i++)
 		{
 			if(nodeList[i] != null && nodeList[i].getClass() == Consumer.class){
@@ -338,31 +339,55 @@ public class Main {
 				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
 			}
 		}
-		double totalProduction = conventionalProduction + renewableProduction;
-		double currentProduction = 0;
-		double maxProduction = 0;
+		double totalCurrentProduction = conventionalProduction + renewableProduction;
+		double maxProduction = 0; //Max production is the highest production that can be reached using all conventional generators.
 
-		if((totalProduction  - sumLoads) < 0){
-			//We need to increase the energy production!
-			System.out.println("increase production!");
+		//Check if we need to increase current production
+		if((totalCurrentProduction  - sumLoads) < 0){
+			System.out.println("Increase production");
+
 			//Check if we're in the initial state, if true we can simply set the generators to meet demand without concerning ourselves with spin up/down times
-
-
 			for (int i = 0; i < grid.getNodeList().length-1; i++){
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-					maxProduction += ((ConventionalGenerator)nodeList[i]).setProduction(((ConventionalGenerator)nodeList[i]).getMaxP());
-					}
+					//Calculate the maximum production of all generators
+					maxProduction += (((ConventionalGenerator)nodeList[i]).getMaxP());
+				}
 			}
-		} else if ((totalProduction  - sumLoads) > 0) {
+
+			//if(maxProduction >= sumLoads){
+				//We need to increase production until it meets demand.
+				for(int i = 0; i < grid.getNodeList().length-1; i++){
+					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
+						if (totalCurrentProduction+((ConventionalGenerator)nodeList[i]).getMaxP() > sumLoads){
+							((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction); //Set production to the remained so we can meet the demand exactly
+						}else
+							((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() + ((ConventionalGenerator)nodeList[i]).getMaxP()/4);
+					}
+				}
+			/*} else {
+				//Go ahead and max out the production
+				for (int i = 0; i < grid.getNodeList().length-1; i++){
+					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
+						//Set and Calculate the maximum production of all generators
+						maxProduction += ((ConventionalGenerator)nodeList[i]).setProduction(((ConventionalGenerator)nodeList[i]).getMaxP());
+					}
+				}
+			}*/
+		} else if ((totalCurrentProduction  - sumLoads) > 0) {
 			//we need to decrease energy production
 			System.out.println("decrease production!");
-		}
-		if(maxProduction < sumLoads){
-			return;
 		} else {
-			balanceProduction(sumLoads, currentProduction, nodeList);
-
+			//production and demand are balanced.
+			return;
 		}
+
+		/*
+		if(maxProduction < sumLoads){
+
+		} else {
+			balanceProduction(sumLoads, totalCurrentProduction, nodeList);
+
+		}*/
 	}
 
 	private static void balanceProduction(double sumLoads, double currentProduction, Node[] nodeList){
