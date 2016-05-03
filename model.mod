@@ -109,7 +109,7 @@ printf {i in tgen} : "TG,%d, %.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} 
 printf : "\n" >> "sol" & outname & ".txt";
 
 #Consumers
-printf {i in consumers} : "C,%d, %.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor) >> "sol" & outname & ".txt";
+printf {i in nodes, j in consumers : capacity[i,j] <> 0} : "C,%d, %.4f \n", i, ((theta[i] - theta[j])/ weight[i,j])*m_factor >> "sol" & outname & ".txt";
 printf : "\n" >> "sol" & outname & ".txt";
 
 #inner nodes
