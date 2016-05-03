@@ -130,6 +130,8 @@ public class Main {
 					if(new File(dirpath+"/filename.out").exists())
 						Files.move(Paths.get(dirpath+"/filename.out"), Paths.get(solutionPath+"/filename.out"), StandardCopyOption.REPLACE_EXISTING);
 
+					if(new File(dirpath+"/update.txt").exists())
+						Files.copy(Paths.get(dirpath+"/update.txt"), Paths.get(solutionPath+"/update"+i+".txt"), StandardCopyOption.REPLACE_EXISTING);
 
 					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); //Using the new input file, we apply the model to solve the cost function given the new state of the grid.
 					String line = "";
@@ -148,6 +150,15 @@ public class Main {
 			}
 			if (graph.getNstorage() > 0) {
 				mp.printStorageData(timestepsGraph, String.valueOf(dirpath) + "storage.txt");
+
+				if(new File(dirpath+"/storage.txt").exists())
+					try {
+						Files.copy(Paths.get(dirpath+"/storage.txt"), Paths.get(solutionPath+"/storage.txt"), StandardCopyOption.REPLACE_EXISTING);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
 			}
 		}
 			long endtime = System.nanoTime();

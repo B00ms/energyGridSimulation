@@ -34,7 +34,10 @@ public class Generator extends Node {
 	public double setProduction(double production) {
 		if (maxp < production){
 			this.production = maxp;
-			return production - maxp;
+			return maxp;
+		} else if(minp > production){
+			this.production = minp;
+			return minp;
 		} else {
 			this.production = production;
 			return production;
