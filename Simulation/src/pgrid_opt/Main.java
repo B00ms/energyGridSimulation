@@ -40,6 +40,7 @@ public class Main {
 
 	//From cheapest to most expensive.
 	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
+	//TODO: price index is currently not used.
 	private final static Map<String, Double[]> PRICE_INDEX;
 	static {
 		//Production prices for 4 different levels of production 25%, 50%, 75%, 100%
@@ -198,6 +199,7 @@ public class Main {
 		//For normal distribution: mean = 0, sigma = 0.05
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.04);
 
+		double sumLoadError = 0;
 		//int i = currentTimeStep;
 		//for(int i = 0; i < graphs.length-1; i ++){
 		for (int j=0; j < graph.getNodeList().length-1; j++){
@@ -249,15 +251,25 @@ public class Main {
 			else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Consumer.class){
 				//Consumer so we want to calculate and set the real demand using the load error.
 				double mcDraw = monteCarloHelper.getRandomNormDist();
-				float realLoad = (float) (((Consumer) graph.getNodeList()[j]).getLoad() * (1+mcDraw));
+				//System.out.println(mcDraw);
+				sumLoadError += (((Consumer) graph.getNodeList()[j]).getLoad() * mcDraw);
 
+				/*
 				if (realLoad >= 0)
 					((Consumer) graph.getNodeList()[j]).setLoad(realLoad);
 				else
 					((Consumer) graph.getNodeList()[j]).setLoad(0);
+					*/
 			}
 			else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Storage.class){
 				// storage node currenlty not being adapted
+			}
+		}
+
+		//Set the load of a consumer using the previously calculated cumulative load error.
+		for (int i = 0; i < graph.getNodeList().length-1; i++){
+			if(graph.getNodeList()[i] != null && graph.getNodeList()[i].getClass() == Consumer.class){
+				((Consumer) graph.getNodeList()[i]).setLoad((float) (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError));
 			}
 		}
 	}
