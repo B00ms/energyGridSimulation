@@ -249,9 +249,8 @@ public class Main {
 						//In a sweet spot for max wind production
 						double production = (P_RATED*((Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3))/(Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3))));//Should be the same as the matlab from Laura
 						((RewGenerator) graph.getNodeList()[j]).setProduction(production);
-					} else if(mcDraw <= V_CUT_IN && mcDraw <= V_CUT_OFF){
-						float production = ((RewGenerator) graph.getNodeList()[j]).getMinP();
-						((RewGenerator) graph.getNodeList()[j]).setProduction(production);
+					} else if (V_RATED <= mcDraw && mcDraw <= V_CUT_OFF ) {
+						((RewGenerator) graph.getNodeList()[j]).setProduction(P_RATED);
 					}
 					break;
 				case "S": //Solar generator
@@ -276,7 +275,7 @@ public class Main {
 				// storage node currenlty not being adapted
 			}
 		}
-
+		System.out.println("Load error: " + sumLoadError);
 		//Set the load of a consumer using the previously calculated cumulative load error.
 		for (int i = 0; i < graph.getNodeList().length-1; i++){
 			if(graph.getNodeList()[i] != null && graph.getNodeList()[i].getClass() == Consumer.class){
@@ -288,8 +287,7 @@ public class Main {
 
 	/**
 	 * Sets the state of conventional generators to on or off.
-	 * @param graphs
-	 * @param timestep
+	 * @param graph
 	 * @param node
 	 * @param currentTimeStep
 	 * @param mcDraw
