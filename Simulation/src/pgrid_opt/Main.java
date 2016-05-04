@@ -66,7 +66,6 @@ public class Main {
 			SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
 		}
 
-
 		long starttime = System.nanoTime();
 		float[] wind = null;
 		float[] solar = null;
@@ -333,6 +332,7 @@ public class Main {
 		double sumLoads = 0;
 		double renewableProduction = 0;
 		double conventionalProduction= 0;
+		double sumStorage = 0;
 
 		/*
 		 * In this loop we calculate the total demand, the total ->current<- production and, total ->current<- production of renewable generators.
@@ -345,6 +345,8 @@ public class Main {
 				conventionalProduction += ((ConventionalGenerator)nodeList[i]).getProduction();
 			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
 				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
+			} else if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
+				sumStorage += ((Storage) nodeList[i]).getCapacity();
 			}
 		}
 		double totalCurrentProduction = conventionalProduction + renewableProduction;
@@ -381,4 +383,5 @@ public class Main {
 			return;//production and demand are balanced.
 		}
 	}
+
 }
