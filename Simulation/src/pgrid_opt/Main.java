@@ -36,7 +36,9 @@ public class Main {
 	private final static double P_RATED = 220;
 
 	//Path to the summer load curve
-	private final static String SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
+	private static String OS = System.getProperty("os.name");
+
+//	private final static String SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
 
 	//From cheapest to most expensive.
 	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
@@ -56,6 +58,15 @@ public class Main {
 		}
 
 	public static void main(String[] args) {
+		String SUMMER_LOAD_CURVE;
+
+		if(OS.startsWith("Windows")){
+			SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
+		}else{
+			SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
+		}
+
+
 		long starttime = System.nanoTime();
 		float[] wind = null;
 		float[] solar = null;
@@ -313,39 +324,6 @@ public class Main {
 		}
 
 		return graph;
-	}
-
-	/**
-	 * check if emergency procedure is needed for current timestep
-	 * @param graphs
-	 * @param currentTimeStep
-	 */
-	private static void checkEmergencyProcedure(Graph[] graphs, int currentTimeStep){
-
-		float deltaP =0, reserveInStorage = 0;
-
-		Graph g = graphs[currentTimeStep];
-		Node[] graphNodes = graphs[currentTimeStep].getNodeList();
-
-		// get total current reserve in storage nodes
-		for (int j=0; j < graphNodes.length-1; j++){
-			if(graphNodes[j] != null && graphNodes[j].getClass() == Storage.class) {
-				reserveInStorage += ((Storage) graphNodes[j]).getCapacity();
-			}
-		}
-
-
-		// is the system balanced or smaller than the available reserve
-		if(Math.abs(deltaP) < reserveInStorage){
-
-
-		// current load is higher than production
-		}else if(deltaP>reserveInStorage){
-
-		// load lower than production
-		}else if(deltaP<=reserveInStorage){
-
-		}
 	}
 
 	/**
