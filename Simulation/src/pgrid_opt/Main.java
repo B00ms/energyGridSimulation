@@ -350,9 +350,10 @@ public class Main {
 			}
 		}
 		double totalCurrentProduction = conventionalProduction + renewableProduction;
+		double deltaProduction = totalCurrentProduction  - sumLoads;
 
 		//Check if we need to increase current production
-		if((totalCurrentProduction  - sumLoads) > 0){
+		if((deltaProduction) > 0){
 			System.out.println("Increasing production");
 
 			//We need to increase production until it meets demand.
@@ -365,7 +366,7 @@ public class Main {
 				}
 			}
 
-		} else if ((totalCurrentProduction  - sumLoads) < 0) {
+		} else if ((deltaProduction) < 0) {
 			//we need to decrease energy production
 			System.out.println("Decreasing production");
 
