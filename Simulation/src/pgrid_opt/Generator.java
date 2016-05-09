@@ -8,7 +8,7 @@ public class Generator extends Node {
 	private float coef; //multiplication coefficient, used to get real production
 	private String type; // Oil, coal or nuclear, wind, solar
 	private int reactivateAtTimeStep;
-	private double production;
+	protected double production;
 
 	public Generator(float min, float max, float coef, String type, double production) {
 		this.maxp = max;

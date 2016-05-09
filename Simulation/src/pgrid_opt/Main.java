@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.math3.stat.descriptive.summary.Product;
 
@@ -37,6 +39,7 @@ public class Main {
 
 	//Path to the summer load curve
 	private final static String SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
+	private final static String SUMMER_EXPECTED_PRODUCTION = "../Expected Production summer.csv";
 
 	//From cheapest to most expensive.
 	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
@@ -84,7 +87,9 @@ public class Main {
 
 		//Hashmap for the 4 different seasonal curves
 		HashMap<String, Double[]> seasonalLoadCurve = new HashMap<>();
-		seasonalLoadCurve.put("summer", parser.parseDayLoadCurve(SUMMER_LOAD_CURVE));
+		HashMap<String, Double[][]> expectedProduction = new HashMap<>();
+		seasonalLoadCurve.put("summer", parser.parseCSV(SUMMER_LOAD_CURVE));
+		//expectedProduction.put("summer", parser.parseCSV2D(SUMMER_EXPECTED_PRODUCTION));
 		//Set the seasonal curve
 		seasonalLoadCurve = setSeasonalVariety(seasonalLoadCurve);
 
@@ -110,10 +115,13 @@ public class Main {
 				e1.printStackTrace();
 			}
 
+			;
+
 			while (i < timestepsGraph.length - 1) {
 
+				//timestepsGraph[i] = setExpectedProduction(timestepsGraph[i], i, expectedProduction.get("summer"));
 				setGridState(timestepsGraph[i], i);
-				checkGridEquilibrium(timestepsGraph[i], i);
+				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
 				try {
@@ -156,7 +164,6 @@ public class Main {
 					try {
 						Files.copy(Paths.get(dirpath+"/storage.txt"), Paths.get(solutionPath+"/storage.txt"), StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
@@ -253,13 +260,6 @@ public class Main {
 				double mcDraw = monteCarloHelper.getRandomNormDist();
 				//System.out.println(mcDraw);
 				sumLoadError += (((Consumer) graph.getNodeList()[j]).getLoad() * mcDraw);
-
-				/*
-				if (realLoad >= 0)
-					((Consumer) graph.getNodeList()[j]).setLoad(realLoad);
-				else
-					((Consumer) graph.getNodeList()[j]).setLoad(0);
-					*/
 			}
 			else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Storage.class){
 				// storage node currenlty not being adapted
@@ -285,12 +285,15 @@ public class Main {
 	 * @return
 	 */
 	private static Graph handleConventionalGenerator(Graph graph, int node, int currentTimeStep, double mcDraw){
-		double convGeneratorProb = 0.5; //Probability of failure for conventional generators
+		//double convGeneratorProb = 0.5; //Probability of failure for conventional generators
 
-		if(((ConventionalGenerator) graph.getNodeList()[node]).getReactivateAtTimeStep() == 0){//0 means that the reactor can fail.
-			if(mcDraw < convGeneratorProb){
+		if(((ConventionalGenerator) graph.getNodeList()[node]).getGeneratorFailure() == false){//0 means that the reactor can fail.
+			if(mcDraw < 1/((ConventionalGenerator) graph.getNodeList()[node]).getMTTF()){
 				//System.out.println(mcDraw);
 				//Our draw is smaller meaning that the generator has failed.
+				((ConventionalGenerator) graph.getNodeList()[node]).setGeneratorFailure(true);
+
+				/*
 				float lastminp = ((ConventionalGenerator) graph.getNodeList()[node]).getMinP();
 				float lastmaxp = ((ConventionalGenerator) graph.getNodeList()[node]).getMaxP();
 
@@ -303,13 +306,28 @@ public class Main {
 				//Set the point at which the generator must be reactivated
 				// time resultion has changed to hourly, still have to determine the proper rate fore reactivation
 				((ConventionalGenerator) graph.getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 1);
+			 	*/
 			}
+		/*
 		}else if(((ConventionalGenerator) graph.getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
 			//We have to reactivate the generator because it's been offline for enough steps.
 			float minp = ((ConventionalGenerator) graph.getNodeList()[node]).getLastminp();
 			float maxp = ((ConventionalGenerator) graph.getNodeList()[node]).getLastmaxp();
 			((ConventionalGenerator) graph.getNodeList()[node]).setMinP(minp);
 			((ConventionalGenerator) graph.getNodeList()[node]).setMaxP(maxp);
+		*/
+		}
+		return graph;
+	}
+
+	private static Graph setExpectedProduction(Graph graph, int timeStep, Double[][] expectedProduction){
+
+		for(int i = 0; i < graph.getNodeList().length-1; i++){
+			if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class){
+				//TODO: this is a problem because we have 42 generators but we dont know the correct order of said generators.
+				//TODO: so lets use json to define the generator, then use the IDs from that definition to set the expected production.
+				((ConventionalGenerator) graph.getNodeList()[i]).setProduction(expectedProduction[i][i]);
+			}
 		}
 
 		return graph;
@@ -351,8 +369,8 @@ public class Main {
 	/**
 	 * Depending on the state of the grid this method will increase or decrease production in order to balance the system
 	 */
-	private static void checkGridEquilibrium(Graph grid, int timestep){
-
+	private static Graph checkGridEquilibrium(Graph grid, int timestep){
+		Logger logger = Logger.getLogger("name");
 		Node[] nodeList = grid.getNodeList();
 		double sumLoads = 0;
 		double renewableProduction = 0;
@@ -374,8 +392,8 @@ public class Main {
 		double totalCurrentProduction = conventionalProduction + renewableProduction;
 
 		//Check if we need to increase current production
-		if((totalCurrentProduction  - sumLoads) > 0){
-			System.out.println("Increasing production");
+		if((totalCurrentProduction  - sumLoads) < 0){
+			System.err.println("Increasing production");
 
 			//We need to increase production until it meets demand.
 			for(int i = 0; i < grid.getNodeList().length-1; i++){
@@ -387,9 +405,9 @@ public class Main {
 				}
 			}
 
-		} else if ((totalCurrentProduction  - sumLoads) < 0) {
+		} else if ((totalCurrentProduction  - sumLoads) > 0) {
 			//we need to decrease energy production
-			System.out.println("Decreasing production");
+			System.err.println("Decreasing production");
 
 			for ( int i = grid.getNodeList().length-1; i >= 0; i--){
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
@@ -402,7 +420,8 @@ public class Main {
 			}
 		} else {
 			System.err.println("Grid is balanced");
-			return;//production and demand are balanced.
+			return null;//production and demand are balanced.
 		}
+		return grid;
 	}
 }
