@@ -307,10 +307,6 @@ public class Main {
 
 				((ConventionalGenerator) graph.getNodeList()[node]).setMinP(0);
 				((ConventionalGenerator) graph.getNodeList()[node]).setMaxP(0);
-
-				//Set the point at which the generator must be reactivated
-				// time resultion has changed to hourly, still have to determine the proper rate fore reactivation
-//				((ConventionalGenerator) graph.getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 1);
 			}
 		}else if(((ConventionalGenerator) graph.getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
 			//We have to reactivate the generator because it's been offline for enough steps.
