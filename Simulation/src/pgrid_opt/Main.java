@@ -38,8 +38,9 @@ public class Main {
 	private final static double P_RATED = 220;
 
 	//Path to the summer load curve
-	private final static String SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
+	private static String OS = System.getProperty("os.name");
 	private final static String SUMMER_EXPECTED_PRODUCTION = "../Expected Production summer.csv";
+//	private final static String SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
 
 	//From cheapest to most expensive.
 	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
@@ -59,6 +60,14 @@ public class Main {
 		}
 
 	public static void main(String[] args) {
+		String SUMMER_LOAD_CURVE;
+
+		if(OS.startsWith("Windows")){
+			SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
+		}else{
+			SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
+		}
+
 		long starttime = System.nanoTime();
 		float[] wind = null;
 		float[] solar = null;
@@ -114,8 +123,6 @@ public class Main {
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-
-			;
 
 			while (i < timestepsGraph.length - 1) {
 
@@ -245,9 +252,8 @@ public class Main {
 						//In a sweet spot for max wind production
 						double production = (P_RATED*((Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3))/(Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3))));//Should be the same as the matlab from Laura
 						((RewGenerator) graph.getNodeList()[j]).setProduction(production);
-					} else if(mcDraw <= V_CUT_IN && mcDraw <= V_CUT_OFF){
-						float production = ((RewGenerator) graph.getNodeList()[j]).getMinP();
-						((RewGenerator) graph.getNodeList()[j]).setProduction(production);
+					} else if (V_RATED <= mcDraw && mcDraw <= V_CUT_OFF ) {
+						((RewGenerator) graph.getNodeList()[j]).setProduction(P_RATED);
 					}
 					break;
 				case "S": //Solar generator
@@ -265,7 +271,7 @@ public class Main {
 				// storage node currenlty not being adapted
 			}
 		}
-
+		System.out.println("Load error: " + sumLoadError);
 		//Set the load of a consumer using the previously calculated cumulative load error.
 		for (int i = 0; i < graph.getNodeList().length-1; i++){
 			if(graph.getNodeList()[i] != null && graph.getNodeList()[i].getClass() == Consumer.class){
@@ -334,39 +340,6 @@ public class Main {
 	}
 
 	/**
-	 * check if emergency procedure is needed for current timestep
-	 * @param graphs
-	 * @param currentTimeStep
-	 */
-	private static void checkEmergencyProcedure(Graph[] graphs, int currentTimeStep){
-
-		float deltaP =0, reserveInStorage = 0;
-
-		Graph g = graphs[currentTimeStep];
-		Node[] graphNodes = graphs[currentTimeStep].getNodeList();
-
-		// get total current reserve in storage nodes
-		for (int j=0; j < graphNodes.length-1; j++){
-			if(graphNodes[j] != null && graphNodes[j].getClass() == Storage.class) {
-				reserveInStorage += ((Storage) graphNodes[j]).getCapacity();
-			}
-		}
-
-
-		// is the system balanced or smaller than the available reserve
-		if(Math.abs(deltaP) < reserveInStorage){
-
-
-		// current load is higher than production
-		}else if(deltaP>reserveInStorage){
-
-		// load lower than production
-		}else if(deltaP<=reserveInStorage){
-
-		}
-	}
-
-	/**
 	 * Depending on the state of the grid this method will increase or decrease production in order to balance the system
 	 */
 	private static Graph checkGridEquilibrium(Graph grid, int timestep){
@@ -375,6 +348,7 @@ public class Main {
 		double sumLoads = 0;
 		double renewableProduction = 0;
 		double conventionalProduction= 0;
+		double sumStorage = 0;
 
 		/*
 		 * In this loop we calculate the total demand, the total ->current<- production and, total ->current<- production of renewable generators.
@@ -387,6 +361,8 @@ public class Main {
 				conventionalProduction += ((ConventionalGenerator)nodeList[i]).getProduction();
 			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
 				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
+			} else if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
+				sumStorage += ((Storage) nodeList[i]).getCapacity();
 			}
 		}
 		double totalCurrentProduction = conventionalProduction + renewableProduction;
@@ -424,4 +400,5 @@ public class Main {
 		}
 		return grid;
 	}
+
 }
