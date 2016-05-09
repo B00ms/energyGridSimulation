@@ -1,21 +1,38 @@
 package pgrid_opt;
 
-import java.util.Comparator;
-
 public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>{
 
 
 	private int mttf;//mean time to failure
 	private int mttr;//mean time to repair
+	private boolean generatorFailure = false; //Indicates if the generator is working normally or if it has failed
 
 
 	public ConventionalGenerator(float min, float max, float coef, String type, double production) {
-		// TODO Auto-generated constructor stub
 		super(min, max, coef, type, production);
 
 		// only used with conventional generator.
 		this.mttf = 630;
 		this.mttr = 60;
+	}
+
+	public boolean getGeneratorFailure() {
+		return generatorFailure;
+	}
+
+	public void setGeneratorFailure(boolean generatorFailure) {
+		this.generatorFailure = generatorFailure;
+	}
+
+	/**
+	 *
+	 * @return the production of this generator
+	 */
+	public double getProduction() {
+		if (generatorFailure == false)
+			return production;
+		else
+			return 0;
 	}
 
 	public void setMTTF(int mttf){
