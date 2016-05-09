@@ -1,7 +1,10 @@
 package pgrid_opt;
 
+import java.io.File;
 import java.util.Random;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.WeibullDistribution;
 import org.apache.commons.math3.random.RandomDataGenerator;
@@ -15,7 +18,18 @@ public class MontoCarloHelper {
 
 	private RandomDataGenerator rand = new RandomDataGenerator();
 	private double shape, scale, mean, sigma;
+	private static Config conf = ConfigFactory.parseFile(new File("config/application.conf"));
 
+	public MontoCarloHelper(){
+		Config monteConfig = conf.getConfig("monte-carlo");
+		this.shape = monteConfig.getDouble("shape");
+		this.scale = monteConfig.getDouble("scale");
+		this.mean = monteConfig.getDouble("mean");
+		this.sigma = monteConfig.getDouble("sigma");
+	}
+
+	//For weibull distribution: alpha = 1.6, beta = 8
+	//For normal distribution: mean = 0, sigma = 0.05
 	public MontoCarloHelper(double shape, double scale, double mean, double  sigma){
 		this.shape = shape;
 		this.scale = scale;

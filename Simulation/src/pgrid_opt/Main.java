@@ -1,28 +1,19 @@
 package pgrid_opt;
 
+import com.typesafe.config.Config;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.math3.stat.descriptive.summary.Product;
+import com.typesafe.config.ConfigFactory;
 
-import pgrid_opt.DataModelPrint;
-import pgrid_opt.Graph;
-import pgrid_opt.InstanceRandomizer;
-import pgrid_opt.Parser;
 
 public class Main {
 
@@ -37,6 +28,9 @@ public class Main {
 
 	//Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
+
+	private static Config conf = ConfigFactory.parseFile(new File("config/application.conf"));
+
 
 //	private final static String SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
 
@@ -58,6 +52,7 @@ public class Main {
 		}
 
 	public static void main(String[] args) {
+
 		String SUMMER_LOAD_CURVE;
 
 		if(OS.startsWith("Windows")){
@@ -74,21 +69,25 @@ public class Main {
 		float scost = 0.0f; //solar cost
 		Graph[] timestepsGraph = null;
 		Parser parser = new Parser();
-		String[] s = parser.parseArg(args);
-		String path = s[1]; //path to the input
+//		String[] s = parser.parseArg(args);
+
 		String outpath1 = "input";
 		String outpath2 = ".mod";
 		String solpath1 = "glpsol -d ";
 		String solpath2 = " -m ";
 		String solpath3 = "sol";
-		String model = s[0]; //path to the model
-		String dirpath = s[2]; //path to the output
+
+		Config generalConf = conf.getConfig("general");
+		String model = generalConf.getString("model-file"); //path to the model
+		String dirpath = generalConf.getString("output-folder"); //path to the output
+		String path = generalConf.getString("input-file"); // parse old input file
+
 		Object[] o = parser.parseData(path);
 		Graph graph = (Graph) o[0]; //Initial graph created from the input file
 		solar = (float[]) o[1]; //Hourly production values for solar
 		wind = (float[]) o[2]; //hourly production values for wind
 		loads = (float[]) o[3]; //Total hourly load of all sinks
-
+		System.exit(0);
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
 
@@ -98,7 +97,9 @@ public class Main {
 		//Set the seasonal curve
 		seasonalLoadCurve = setSeasonalVariety(seasonalLoadCurve);
 
-		for ( int numOfSim=0; numOfSim < Integer.parseInt(s[3]); numOfSim++){
+		// load simulation limit
+		int simLimit = generalConf.getInt("simulation-runs");
+		for ( int numOfSim=0; numOfSim < simLimit; numOfSim++){
 			System.out.println("Simulation: "+ numOfSim);
 			InstanceRandomizer instanceRandomizer = new InstanceRandomizer();
 			timestepsGraph = new Graph[loads.length + 1];
@@ -205,9 +206,7 @@ public class Main {
 	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
 	private static void setGridState(Graph graph, int currentTimeStep){
-		//For weibull distribution: alpha = 1.6, beta = 8
-		//For normal distribution: mean = 0, sigma = 0.05
-		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.04);
+		MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
 		double sumLoadError = 0;
 		//int i = currentTimeStep;
