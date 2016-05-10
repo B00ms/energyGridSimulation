@@ -30,7 +30,7 @@ public class Main {
 
 	//Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
-	
+
 	private static Config conf = ConfigFactory.parseFile(new File("config/application.conf"));
 	private final static String SUMMER_EXPECTED_PRODUCTION = "../Expected Production summer.csv";
 
@@ -281,8 +281,7 @@ public class Main {
 
 	/**
 	 * Sets the state of conventional generators to on or off.
-	 * @param graphs
-	 * @param timestep
+	 * @param graph
 	 * @param node
 	 * @param currentTimeStep
 	 * @param mcDraw
@@ -293,33 +292,9 @@ public class Main {
 
 		if(((ConventionalGenerator) graph.getNodeList()[node]).getGeneratorFailure() == false){//0 means that the reactor can fail.
 			if(mcDraw < 1/((ConventionalGenerator) graph.getNodeList()[node]).getMTTF()){
-				//System.out.println(mcDraw);
 				//Our draw is smaller meaning that the generator has failed.
 				((ConventionalGenerator) graph.getNodeList()[node]).setGeneratorFailure(true);
-
-				/*
-				float lastminp = ((ConventionalGenerator) graph.getNodeList()[node]).getMinP();
-				float lastmaxp = ((ConventionalGenerator) graph.getNodeList()[node]).getMaxP();
-
-				((ConventionalGenerator) graph.getNodeList()[node]).setLastminp(lastminp);
-				((ConventionalGenerator) graph.getNodeList()[node]).setLastmaxp(lastmaxp);
-
-				((ConventionalGenerator) graph.getNodeList()[node]).setMinP(0);
-				((ConventionalGenerator) graph.getNodeList()[node]).setMaxP(0);
-
-				//Set the point at which the generator must be reactivated
-				// time resultion has changed to hourly, still have to determine the proper rate fore reactivation
-				((ConventionalGenerator) graph.getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 1);
-			 	*/
 			}
-		/*
-		}else if(((ConventionalGenerator) graph.getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
-			//We have to reactivate the generator because it's been offline for enough steps.
-			float minp = ((ConventionalGenerator) graph.getNodeList()[node]).getLastminp();
-			float maxp = ((ConventionalGenerator) graph.getNodeList()[node]).getLastmaxp();
-			((ConventionalGenerator) graph.getNodeList()[node]).setMinP(minp);
-			((ConventionalGenerator) graph.getNodeList()[node]).setMaxP(maxp);
-		*/
 		}
 		return graph;
 	}
