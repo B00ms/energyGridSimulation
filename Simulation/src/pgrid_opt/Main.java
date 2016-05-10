@@ -88,7 +88,7 @@ public class Main {
 		solar = (float[]) o[1]; //Hourly production values for solar
 		wind = (float[]) o[2]; //hourly production values for wind
 		loads = (float[]) o[3]; //Total hourly load of all sinks
-		System.exit(0);
+		
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
 
