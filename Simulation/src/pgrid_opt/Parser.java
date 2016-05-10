@@ -12,7 +12,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 public class Parser {
-	private Config conf = ConfigFactory.parseFile(new File("config/application.conf"));
+	private Config conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 	private String gen = "generators";
 	private String cons = "consumers";
 	private String net = "network";
@@ -52,10 +52,6 @@ public class Parser {
 		double storageChargeEfficiency = 0;
 
 		Config generalConf = conf.getConfig("general");
-		//dailyMaxLoadDemand = Integer.parseInt(properties.getProperty("dailyMaxLoadDemand"));
-		//timeStepDuration = Double.parseDouble(properties.getProperty("durationOfEachStep"));
-		//storageChargeEfficiency = Double.parseDouble(properties.getProperty("chargeEfficiencyOfStorage"));
-
 		dailyMaxLoadDemand  = generalConf.getInt("dailyMaxLoadDemand");
 		timeStepDuration  = generalConf.getDouble("durationOfEachStep");
 		storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage");
