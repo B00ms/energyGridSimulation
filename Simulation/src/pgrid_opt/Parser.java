@@ -1,13 +1,17 @@
 package pgrid_opt;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Scanner;
+
+import javax.xml.crypto.NodeSetData;
 
 public class Parser {
 	private String gen = "generators";
@@ -20,6 +24,143 @@ public class Parser {
 	private String wind = "wind";
 	private String stor = "storage";
 	private int ngraph;
+
+
+	public Graph parseData(String path, int overload) {
+		Scanner scanner = null;
+
+		try {
+			scanner = new Scanner(Paths.get(path));
+			scanner.useDelimiter(",|\\n");
+		}catch (IOException e){
+			System.err.println("Error: Wrong path to input file");
+			return null;
+		}
+
+		List<ConventionalGenerator> generatorList = new ArrayList<ConventionalGenerator>();
+		List<Node> nodeList = new ArrayList<Node>();
+		List<Edge> edges = new ArrayList<Edge>();
+
+		int totalNumberOfNodes = 0;
+		int numberOfConventionalGenerators = 0;
+		int numberOfRenewableGenerators = 0;
+		int numberOfConsumers = 0;
+		int numberOfStorage = 0;
+
+		int dailyMaxLoadDemand = 0;
+		int numberOfTimeSteps = 0;
+		double timeStepDuration = 0;
+		double storageChargeEfficiency = 0;
+
+		Properties properties = new Properties();
+		InputStream inputStream;
+
+		try{
+			inputStream = new FileInputStream("../parameters.cfg");
+			properties.load(inputStream);
+			dailyMaxLoadDemand = Integer.parseInt(properties.getProperty("dailyMaxLoadDemand"));
+			timeStepDuration = Double.parseDouble(properties.getProperty("durationOfEachStep"));
+			storageChargeEfficiency = Double.parseDouble(properties.getProperty("chargeEfficiencyOfStorage"));
+		} catch (IOException e){
+			System.err.println("Error: Could not find paramters.cfg");
+			e.printStackTrace();
+		}
+
+		while(scanner.hasNext()){
+
+			String data = scanner.next();
+			int nodeId;
+			double minProduction;
+			double maxProduction;
+			double production;
+			String type;
+
+			if(data.contains("#"))
+				scanner.nextLine();
+
+			switch (data){
+			case "CG":
+				type = scanner.next();
+				nodeId = scanner.nextInt();
+				//String test =  scanner.next();
+				minProduction = scanner.nextDouble();
+				maxProduction = scanner.nextDouble();
+				double coef = scanner.nextDouble();
+				production = minProduction;
+
+				ConventionalGenerator convGenerator = new ConventionalGenerator(minProduction, maxProduction, coef, type, production, nodeId);
+				generatorList.add(convGenerator); //Using a different array for convetional generators because we want to sort it.
+				numberOfConventionalGenerators++;
+				break;
+			case "C":
+				nodeId = scanner.nextInt();
+				double load = scanner.nextDouble();
+
+				Consumer consumer = new Consumer(load, nodeId);
+				nodeList.add(consumer);
+				numberOfConsumers++;
+
+				break;
+			case "IN":
+				nodeId = scanner.nextInt();
+				Node node = new InnerNode(nodeId);
+				nodeList.add(node);
+
+				break;
+			case "RG":
+				type = scanner.next();
+				nodeId = scanner.nextInt();
+				minProduction = scanner.nextDouble();
+				maxProduction = scanner.nextDouble();
+				double cost = scanner.nextDouble();
+
+				RewGenerator renewableGenerator = new RewGenerator(maxProduction, minProduction, cost, type, nodeId);
+				nodeList.add(renewableGenerator);
+				numberOfRenewableGenerators++;
+				break;
+			case "Storage":
+				nodeId = scanner.nextInt();
+				double currentCharge = scanner.nextDouble();
+				double minimumCharge = scanner.nextDouble();
+				double maximumCharge = scanner.nextDouble();
+				Storage storage =  new Storage(currentCharge, maximumCharge, minimumCharge, nodeId);
+				nodeList.add(storage);
+				numberOfStorage++;
+				break;
+			case "AE":
+				int nodeOneId = scanner.nextInt();
+				int nodeTwoId = scanner.nextInt();
+				System.out.println(nodeOneId + " " + nodeTwoId);
+				double capacity = scanner.nextDouble();
+				double reactance = scanner.nextDouble();
+				double flow = 0;
+
+				Edge edge = new Edge();
+				edge.setCapacity(capacity);
+				edge.setFlow(flow);
+				edge.setWeight(reactance);
+				edge.setEndVertexes(nodeOneId, nodeTwoId);
+				edges.add(edge);
+				break;
+			default:
+				//Ignores comments
+			}
+		}
+		Collections.sort(generatorList);
+		nodeList.addAll(generatorList); //Merge conventional generator nodes with the rest.
+		Node[] nodeArray = nodeList.toArray(new Node[0]);
+		Edge[] edgesArray = edges.toArray(new Edge[0]);
+
+		totalNumberOfNodes = nodeArray.length-1;
+
+		Graph graph = new Graph(totalNumberOfNodes, numberOfConventionalGenerators, numberOfRenewableGenerators,
+				numberOfConsumers, dailyMaxLoadDemand, numberOfStorage, (float)timeStepDuration, (float)storageChargeEfficiency, (float)storageChargeEfficiency);
+		graph.setNodeList(nodeArray);
+		graph.setEdges(edgesArray);
+		scanner.close();
+
+		return graph;
+	}
 
 	/**
 	 * Parsers the initial input file and returns its contents as a java object that contains:

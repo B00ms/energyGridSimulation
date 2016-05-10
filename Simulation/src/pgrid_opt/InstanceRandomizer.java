@@ -42,7 +42,7 @@ public class InstanceRandomizer {
 			float etac = oldg.getEtac();
 			float etad = oldg.getEtad();
 			float delta = oldg.getDelta();
-			float av = ((Storage) oldg.getNodeList()[i]).getAvaliability();
+			double av = ((Storage) oldg.getNodeList()[i]).getAvaliability();
 			float flow = 0.0F;
 			for (int j = 0; j < oldg.getNNode(); j++) {
 				flow += oldg.getNetwork()[i][j].getFlow();
@@ -106,7 +106,7 @@ public class InstanceRandomizer {
 		for (int i = 0; i < this.gDay.length - 1; i++) {
 			for (int j = this.g.getNGenerators(); j < this.g.getNGenerators() + this.g.getNConsumers(); j++) {
 				((Consumer) this.gDay[i].getNodeList()[j])
-						.setLoad(this.loads[i] / 100.0F * ((Consumer) this.g.getNodeList()[j]).getLoad());
+						.setLoad(this.loads[i] / 100 * ((Consumer) this.g.getNodeList()[j]).getLoad());
 			}
 		}
 	}

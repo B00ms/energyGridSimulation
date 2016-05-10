@@ -1,9 +1,5 @@
 package pgrid_opt;
 
-import java.util.Random;
-
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.distribution.WeibullDistribution;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
 /**

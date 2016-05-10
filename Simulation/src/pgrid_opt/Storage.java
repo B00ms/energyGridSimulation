@@ -1,29 +1,36 @@
 package pgrid_opt;
 
 public class Storage extends Node {
-	private float avaliability;
-	private float capacity;
-	private float mincap;
+	private double avaliability;
+	private double capacity;
+	private double mincap;
 
-	public Storage(float aval, float cap, float min) {
-		setAvaliability(aval);
-		setCapacity(cap);
-		setMincap(min);
+	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId) {
+		super(nodeId);
+		setAvaliability(currentCharge);
+		setCapacity(maximumCharge);
+		setMincap(minimumCharge);
 	}
 
-	public float getAvaliability() {
+	public Storage(double currentCharge, double maximumCharge, double minimumCharge) {
+		setAvaliability(currentCharge);
+		setCapacity(maximumCharge);
+		setMincap(minimumCharge);
+	}
+
+	public double getAvaliability() {
 		return this.avaliability;
 	}
 
-	public void setAvaliability(float avaliability) {
+	public void setAvaliability(double avaliability) {
 		this.avaliability = avaliability;
 	}
 
-	public float getCapacity() {
+	public double getCapacity() {
 		return this.capacity;
 	}
 
-	public void setCapacity(float capacity) {
+	public void setCapacity(double capacity) {
 		this.capacity = capacity;
 	}
 
@@ -31,11 +38,11 @@ public class Storage extends Node {
 		return false;
 	}
 
-	public float getMincap() {
+	public double getMincap() {
 		return this.mincap;
 	}
 
-	public void setMincap(float mincap) {
+	public void setMincap(double mincap) {
 		this.mincap = mincap;
 	}
 }

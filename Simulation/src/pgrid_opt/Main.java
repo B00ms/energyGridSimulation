@@ -4,27 +4,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.math3.stat.descriptive.summary.Product;
-
-import pgrid_opt.DataModelPrint;
-import pgrid_opt.Graph;
-import pgrid_opt.InstanceRandomizer;
-import pgrid_opt.Parser;
 
 public class Main {
 
@@ -62,7 +50,7 @@ public class Main {
 	public static void main(String[] args) {
 		String SUMMER_LOAD_CURVE;
 
-		if(OS.startsWith("Windows")){
+		if(OS.startsWith("Windows") || OS.startsWith("Linux")){
 			SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
 		}else{
 			SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
@@ -82,7 +70,7 @@ public class Main {
 		String outpath2 = ".mod";
 		String solpath1 = "glpsol -d ";
 		String solpath2 = " -m ";
-		String solpath3 = "sol";
+		//String solpath3 = "sol";
 		String model = s[0]; //path to the model
 		String dirpath = s[2]; //path to the output
 		Object[] o = parser.parseData(path);
@@ -90,6 +78,8 @@ public class Main {
 		solar = (float[]) o[1]; //Hourly production values for solar
 		wind = (float[]) o[2]; //hourly production values for wind
 		loads = (float[]) o[3]; //Total hourly load of all sinks
+
+		Graph graph2 = parser.parseData("../network.csv", 1);
 
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;

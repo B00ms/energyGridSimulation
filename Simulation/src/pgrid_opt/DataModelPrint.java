@@ -138,12 +138,12 @@ public class DataModelPrint {
 			if (g.getNstorage() != 0) {
 				writer.println("param storagemax :=");
 				for (int i = g.getNNode() - g.getNstorage(); i < g.getNNode(); i++) {
-					float cap = 0.0F;
+					double cap = 0;
 
 					if (((Storage) g.getNodeList()[i]).getMincap() > ((Storage) g.getNodeList()[i]).getAvaliability()) {
 						((Storage) g.getNodeList()[i]).setAvaliability(((Storage) g.getNodeList()[i]).getMincap());
 					}
-					float val = (((Storage) g.getNodeList()[i]).getAvaliability()
+					double val = (((Storage) g.getNodeList()[i]).getAvaliability()
 							- ((Storage) g.getNodeList()[i]).getMincap()) / delta * etad;
 					for (int j = 0; j < g.getNNode(); j++) {
 						if (g.getNetwork()[i][j].getCapacity() != 0.0F) {
@@ -167,14 +167,14 @@ public class DataModelPrint {
 			if (g.getNstorage() != 0) {
 				writer.println("param storagemin :=");
 				for (int i = g.getNNode() - g.getNstorage(); i < g.getNNode(); i++) {
-					float cap = 0.0F;
+					double cap = 0;
 					float eps = 0.001F;
 
 					if (((Storage) g.getNodeList()[i]).getCapacity() < ((Storage) g.getNodeList()[i])
 							.getAvaliability()) {
 						((Storage) g.getNodeList()[i]).setAvaliability(((Storage) g.getNodeList()[i]).getCapacity());
 					}
-					float val = (((Storage) g.getNodeList()[i]).getCapacity()
+					double val = (((Storage) g.getNodeList()[i]).getCapacity()
 							- ((Storage) g.getNodeList()[i]).getAvaliability()) / delta / etac;
 					for (int j = g.getNGenerators() + g.getNConsumers(); j < g.getNNode()
 							- (g.getNstorage() + g.getNrgenetarors()); j++) {

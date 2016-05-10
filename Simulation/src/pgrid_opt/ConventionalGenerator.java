@@ -8,8 +8,16 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	private boolean generatorFailure = false; //Indicates if the generator is working normally or if it has failed
 
 
-	public ConventionalGenerator(float min, float max, float coef, String type, double production) {
-		super(min, max, coef, type, production);
+	public ConventionalGenerator(double minProduction, double maxProduction, double coef, String type, double production, int nodeId) {
+		super(minProduction, maxProduction, coef, type, production, nodeId);
+
+		// only used with conventional generator.
+		this.mttf = 630;
+		this.mttr = 60;
+	}
+
+	public ConventionalGenerator(double minProduction, double maxProduction, double coef, String type, double production) {
+		super(minProduction, maxProduction, coef, type, production);
 
 		// only used with conventional generator.
 		this.mttf = 630;

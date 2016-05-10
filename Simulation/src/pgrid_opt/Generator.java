@@ -2,18 +2,27 @@ package pgrid_opt;
 
 public class Generator extends Node {
 
-	private float maxp; //maximum production
-	private float minp; //minimum production
-	private float lastmaxp,lastminp;
-	private float coef; //multiplication coefficient, used to get real production
+	private double maxp; //maximum production
+	private double minp; //minimum production
+	private double lastmaxp,lastminp;
+	private double coef; //multiplication coefficient, used to get real production
 	private String type; // Oil, coal or nuclear, wind, solar
 	private int reactivateAtTimeStep;
 	protected double production;
 
-	public Generator(float min, float max, float coef, String type, double production) {
-		this.maxp = max;
-		this.minp = min;
-		this.coef = coef;
+	public Generator(double minProduction, double maxProduction, double coef2, String type, double production, int nodeId) {
+		super(nodeId);
+		this.maxp = maxProduction;
+		this.minp = minProduction;
+		this.coef = coef2;
+		this.type = type;
+		this.production = production;
+	}
+
+	public Generator(double minProduction, double maxProduction, double coef2, String type, double production) {
+		this.maxp = maxProduction;
+		this.minp = minProduction;
+		this.coef = coef2;
 		this.type = type;
 		this.production = production;
 	}
@@ -48,7 +57,7 @@ public class Generator extends Node {
 	 *
 	 * @return Maximum power generation
 	 */
-	public float getMaxP() {
+	public double getMaxP() {
 		return this.maxp;
 	}
 
@@ -56,7 +65,7 @@ public class Generator extends Node {
 	 * Set the maximum power generation
 	 * @param maxp
 	 */
-	public void setMaxP(float maxp) {
+	public void setMaxP(double maxp) {
 		this.maxp = maxp;
 	}
 
@@ -64,7 +73,7 @@ public class Generator extends Node {
 	 *
 	 * @return Minimum power generation
 	 */
-	public float getMinP() {
+	public double getMinP() {
 		return this.minp;
 	}
 
@@ -72,7 +81,7 @@ public class Generator extends Node {
 	 * Set the minimum power generation
 	 * @param minp
 	 */
-	public void setMinP(float minp) {
+	public void setMinP(double minp) {
 		this.minp = minp;
 	}
 
@@ -87,7 +96,7 @@ public class Generator extends Node {
 	 *
 	 * @return the multiplication coefficient, which is used to get the actual MWh of this generator
 	 */
-	public float getCoef() {
+	public double getCoef() {
 		return this.coef;
 	}
 
@@ -95,7 +104,7 @@ public class Generator extends Node {
 	 * Set the multiplication coefficient.
 	 * @param coef
 	 */
-	public void setCoef(float coef) {
+	public void setCoef(double coef) {
 		this.coef = coef;
 	}
 
@@ -130,7 +139,7 @@ public class Generator extends Node {
 		this.reactivateAtTimeStep = reactivateAtTimeStep;
 	}
 
-	public float getLastmaxp() {
+	public double getLastmaxp() {
 		return lastmaxp;
 	}
 
@@ -138,7 +147,7 @@ public class Generator extends Node {
 		this.lastmaxp = lastmaxp;
 	}
 
-	public float getLastminp() {
+	public double getLastminp() {
 		return lastminp;
 	}
 

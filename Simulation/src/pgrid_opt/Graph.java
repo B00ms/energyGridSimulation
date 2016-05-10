@@ -6,7 +6,7 @@ public class Graph implements Cloneable {
 	private int nconsumers; //Number of loads
 	private int nrgenetarors; //Number of renewable generators
 	private int loadmax; //Daily max load demand
-	private int nstorage; //Number of loads
+	private int nstorage; //Number of storage systems in the grid
 	private int efficency; //TODO: determine what this variable represents(capacity of real edges?), it's hardcoded to 75
 	private float ccurt; //Renewable cut costs
 	private float etac; //Duration of each time step
@@ -14,6 +14,7 @@ public class Graph implements Cloneable {
 	private float delta; //Number of storage systems.
 	private Node[] nodelist;
 	private Edge[][] network;
+	private Edge[] edges;
 
 	public Graph(int nnode, int ngenerators, int nrgenerators, int nconsumers, int loadmax, int nstorage, float delta,
 			float etac, float etad) {
@@ -38,6 +39,14 @@ public class Graph implements Cloneable {
 
 	public void setNetwork(Edge[][] network) {
 		this.network = network;
+	}
+
+	public void setEdges(Edge[] edges) {
+		this.edges = edges;
+	}
+
+	public Edge[] getEdges(){
+		return edges;
 	}
 
 	public Node[] getNodeList() {
