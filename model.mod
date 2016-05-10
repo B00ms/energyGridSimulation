@@ -115,6 +115,9 @@ printf : "\n" >> "sol" & outname & ".txt";
 #inner nodes
 printf {i in inner} : "I,%d,%.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor) >> "sol" & outname & ".txt";
 printf : "\n" >> "sol" & outname & ".txt";
+
+printf {i in storage} : "Stor,%d,%.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor) >> "sol" & outname & ".txt";
+printf : "\n" >> "sol" & outname & ".txt";
 #printf {i in nodes,j in nodes : capacity[j,i] <> 0} : " flow in [ %d , %d ] = %.6f \n", j, i, ((theta[j] - theta[i])/ weight[j,i])*m_factor;
 #printf {i in nodes} : "theta %d = %.6f\n", i, theta[i] >> "sol" & outname & ".txt"; 
 

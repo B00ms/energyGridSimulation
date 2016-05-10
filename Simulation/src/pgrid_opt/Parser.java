@@ -1,19 +1,18 @@
 package pgrid_opt;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.Scanner;
 
-import javax.xml.crypto.NodeSetData;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 public class Parser {
+	private Config conf = ConfigFactory.parseFile(new File("config/application.conf"));
 	private String gen = "generators";
 	private String cons = "consumers";
 	private String net = "network";
@@ -52,19 +51,14 @@ public class Parser {
 		double timeStepDuration = 0;
 		double storageChargeEfficiency = 0;
 
-		Properties properties = new Properties();
-		InputStream inputStream;
+		Config generalConf = conf.getConfig("general");
+		//dailyMaxLoadDemand = Integer.parseInt(properties.getProperty("dailyMaxLoadDemand"));
+		//timeStepDuration = Double.parseDouble(properties.getProperty("durationOfEachStep"));
+		//storageChargeEfficiency = Double.parseDouble(properties.getProperty("chargeEfficiencyOfStorage"));
 
-		try{
-			inputStream = new FileInputStream("../parameters.cfg");
-			properties.load(inputStream);
-			dailyMaxLoadDemand = Integer.parseInt(properties.getProperty("dailyMaxLoadDemand"));
-			timeStepDuration = Double.parseDouble(properties.getProperty("durationOfEachStep"));
-			storageChargeEfficiency = Double.parseDouble(properties.getProperty("chargeEfficiencyOfStorage"));
-		} catch (IOException e){
-			System.err.println("Error: Could not find paramters.cfg");
-			e.printStackTrace();
-		}
+		dailyMaxLoadDemand  = generalConf.getInt("dailyMaxLoadDemand");
+		timeStepDuration  = generalConf.getDouble("durationOfEachStep");
+		storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage");
 
 		while(scanner.hasNext()){
 

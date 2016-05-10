@@ -1,5 +1,7 @@
 package pgrid_opt;
 
+import com.typesafe.config.Config;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +9,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
+import com.typesafe.config.ConfigFactory;
 public class Main {
 
 	/*
@@ -27,8 +31,10 @@ public class Main {
 
 	//Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
+
+	private static Config conf;
 	private final static String SUMMER_EXPECTED_PRODUCTION = "../Expected Production summer.csv";
-//	private final static String SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
+
 
 	//From cheapest to most expensive.
 	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
@@ -48,12 +54,15 @@ public class Main {
 		}
 
 	public static void main(String[] args) {
+
 		String SUMMER_LOAD_CURVE;
 
 		if(OS.startsWith("Windows") || OS.startsWith("Linux")){
 			SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
+			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 		}else{
 			SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
+			conf = ConfigFactory.parseFile(new File("config/application.conf"));
 		}
 
 		long starttime = System.nanoTime();
@@ -64,15 +73,19 @@ public class Main {
 		float scost = 0.0f; //solar cost
 		Graph[] timestepsGraph = null;
 		Parser parser = new Parser();
-		String[] s = parser.parseArg(args);
-		String path = s[1]; //path to the input
+//		String[] s = parser.parseArg(args);
+
 		String outpath1 = "input";
 		String outpath2 = ".mod";
 		String solpath1 = "glpsol -d ";
 		String solpath2 = " -m ";
 		//String solpath3 = "sol";
-		String model = s[0]; //path to the model
-		String dirpath = s[2]; //path to the output
+
+		Config generalConf = conf.getConfig("general");
+		String model = generalConf.getString("model-file"); //path to the model
+		String dirpath = generalConf.getString("output-folder"); //path to the output
+		String path = generalConf.getString("input-file"); // parse old input file
+
 		Object[] o = parser.parseData(path);
 		Graph graph = (Graph) o[0]; //Initial graph created from the input file
 		solar = (float[]) o[1]; //Hourly production values for solar
@@ -92,7 +105,9 @@ public class Main {
 		//Set the seasonal curve
 		seasonalLoadCurve = setSeasonalVariety(seasonalLoadCurve);
 
-		for ( int numOfSim=0; numOfSim < Integer.parseInt(s[3]); numOfSim++){
+		// load simulation limit
+		int simLimit = generalConf.getInt("simulation-runs");
+		for ( int numOfSim=0; numOfSim < simLimit; numOfSim++){
 			System.out.println("Simulation: "+ numOfSim);
 			InstanceRandomizer instanceRandomizer = new InstanceRandomizer();
 			timestepsGraph = new Graph[loads.length + 1];
@@ -199,9 +214,7 @@ public class Main {
 	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
 	private static void setGridState(Graph graph, int currentTimeStep){
-		//For weibull distribution: alpha = 1.6, beta = 8
-		//For normal distribution: mean = 0, sigma = 0.05
-		MontoCarloHelper monteCarloHelper = new MontoCarloHelper(1.6, 8, 0, 0.04);
+		MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
 		double sumLoadError = 0;
 		//int i = currentTimeStep;
@@ -273,8 +286,7 @@ public class Main {
 
 	/**
 	 * Sets the state of conventional generators to on or off.
-	 * @param graphs
-	 * @param timestep
+	 * @param graph
 	 * @param node
 	 * @param currentTimeStep
 	 * @param mcDraw
@@ -285,33 +297,9 @@ public class Main {
 
 		if(((ConventionalGenerator) graph.getNodeList()[node]).getGeneratorFailure() == false){//0 means that the reactor can fail.
 			if(mcDraw < 1/((ConventionalGenerator) graph.getNodeList()[node]).getMTTF()){
-				//System.out.println(mcDraw);
 				//Our draw is smaller meaning that the generator has failed.
 				((ConventionalGenerator) graph.getNodeList()[node]).setGeneratorFailure(true);
-
-				/*
-				float lastminp = ((ConventionalGenerator) graph.getNodeList()[node]).getMinP();
-				float lastmaxp = ((ConventionalGenerator) graph.getNodeList()[node]).getMaxP();
-
-				((ConventionalGenerator) graph.getNodeList()[node]).setLastminp(lastminp);
-				((ConventionalGenerator) graph.getNodeList()[node]).setLastmaxp(lastmaxp);
-
-				((ConventionalGenerator) graph.getNodeList()[node]).setMinP(0);
-				((ConventionalGenerator) graph.getNodeList()[node]).setMaxP(0);
-
-				//Set the point at which the generator must be reactivated
-				// time resultion has changed to hourly, still have to determine the proper rate fore reactivation
-				((ConventionalGenerator) graph.getNodeList()[node]).setReactivateAtTimeStep(currentTimeStep + 1);
-			 	*/
 			}
-		/*
-		}else if(((ConventionalGenerator) graph.getNodeList()[node]).getReactivateAtTimeStep() < currentTimeStep) {
-			//We have to reactivate the generator because it's been offline for enough steps.
-			float minp = ((ConventionalGenerator) graph.getNodeList()[node]).getLastminp();
-			float maxp = ((ConventionalGenerator) graph.getNodeList()[node]).getLastmaxp();
-			((ConventionalGenerator) graph.getNodeList()[node]).setMinP(minp);
-			((ConventionalGenerator) graph.getNodeList()[node]).setMaxP(maxp);
-		*/
 		}
 		return graph;
 	}
