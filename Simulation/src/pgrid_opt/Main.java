@@ -345,6 +345,11 @@ public class Main {
 		}
 		double totalCurrentProduction = conventionalProduction + renewableProduction;
 
+		Config convGeneratorConf = conf.getConfig("conventionalGenerator");
+		Double maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
+		Double dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
+		Double dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
+
 		//Check if we need to increase current production
 		if((totalCurrentProduction  - sumLoads) < 0){
 			System.err.println("Increasing production");
@@ -352,12 +357,16 @@ public class Main {
 			//We need to increase production until it meets demand.
 			for(int i = 0; i < grid.getNodeList().length-1; i++){
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-					if (totalCurrentProduction+((ConventionalGenerator)nodeList[i]).getMaxP() > sumLoads){
+					if (totalCurrentProduction+((ConventionalGenerator)nodeList[i]).getMaxP()*dayAheadLimitMax > sumLoads){
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction); //Set production to the remainder so we can meet the demand exactly
-					}else
-						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() + ((ConventionalGenerator)nodeList[i]).getMaxP()/4);
+					}else {
+						// increase production by maximum of -7,5% of Pmax
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getProduction() + ((ConventionalGenerator) nodeList[i]).getMaxP()*dayAheadLimitMax);
+					}
 				}
 			}
+
+
 
 		} else if ((totalCurrentProduction  - sumLoads) > 0) {
 			//we need to decrease energy production
@@ -365,8 +374,9 @@ public class Main {
 
 			for ( int i = grid.getNodeList().length-1; i >= 0; i--){
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-					if (totalCurrentProduction-((ConventionalGenerator)nodeList[i]).getMinP() > sumLoads){
-						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP()/4);
+					if (totalCurrentProduction-((ConventionalGenerator)nodeList[i]).getMinP()*dayAheadLimitMin > sumLoads){
+						// decrease production by maximum of -7,5% of Pmax
+						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP()*dayAheadLimitMax);
 					} else {
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction);
 					}
@@ -376,6 +386,10 @@ public class Main {
 			System.err.println("Grid is balanced");
 			return null;//production and demand are balanced.
 		}
+
+		// calculate shedded load
+
+
 		return grid;
 	}
 
