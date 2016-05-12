@@ -7,30 +7,30 @@ public class Storage extends Node {
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId) {
 		super(nodeId);
-		setAvaliability(currentCharge);
-		setCapacity(maximumCharge);
-		setMincap(minimumCharge);
+		setCurrentCharge(currentCharge);
+		setMaximumCharge(maximumCharge);
+		setMinimumCharge(minimumCharge);
 	}
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge) {
-		setAvaliability(currentCharge);
-		setCapacity(maximumCharge);
-		setMincap(minimumCharge);
+		setCurrentCharge(currentCharge);
+		setMaximumCharge(maximumCharge);
+		setMinimumCharge(minimumCharge);
 	}
 
-	public double getAvaliability() {
+	public double getCurrentCharge() {
 		return this.avaliability;
 	}
 
-	public void setAvaliability(double avaliability) {
+	public void setCurrentCharge(double avaliability) {
 		this.avaliability = avaliability;
 	}
 
-	public double getCapacity() {
+	public double getMaximumCharge() {
 		return this.capacity;
 	}
 
-	public void setCapacity(double capacity) {
+	public void setMaximumCharge(double capacity) {
 		this.capacity = capacity;
 	}
 
@@ -38,11 +38,11 @@ public class Storage extends Node {
 		return false;
 	}
 
-	public double getMincap() {
+	public double getMinimumCharge() {
 		return this.mincap;
 	}
 
-	public void setMincap(double mincap) {
+	public void setMinimumCharge(double mincap) {
 		this.mincap = mincap;
 	}
 }

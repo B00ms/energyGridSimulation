@@ -1,6 +1,6 @@
 package pgrid_opt;
 
-public class Edge {
+public class Edge implements Comparable<Edge> {
 	private double weight;
 	private double capacity;
 	private double flow;
@@ -18,8 +18,8 @@ public class Edge {
 		return this.capacity;
 	}
 
-	public void setCapacity(double capacity2) {
-		this.capacity = capacity2;
+	public void setCapacity(double capacity) {
+		this.capacity = capacity;
 	}
 
 	public double getFlow() {
@@ -32,7 +32,7 @@ public class Edge {
 
 	public void setEndVertexes(int nodeOneId, int nodeTwoId){
 		endVertexOne = nodeOneId;
-		endVertexOne = nodeTwoId;
+		endVertexTwo = nodeTwoId;
 	}
 
 	public Integer[] getEndVertexes(){
@@ -40,5 +40,16 @@ public class Edge {
 		endVertexes[0] = endVertexOne;
 		endVertexes[1] = endVertexTwo;
 		return endVertexes;
+	}
+
+	@Override
+	public int compareTo(Edge o) {
+		// TODO Auto-generated method stub
+		if (o.getEndVertexes()[0] < endVertexOne)
+			return 1;
+		else if (o.getEndVertexes()[0] == endVertexOne)
+			return 0;
+		else
+			return -1;
 	}
 }

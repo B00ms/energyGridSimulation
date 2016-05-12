@@ -14,7 +14,7 @@ public class MontoCarloHelper {
 
 	private RandomDataGenerator rand = new RandomDataGenerator();
 	private double shape, scale, mean, sigma;
-	private static Config conf = ConfigFactory.parseFile(new File("config/application.conf"));
+	private static Config conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 
 	public MontoCarloHelper(){
 		Config monteConfig = conf.getConfig("monte-carlo");

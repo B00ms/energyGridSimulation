@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -72,7 +74,6 @@ public class Parser {
 			case "CG":
 				type = scanner.next();
 				nodeId = scanner.nextInt();
-				//String test =  scanner.next();
 				minProduction = scanner.nextDouble();
 				maxProduction = scanner.nextDouble();
 				double coef = scanner.nextDouble();
@@ -120,9 +121,8 @@ public class Parser {
 			case "AE":
 				int nodeOneId = scanner.nextInt();
 				int nodeTwoId = scanner.nextInt();
-				System.out.println(nodeOneId + " " + nodeTwoId);
-				double capacity = scanner.nextDouble();
 				double reactance = scanner.nextDouble();
+				double capacity = scanner.nextDouble();
 				double flow = 0;
 
 				Edge edge = new Edge();
@@ -139,12 +139,51 @@ public class Parser {
 		Collections.sort(generatorList);
 		nodeList.addAll(generatorList); //Merge conventional generator nodes with the rest.
 		Node[] nodeArray = nodeList.toArray(new Node[0]);
+
+		/*
+		 * So we have to create this comparator because we need to sort the nodes according to a order so they can be used by GLPK
+		 */
+		Comparator<Node> comparator = new Comparator<Node>() {
+			@Override
+			public int compare(Node o1, Node o2) {
+					if (o1.getClass() == o2.getClass())
+						return 0;
+
+					if(o1.getClass() != ConventionalGenerator.class)
+						return 1;
+					else if (o1.getClass() != Consumer.class)
+						if (o2.getClass() != ConventionalGenerator.class)
+							return -1;
+						else
+							return 1;
+					else if(o1.getClass() != InnerNode.class)
+						if(o2.getClass() != ConventionalGenerator.class || o2.getClass() != Consumer.class)
+							return -1;
+						else
+							return 1;
+
+					else if(o1.getClass() != RewGenerator.class)
+						if (o2.getClass() != ConventionalGenerator.class || o2.getClass() != Consumer.class || o2.getClass() != InnerNode.class)
+							return -1;
+						else
+							return 1;
+					else if(o1.getClass() != Storage.class)
+							return -1;
+
+					return 0;
+			}
+		};
+		Arrays.sort(nodeArray, comparator); //Get it sorted son.
+		Collections.sort(edges);
 		Edge[] edgesArray = edges.toArray(new Edge[0]);
 
-		totalNumberOfNodes = nodeArray.length-1;
+		totalNumberOfNodes = nodeArray.length;
 
 		Graph graph = new Graph(totalNumberOfNodes, numberOfConventionalGenerators, numberOfRenewableGenerators,
 				numberOfConsumers, dailyMaxLoadDemand, numberOfStorage, (float)timeStepDuration, (float)storageChargeEfficiency, (float)storageChargeEfficiency);
+
+		Node[] sortedArray = new Node[totalNumberOfNodes];
+
 		graph.setNodeList(nodeArray);
 		graph.setEdges(edgesArray);
 		scanner.close();
@@ -419,7 +458,7 @@ public class Parser {
 			Scanner s = new Scanner(scanner.next());
 			int i = s.nextInt();
 			int j = s.nextInt();
-			g.getNetwork()[i][j].setFlow(Float.parseFloat(s.next()));
+			g.getEdges()[j].setFlow(Float.parseFloat(s.next()));
 			goon = scanner.hasNext();
 			s.close();
 		}

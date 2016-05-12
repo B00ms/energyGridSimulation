@@ -38,19 +38,21 @@ public class InstanceRandomizer {
 	 * @return
 	 */
 	public Graph updateStorages(Graph oldg, Graph newg) {
-		for (int i = oldg.getNNode() - oldg.getNstorage(); i < oldg.getNNode(); i++) {
-			float etac = oldg.getEtac();
-			float etad = oldg.getEtad();
-			float delta = oldg.getDelta();
-			double av = ((Storage) oldg.getNodeList()[i]).getAvaliability();
-			float flow = 0.0F;
-			for (int j = 0; j < oldg.getNNode(); j++) {
-				flow += oldg.getNetwork()[i][j].getFlow();
+		for (int i = 0; i < oldg.getNodeList().length-1; i++) {
+			if(oldg.getNodeList()[i].getClass() == Storage.class) {
+				float etac = oldg.getEtac();
+				float etad = oldg.getEtad();
+				float delta = oldg.getDelta();
+				double av = ((Storage) oldg.getNodeList()[i]).getCurrentCharge();
+				float flow = 0.0F;
+				for (int j = 0; j < oldg.getNNode(); j++) {
+					flow += oldg.getEdges()[j].getFlow();
+				}
+				if (flow >= 0.0F)
+					((Storage) newg.getNodeList()[i]).setCurrentCharge(av - flow / etad * delta);
+				else
+					((Storage) newg.getNodeList()[i]).setCurrentCharge(av - flow * etac * delta);
 			}
-			if (flow >= 0.0F)
-				((Storage) newg.getNodeList()[i]).setAvaliability(av - flow / etad * delta);
-			else
-				((Storage) newg.getNodeList()[i]).setAvaliability(av - flow * etac * delta);
 		}
 		return newg;
 	}
@@ -60,7 +62,7 @@ public class InstanceRandomizer {
 	 * 70% of maximum load > load demand = disable hydro plant;
 	 */
 	private void checkGen() {
-		for (int i = 0; i < this.gDay.length - 1; i++) {
+		/*for (int i = 0; i < this.gDay.length - 1; i++) {
 
 			if (this.g.getLoadmax() / 100 * 70 > this.loads[i]) {
 
@@ -73,7 +75,24 @@ public class InstanceRandomizer {
 					}
 				}
 			}
+
+
+		}*/
+		for (int i = 0; i < this.gDay.length - 1; i++) {
+
+			if (this.g.getLoadmax() / 100 * 70 > this.loads[i]) {
+
+				for (int j = 0; j < this.g.getNGenerators(); j++) {
+					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
+						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
+							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
+							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
+						}
+					}
+				}
+			}
 		}
+
 	}
 
 	/**
@@ -82,16 +101,27 @@ public class InstanceRandomizer {
 	 * "W" wind
 	 */
 	private void calculateRewProd() {
-		for (int i = 0; i < this.gDay.length - 1; i++) {
-			for (int j = this.g.getNNode() - this.g.getNrgenetarors() - this.g.getNstorage(); j < this.g.getNNode()
-					- this.g.getNstorage(); j++) {
-				if (("S".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 1)
-						|| ("S".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 0)) {
-					((RewGenerator) this.gDay[i].getNodeList()[j])
-							.setProduction(((RewGenerator) this.gDay[i].getNodeList()[j]).getMaxP() * this.solar[i]);
+		/*for (int i = 0; i < this.gDay.length - 1; i++) {
+			for (int j = this.g.getNNode() - this.g.getNrgenetarors() - this.g.getNstorage(); j < this.g.getNNode()- this.g.getNstorage(); j++) {
+				if (("S".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 1)|| ("S".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 0)) {
+					((RewGenerator) this.gDay[i].getNodeList()[j]).setProduction(((RewGenerator) this.gDay[i].getNodeList()[j]).getMaxP() * this.solar[i]);
 				} else {
-					((RewGenerator) this.gDay[i].getNodeList()[j])
-							.setProduction(((RewGenerator) this.gDay[i].getNodeList()[j]).getMaxP() * this.wind[i]);
+					((RewGenerator) this.gDay[i].getNodeList()[j]).setProduction(((RewGenerator) this.gDay[i].getNodeList()[j]).getMaxP() * this.wind[i]);
+				}
+			}
+		}*/
+
+		for (int i = 0; i < gDay.length-1; i++){
+			for (int j = 0; j < gDay[i].getNodeList().length-1; j++){
+				if(gDay[i].getNodeList()[i].getClass() == RewGenerator.class){
+					if(((RewGenerator)gDay[i].getNodeList()[i]).getType().equals("S")){
+						((RewGenerator) gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * solar[i]);
+						((RewGenerator)gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * solar[i]);
+
+					} else{
+						((RewGenerator) gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * wind[i]);
+					}
+
 				}
 			}
 		}
@@ -103,10 +133,17 @@ public class InstanceRandomizer {
 	 * Consumer has percentage of total load predefined (perloads)
 	 */
 	private void calculateLoads() {
-		for (int i = 0; i < this.gDay.length - 1; i++) {
+		/*for (int i = 0; i < this.gDay.length - 1; i++) {
 			for (int j = this.g.getNGenerators(); j < this.g.getNGenerators() + this.g.getNConsumers(); j++) {
 				((Consumer) this.gDay[i].getNodeList()[j])
 						.setLoad(this.loads[i] / 100 * ((Consumer) this.g.getNodeList()[j]).getLoad());
+			}
+		}*/
+		for (int i = 0; i < gDay.length - 1; i++) {
+			for (int j = 0; j < g.getNodeList().length-1; j++){
+				if(gDay[i].getNodeList()[j].getClass() == Consumer.class){
+					((Consumer)gDay[i].getNodeList()[j]).setLoad(loads[i] / 100 * ((Consumer)g.getNodeList()[j]).getLoad());
+				}
 			}
 		}
 	}

@@ -62,7 +62,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	@Override
 	public int compareTo(ConventionalGenerator o) {
 
-		if(this.getType().equals(o.getType())){
+		if(this.getType().equals(((ConventionalGenerator)o).getType())){
 			return 0; //Generator type are equal so we return 0.
 		}
 

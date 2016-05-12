@@ -2,12 +2,17 @@ package pgrid_opt;
 
 public abstract class Node {
 	public abstract boolean isRenew();
-	protected int nodeId;
+
+	private int nodeId;
 
 	public Node(int nodeId){
 		this.nodeId = nodeId;
 	}
 
 	public Node(){
+	}
+
+	public int getNodeId() {
+		return nodeId;
 	}
 }

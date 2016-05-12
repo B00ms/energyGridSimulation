@@ -26,9 +26,9 @@ public class Graph implements Cloneable {
 		setNrgenetarors(nrgenerators);
 		setNConsumers(nconsumers);
 		setNstorage(nstorage);
-		setCcurt(200.0F);
+		setCcurt(200.0F); //TODO: movie to configuration file.
 		setEfficency(75);
-		setDelta(delta);
+		setDelta(delta); //TODO: remove this because its not used.
 		setEtac(etac);
 		setEtad(etad);
 	}
@@ -110,7 +110,7 @@ public class Graph implements Cloneable {
 	public Graph clone() {
 		Graph g = new Graph(this.nnode, this.ngenerators, this.nrgenetarors, this.nconsumers, this.loadmax,
 				this.nstorage, this.delta, this.etac, this.etad);
-		for (int i = 0; i < g.ngenerators; i++) {
+		/*for (int i = 0; i < g.ngenerators; i++) {
 			g.nodelist[i] = new ConventionalGenerator(((ConventionalGenerator) this.nodelist[i]).getMinP(),
 					((ConventionalGenerator) this.nodelist[i]).getMaxP(), ((ConventionalGenerator) this.nodelist[i]).getCoef(),
 					((ConventionalGenerator) this.nodelist[i]).getType(), ((ConventionalGenerator) this.nodelist[i]).getProduction());
@@ -134,6 +134,68 @@ public class Graph implements Cloneable {
 				g.network[i][j].setWeight(this.network[i][j].getWeight());
 				g.network[i][j].setFlow(this.network[i][j].getFlow());
 			}
+		*/
+		Node[] tempNodeList = new Node[g.getNodeList().length];
+		int counter = 0;
+		for (int i = 0; i < g.getNodeList().length; i++) {
+			//System.out.println(((Node)getNodeList()[i]).getNodeId());
+
+			//if(((Node)getNodeList()[i]).getNodeId() == 40){
+			//	System.out.println("stop");
+			//}
+
+			if(getNodeList()[i].getClass() == (ConventionalGenerator.class))
+			{
+				ConventionalGenerator conventionalGenerator = new ConventionalGenerator(((ConventionalGenerator) nodelist[i]).getMinP(),
+																					((ConventionalGenerator) nodelist[i]).getMaxP(),
+																					((ConventionalGenerator) nodelist[i]).getCoef(),
+																					((ConventionalGenerator) nodelist[i]).getType(),
+																					((ConventionalGenerator) nodelist[i]).getProduction(),
+																					((ConventionalGenerator) nodelist[i]).getNodeId());
+
+				conventionalGenerator.setMTTF(((ConventionalGenerator) nodelist[i]).getMTTF());
+				conventionalGenerator.setMTTR(((ConventionalGenerator) nodelist[i]).getMTTR());
+				tempNodeList[i] = conventionalGenerator;
+			} else if(getNodeList()[i].getClass() == RewGenerator.class){
+
+				RewGenerator renewableGenerator = new RewGenerator(((RewGenerator) nodelist[i]).getMaxP(),
+																	((RewGenerator)nodelist[i]).getMinP(),
+																	((RewGenerator)nodelist[i]).getCoef(),
+																	((RewGenerator)nodelist[i]).getType(),
+																	((RewGenerator)nodelist[i]).getNodeId());
+				tempNodeList[i] = renewableGenerator;
+
+			} else if (getNodeList()[i].getClass() == Storage.class){
+
+				Storage storage = new Storage(((Storage)getNodeList()[i]).getCurrentCharge(),
+											((Storage)getNodeList()[i]).getMaximumCharge(),
+											((Storage)getNodeList()[i]).getMinimumCharge(),
+											((Storage)getNodeList()[i]).getNodeId());
+
+				tempNodeList[i] = storage;
+
+			} else if (getNodeList()[i].getClass() == InnerNode.class){
+				int nodeId = ((InnerNode)nodelist[i]).getNodeId();
+				InnerNode innerNode = new InnerNode(nodeId);
+				tempNodeList[i] = innerNode;
+
+			}else if (getNodeList()[i].getClass() == Consumer.class){
+				Consumer consumer = new Consumer(((Consumer)getNodeList()[i]).getLoad(), ((Consumer)getNodeList()[i]).getNodeId());
+				tempNodeList[i] = consumer;
+			}
+		}
+
+		Edge[] tempEdges = new Edge[this.getEdges().length];
+		for (int i = 0; i < getEdges().length; i++){
+			Edge edge = new Edge();
+			edge.setCapacity(getEdges()[i].getCapacity());
+			edge.setWeight(getEdges()[i].getWeight());
+			edge.setFlow(getEdges()[i].getFlow());
+			edge.setEndVertexes(getEdges()[i].getEndVertexes()[0], getEdges()[i].getEndVertexes()[1]);
+			tempEdges[i] = edge;
+		}
+		g.setEdges(tempEdges );
+		g.setNodeList(tempNodeList);
 		return g;
 	}
 

@@ -61,7 +61,7 @@ public class Main {
 			SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
 			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 		}else{
-			SUMMER_LOAD_CURVE = "./Expected Load summer.csv";
+			SUMMER_LOAD_CURVE = "..q/Expected Load summer.csv";
 			conf = ConfigFactory.parseFile(new File("config/application.conf"));
 		}
 
@@ -92,7 +92,7 @@ public class Main {
 		wind = (float[]) o[2]; //hourly production values for wind
 		loads = (float[]) o[3]; //Total hourly load of all sinks
 
-		Graph graph2 = parser.parseData("../network.csv", 1);
+		graph = parser.parseData("../network.csv", 1);
 
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
@@ -178,7 +178,6 @@ public class Main {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-
 			}
 		}
 			long endtime = System.nanoTime();
@@ -340,7 +339,7 @@ public class Main {
 			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
 				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
 			} else if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
-				sumStorage += ((Storage) nodeList[i]).getCapacity();
+				sumStorage += ((Storage) nodeList[i]).getMaximumCharge();
 			}
 		}
 		double totalCurrentProduction = conventionalProduction + renewableProduction;
