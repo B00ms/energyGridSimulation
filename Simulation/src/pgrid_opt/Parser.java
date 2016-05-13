@@ -112,8 +112,8 @@ public class Parser {
 			case "Storage":
 				nodeId = scanner.nextInt();
 				double currentCharge = scanner.nextDouble();
-				double minimumCharge = scanner.nextDouble();
 				double maximumCharge = scanner.nextDouble();
+				double minimumCharge = scanner.nextDouble();
 				Storage storage =  new Storage(currentCharge, maximumCharge, minimumCharge, nodeId);
 				nodeList.add(storage);
 				numberOfStorage++;
@@ -429,12 +429,12 @@ public class Parser {
 	 */
 	private Storage parseStorage(String next) {
 		Scanner s = new Scanner(next);
-		float aval = s.nextFloat();
-		float cap = s.nextFloat();
-		float min = s.nextFloat();
+		float currentCharge = s.nextFloat();
+		float maximumCharge= s.nextFloat();
+		float minimumCharge = s.nextFloat();
 
 		s.close();
-		return new Storage(aval, cap, min);
+		return new Storage(currentCharge, maximumCharge, minimumCharge);
 	}
 
 	/**

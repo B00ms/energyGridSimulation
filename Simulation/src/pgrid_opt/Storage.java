@@ -1,9 +1,9 @@
 package pgrid_opt;
 
 public class Storage extends Node {
-	private double avaliability;
-	private double capacity;
-	private double mincap;
+	private double currentCharge;
+	private double maximumCharge;
+	private double minimumCharge;
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId) {
 		super(nodeId);
@@ -19,19 +19,19 @@ public class Storage extends Node {
 	}
 
 	public double getCurrentCharge() {
-		return this.avaliability;
+		return this.currentCharge;
 	}
 
 	public void setCurrentCharge(double avaliability) {
-		this.avaliability = avaliability;
+		this.currentCharge = avaliability;
 	}
 
 	public double getMaximumCharge() {
-		return this.capacity;
+		return this.maximumCharge;
 	}
 
 	public void setMaximumCharge(double capacity) {
-		this.capacity = capacity;
+		this.maximumCharge = capacity;
 	}
 
 	public boolean isRenew() {
@@ -39,10 +39,10 @@ public class Storage extends Node {
 	}
 
 	public double getMinimumCharge() {
-		return this.mincap;
+		return this.minimumCharge;
 	}
 
 	public void setMinimumCharge(double mincap) {
-		this.mincap = mincap;
+		this.minimumCharge = mincap;
 	}
 }

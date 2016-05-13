@@ -217,8 +217,8 @@ public class DataModelPrint {
 						if (((Storage) g.getNodeList()[i]).getMinimumCharge() > ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
 							((Storage) g.getNodeList()[i]).setCurrentCharge(((Storage) g.getNodeList()[i]).getMinimumCharge());
 						}
-						double val = (((Storage) g.getNodeList()[i]).getCurrentCharge()
-								- ((Storage) g.getNodeList()[i]).getMinimumCharge()) / delta * etad;
+
+						double val = (((Storage) g.getNodeList()[i]).getCurrentCharge()	- ((Storage) g.getNodeList()[i]).getMinimumCharge()) / delta * etad;
 						for (int j = 0; j < g.getNNode(); j++) {
 							if (g.getEdges()[j].getCapacity() != 0.0F) {
 								cap = g.getEdges()[j].getCapacity();

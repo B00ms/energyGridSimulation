@@ -219,17 +219,17 @@ RG,S,205,350,300,1.25
 RG,S12,206,350,300,1.25
 
 #Storage
-#nodeType, nodeId, currentCharge, minCharge, maxCharge
+#nodeType, nodeId, currentCharge, maxCharge, minCharge
 Storage,208,27,131,27
 Storage,209,27,131,27
 Storage,210,27,131,27
 Storage,211,27,131,27
-Storage,212,27,375,75
-Storage,213,27,375,75
-Storage,214,27,375,75
-Storage,215,27,375,75
-Storage,216,27,375,75
-Storage,217,27,375,75
+Storage,212,75,375,75
+Storage,213,75,375,75
+Storage,214,75,375,75
+Storage,215,75,375,75
+Storage,216,75,375,75
+Storage,217,75,375,75
 
 #Network
 #nodeId,nodeId,Reactance,capacity
