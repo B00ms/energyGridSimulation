@@ -15,17 +15,6 @@ import com.typesafe.config.ConfigFactory;
 
 public class Parser {
 	private Config conf = ConfigFactory.parseFile(new File("../config/application.conf"));
-	private String gen = "generators";
-	private String cons = "consumers";
-	private String net = "network";
-	private String rgen = "rgenerators";
-	private String tload = "totloads";
-	private String pload = "perloads";
-	private String solar = "solar";
-	private String wind = "wind";
-	private String stor = "storage";
-	private int ngraph;
-
 
 	/**
 	 * Parsers the initial input file and returns its contents as a java object that contains:
@@ -187,8 +176,6 @@ public class Parser {
 		Graph graph = new Graph(totalNumberOfNodes, numberOfConventionalGenerators, numberOfRenewableGenerators,
 				numberOfConsumers, dailyMaxLoadDemand, numberOfStorage, (float)timeStepDuration, (float)storageChargeEfficiency, (float)storageChargeEfficiency);
 
-		Node[] sortedArray = new Node[totalNumberOfNodes];
-
 		graph.setNodeList(nodeArray);
 		graph.setEdges(edgesArray);
 		scanner.close();
@@ -222,143 +209,6 @@ public class Parser {
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	/**
-	 * Parse renewable generators from input file
-	 * @param next
-	 * @param wcost
-	 * @param scost
-	 * @return
-	 */
-	private Node parseRGenerators(String next, float wcost, float scost) {
-		Scanner scanner = new Scanner(next);
-		float max = scanner.nextFloat();
-		String type = scanner.next();
-		scanner.close();
-
-		// doesn't seem to do anything same as normal renewable generator
-		if (("S".compareTo(type) == 0) && ("S".compareTo(type) == 1)) {
-			return new RewGenerator(0.0F, max, scost, type);
-		}
-		return new RewGenerator(0.0F, max, wcost, type);
-	}
-
-	/**
-	 * Parse an edge
-	 * @param e
-	 * @param scan
-	 */
-	private void parseEdge(Edge[][] e, Scanner scan) {
-		for (int i = 0; i < e.length; i++) {
-			for (int j = 0; j < e.length; j++) {
-				e[i][j] = new Edge();
-				e[i][j].setCapacity(0.0F);
-				e[i][j].setWeight(0.0F);
-				e[i][j].setFlow(0.0F);
-			}
-		}
-		while (scan.hasNext()) {
-			Scanner scanner = new Scanner(scan.next());
-			int i = scanner.nextInt();
-			int j = scanner.nextInt();
-			e[i][j].setWeight(scanner.nextFloat());
-			e[i][j].setCapacity(scanner.nextFloat());
-			scanner.close();
-		}
-	}
-
-	/**
-	 * Parse consumer node
-	 * @param next input String
-	 * @return Consumer node
-	 */
-	private Node parseConsumer(String next) {
-		Scanner scanner = new Scanner(next);
-		float load = scanner.nextFloat();
-		scanner.close();
-		return new Consumer(load);
-	}
-
-	private float parsefloat(String next) {
-		Scanner scanner = new Scanner(next);
-		float num = scanner.nextFloat();
-		scanner.close();
-		return num;
-	}
-
-	/**
-	 * Parse initial values for Generator node
-	 * @param next input String
-	 * @return
-	 */
-	private ConventionalGenerator parseGenerator(String next) {
-		Scanner scanner = new Scanner(next);
-		float min = scanner.nextFloat();
-		float max = scanner.nextFloat();
-		float coef = scanner.nextFloat();
-
-		// returns type from input file
-		String type = scanner.next();
-		scanner.close();
-
-		// set type of traditional plant based on coef.
-		if(coef == 10){
-			type = "H"; // Hydro
-		}else if(coef == 35) {
-			type = "N";//nuclear
-		}else if(coef == 40 && max == 350){
-			type = "C";// coal
-		}else if(coef == 45 && min == 155 || max == 155){
-			type = "C";// coal
-		}else if(coef == 55 && min == 76){
-			type = "C";// coal
-		}else if(coef == 55 && min > 100) {
-			type = "O";// oil, not sure minp 236 maxp 591 not in thesis
-		}else if(coef > 55 && coef <=80){
-			type = "O";
-		}else{
-			type = "unknown";
-		}
-
-		return new ConventionalGenerator(min, max, coef, type, 0);
-	}
-
-	/**
-	 * Parse initial parameters for construction of energy grid
-	 * @param next input line
-	 * @return Graph of energy grid
-	 */
-	private Graph parseNetSize(String next) {
-		Scanner s = new Scanner(next);
-		s.useDelimiter("\\s");
-		this.ngraph = Integer.parseInt(s.next());
-		int loadmax = Integer.parseInt(s.next());
-		int nNode = Integer.parseInt(s.next());
-		int nGenerators = Integer.parseInt(s.next());
-		int nRGenerators = Integer.parseInt(s.next());
-		int nConsumers = Integer.parseInt(s.next());
-		int nStorage = Integer.parseInt(s.next());
-		float delta = (float) s.nextDouble();
-		float etac = (float) s.nextDouble();
-		float etad = (float) s.nextDouble();
-		s.close();
-		return new Graph(nNode, nGenerators, nRGenerators, nConsumers, loadmax, nStorage, delta, etac, etad);
-	}
-
-	/**
-	 * Parse and create new Storage node
-	 * @param next
-	 * @return Storage node
-	 */
-	private Storage parseStorage(String next) {
-		Scanner s = new Scanner(next);
-		float currentCharge = s.nextFloat();
-		float maximumCharge= s.nextFloat();
-		float minimumCharge = s.nextFloat();
-
-		s.close();
-		return new Storage(currentCharge, maximumCharge, minimumCharge);
 	}
 
 	/**
