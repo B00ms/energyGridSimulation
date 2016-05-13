@@ -3,9 +3,9 @@ package pgrid_opt;
 public class InstanceRandomizer {
 	private Graph g;
 	private Graph[] gDay;
-	private float[] solar;
-	private float[] wind;
-	private float[] loads;
+	//private float[] solar;
+	//private float[] wind;
+	private Float[] loads;
 
 	/**
 	 * Create graphs for every timestep and apply load initialization
@@ -16,11 +16,11 @@ public class InstanceRandomizer {
 	 * @param loads	load
 	 * @return	list of graph for each timestep
 	 */
-	public Graph[] creategraphs(Graph g, Graph[] gDay, float[] solar, float[] wind, float[] loads) {
+	public Graph[] creategraphs(Graph g, Graph[] gDay, Float[] loads) {
 		this.g = g;
 		this.gDay = gDay;
-		this.solar = solar;
-		this.wind = wind;
+		//this.solar = solar;
+		//this.wind = wind;
 		this.loads = loads;
 		for (int i = 0; i < this.gDay.length; i++) {
 			this.gDay[i] = g.clone();
@@ -80,7 +80,7 @@ public class InstanceRandomizer {
 		}*/
 		for (int i = 0; i < this.gDay.length - 1; i++) {
 
-			if (this.g.getLoadmax() / 100 * 70 > this.loads[i]) {
+			if (this.g.getLoadmax() / 100 * 70 > ((ConventionalGenerator)g.getNodeList()[i]).getProduction()) {
 
 				for (int j = 0; j < this.g.getNGenerators(); j++) {
 					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
@@ -101,27 +101,10 @@ public class InstanceRandomizer {
 	 * "W" wind
 	 */
 	private void calculateRewProd() {
-		/*for (int i = 0; i < this.gDay.length - 1; i++) {
-			for (int j = this.g.getNNode() - this.g.getNrgenetarors() - this.g.getNstorage(); j < this.g.getNNode()- this.g.getNstorage(); j++) {
-				if (("S".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 1)|| ("S".compareTo(((Generator) this.g.getNodeList()[j]).getType()) == 0)) {
-					((RewGenerator) this.gDay[i].getNodeList()[j]).setProduction(((RewGenerator) this.gDay[i].getNodeList()[j]).getMaxP() * this.solar[i]);
-				} else {
-					((RewGenerator) this.gDay[i].getNodeList()[j]).setProduction(((RewGenerator) this.gDay[i].getNodeList()[j]).getMaxP() * this.wind[i]);
-				}
-			}
-		}*/
-
 		for (int i = 0; i < gDay.length-1; i++){
 			for (int j = 0; j < gDay[i].getNodeList().length-1; j++){
 				if(gDay[i].getNodeList()[i].getClass() == RewGenerator.class){
-					if(((RewGenerator)gDay[i].getNodeList()[i]).getType().equals("S")){
-						((RewGenerator) gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * solar[i]);
-						((RewGenerator)gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * solar[i]);
-
-					} else{
-						((RewGenerator) gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * wind[i]);
-					}
-
+					((RewGenerator)gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * ((RewGenerator)gDay[i].getNodeList()[j]).getProduction());
 				}
 			}
 		}

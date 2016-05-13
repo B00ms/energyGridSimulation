@@ -27,7 +27,13 @@ public class Parser {
 	private int ngraph;
 
 
-	public Graph parseData(String path, int overload) {
+	/**
+	 * Parsers the initial input file and returns its contents as a java object that contains:
+	 * The graph representing the grid, production values of solar and wind, the consumption value of the loads
+	 * @param path to the input file.
+	 * @return
+	 */
+	public Graph parseData(String path) {
 		Scanner scanner = null;
 
 		try {
@@ -49,7 +55,6 @@ public class Parser {
 		int numberOfStorage = 0;
 
 		int dailyMaxLoadDemand = 0;
-		int numberOfTimeSteps = 0;
 		double timeStepDuration = 0;
 		double storageChargeEfficiency = 0;
 
@@ -191,113 +196,32 @@ public class Parser {
 		return graph;
 	}
 
-	/**
-	 * Parsers the initial input file and returns its contents as a java object that contains:
-	 * The graph representing the grid, production values of solar and wind, the consumption value of the loads
-	 * @param path to the input file.
-	 * @return
-	 */
-	public Object[] parseData(String path) {
+	public Float[] parseExpectedHourlyLoad(){
+
+		Config generalConf = conf.getConfig("conventionalGenerator");
+		Config loadConfig = generalConf.getConfig("load-curves");
+
+		//TODO: later on we have to change this to be dynamic because we want to run for 4 different seasons.
+		String path = loadConfig.getString("summer");
+		List<Float> expectedHourlyLoad = new ArrayList<>();
+
 		Scanner scanner;
 		try {
-			scanner = new Scanner(Paths.get(path, new String[0]));
-			scanner.useDelimiter(System.getProperty("line.separator"));
-		} catch (IOException e1) {
-			// Scanner scanner;
-			System.out.println("ERROR: wrong raw data input file path");
-			return null;
-		}
-		Graph g = parseNetSize(scanner.next());
-		float[] dsolar = new float[this.ngraph]; //Production values for solar for each time step
-		float[] dwind = new float[this.ngraph]; //Production values for wind for each time step
-		float[] dloads = new float[this.ngraph]; //Load demand for each time step
-		float wcost = 0.0F;
-		float scost = 0.0F;
-		float ccurt = 200.0F;
+			scanner = new Scanner(Paths.get("../"+path));
+			scanner.useDelimiter(",|\\n");
 
-		Node[] n = new Node[g.getNNode()];
-		String token = scanner.next();
-		if ((token.compareTo(this.gen) == 1) || (token.compareTo(this.gen) == 0)) {
-			System.out.println("parsing gen");
-			List<ConventionalGenerator> generatorList = new ArrayList<>();
-			for (int i = 0; i < g.getNGenerators(); i++) {
-				//n[i] = parseGenerator(scanner.next());
-				generatorList.add(parseGenerator(scanner.next()));
+			while(scanner.hasNext()){
+				float expectedLoad = scanner.nextFloat();
+				expectedHourlyLoad.add(expectedLoad);
+				scanner.nextLine();
 			}
-			Collections.sort(generatorList);
-			generatorList.toArray(n);
-		}
-		token = scanner.next();
-		if ((token.compareTo(this.cons) == 1) || (token.compareTo(this.cons) == 0)) {
-			token = scanner.next();
-			if ((token.compareTo(this.tload) == 1) || (token.compareTo(this.tload) == 0)) {
-				System.out.println("parsing tload");
-				for (int i = 0; i < this.ngraph; i++) {
-					dloads[i] = Float.parseFloat(scanner.next());
-				}
-			}
-			token = scanner.next();
-			if ((token.compareTo(this.pload) == 1) || (token.compareTo(this.pload) == 0)) {
-				System.out.println("parsing pload");
-				for (int i = 0; i < g.getNConsumers(); i++) {
-					n[(g.getNGenerators() + i)] = parseConsumer(scanner.next());
-				}
-			}
-		}
-		token = scanner.next();
-		if ((token.compareTo(this.rgen) == 1) || (token.compareTo(this.rgen) == 0)) {
-			System.out.println("parsing rgen");
-			ccurt = parsefloat(scanner.next());
-			wcost = parsefloat(scanner.next());
-			scost = parsefloat(scanner.next());
-			for (int i = g.getNNode() - g.getNrgenetarors() - g.getNstorage(); i < g.getNNode()
-					- g.getNstorage(); i++) {
-				n[i] = parseRGenerators(scanner.next(), wcost, scost);
-			}
-		}
-		g.setCcurt(ccurt);
+			scanner.close();
 
-		g.setNodeList(n);
-		token = scanner.next();
-		if (((token.compareTo(this.wind) == 1) || (token.compareTo(this.wind) == 0)) && (g.getNrgenetarors() > 0)) {
-			for (int i = 0; i < this.ngraph; i++) {
-				Scanner s = new Scanner(scanner.next());
-				dwind[i] = s.nextFloat();
-				s.close();
-			}
+			return expectedHourlyLoad.toArray(new Float[expectedHourlyLoad.size()]);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		token = scanner.next();
-		if (((token.compareTo(this.solar) == 1) || (token.compareTo(this.solar) == 0)) && (g.getNrgenetarors() > 0)) {
-			for (int i = 0; i < this.ngraph; i++) {
-				Scanner s = new Scanner(scanner.next());
-				dsolar[i] = s.nextFloat();
-				s.close();
-			}
-		}
-		token = scanner.next();
-		if ((token.compareTo(this.stor) == 1) || (token.compareTo(this.stor) == 0)) {
-			System.out.println("parsing stor");
-			for (int i = g.getNNode() - g.getNstorage(); i < g.getNNode(); i++) {
-				n[i] = parseStorage(scanner.next());
-			}
-		}
-		Edge[][] e = new Edge[g.getNNode()][g.getNNode()];
-		token = scanner.next();
-		if ((token.compareTo(this.net) == 1) || (token.compareTo(this.net) == 0)) {
-			System.out.println("parsing net");
-			parseEdge(e, scanner);
-		}
-		g.setNetwork(e);
-
-		scanner.close();
-		Object[] o = new Object[6];
-		o[0] = g;
-		o[1] = dsolar;
-		o[2] = dwind;
-		o[3] = dloads;
-		o[4] = Float.valueOf(wcost);
-		o[5] = Float.valueOf(scost);
-		return o;
+		return null;
 	}
 
 	/**

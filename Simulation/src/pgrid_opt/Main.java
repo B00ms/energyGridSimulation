@@ -31,10 +31,7 @@ public class Main {
 
 	//Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
-
 	private static Config conf;
-	private final static String SUMMER_EXPECTED_PRODUCTION = "../Expected Production summer.csv";
-
 
 	//From cheapest to most expensive.
 	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
@@ -66,9 +63,9 @@ public class Main {
 		}
 
 		long starttime = System.nanoTime();
-		float[] wind = null;
-		float[] solar = null;
-		float[] loads = null;
+		//float[] wind = null;
+		//float[] solar = null;
+		Float[] loads = null;
 		float wcost = 0.0f;  //wind cost
 		float scost = 0.0f; //solar cost
 		Graph[] timestepsGraph = null;
@@ -86,13 +83,14 @@ public class Main {
 		String dirpath = generalConf.getString("output-folder"); //path to the output
 		String path = generalConf.getString("input-file"); // parse old input file
 
-		Object[] o = parser.parseData(path);
-		Graph graph = (Graph) o[0]; //Initial graph created from the input file
-		solar = (float[]) o[1]; //Hourly production values for solar
-		wind = (float[]) o[2]; //hourly production values for wind
-		loads = (float[]) o[3]; //Total hourly load of all sinks
+		//Object[] o = parser.parseData(path);
+		//Graph graph = (Graph) o[0]; //Initial graph created from the input file
+		//solar = (float[]) o[1]; //Hourly production values for solar
+		//wind = (float[]) o[2]; //hourly production values for wind
+		//loads = (float[]) o[3]; //Total hourly load of all sinks
+		loads = parser.parseExpectedHourlyLoad();
 
-		graph = parser.parseData("../network.csv", 1);
+		Graph graph = parser.parseData("../network.csv");
 
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
@@ -110,8 +108,8 @@ public class Main {
 		for ( int numOfSim=0; numOfSim < simLimit; numOfSim++){
 			System.out.println("Simulation: "+ numOfSim);
 			InstanceRandomizer instanceRandomizer = new InstanceRandomizer();
-			timestepsGraph = new Graph[loads.length + 1];
-			timestepsGraph = instanceRandomizer.creategraphs(graph, timestepsGraph, solar, wind, loads);
+			timestepsGraph = new Graph[generalConf.getInt(("numberOfTimeSteps"))];
+			timestepsGraph = instanceRandomizer.creategraphs(graph, timestepsGraph, loads);
 			int i = 0;
 
 			double load = 0;

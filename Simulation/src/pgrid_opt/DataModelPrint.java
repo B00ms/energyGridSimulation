@@ -67,14 +67,6 @@ public class DataModelPrint {
 				for (int i = 0; i < edgesPrintArray.length; i++) {
 					for (int j = 0; j < edgesPrintArray.length; j++) {
 						writer.print("[" + i + "," + j + "] " + edgesPrintArray[i][j] + " ");
-						/*
-							if (vertexOne == i && vertexTwo == j) {
-								writer.print("[" + i + "," + j + "] " + (float)g.getEdges()[j].getWeight() + " ");
-								written = true;
-							} else {
-								writer.print("[" + i + "," + j + "] " + 0 + " ");
-							}
-						*/
 					}
 
 				if (i == g.getNNode() - 1)
@@ -97,29 +89,13 @@ public class DataModelPrint {
 			for (int i = 0; i < edgesPrintArray.length; i++) {
 				for (int j = 0; j < edgesPrintArray.length; j++) {
 					writer.print("[" + i + "," + j + "] " + edgesPrintArray[i][j] + " ");
-					/*if ((i >= g.getNNode() - g.getNstorage()) && (g.getEdges()[j].getCapacity() > 0.0F)) {
-						writer.print("[" + i + "," + j + "] " + (float)g.getEdges()[j].getCapacity() / etac + " ");
-					} else
-						writer.print("[" + i + "," + j + "] " + (float)g.getEdges()[j].getCapacity() + " ");
-
-					*/
 				}
 				if (i == g.getNNode() - 1)
 					writer.println(";");
 				else
 					writer.println();
 			}
-			/*
-			writer.println("param costs :=");
-			for (int i = 0; i < g.getNGenerators(); i++) {
-				if(g.getNodeList()[i].getClass() == ConventionalGenerator.class){
-					if (i == g.getNGenerators() - 1)
-						writer.println(i + " " + ((Generator) g.getNodeList()[i]).getCoef() + ";");
-					else
-						writer.println(i + " " + ((Generator) g.getNodeList()[i]).getCoef());
 
-					}
-				*/
 			int counter = 0;
 			writer.println("param costs :=");
 			for (int i = 0; i < g.getNodeList().length; i++) {
