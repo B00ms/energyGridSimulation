@@ -29,7 +29,7 @@ public class Parser {
 			scanner = new Scanner(Paths.get(path));
 			scanner.useDelimiter(",|\\n");
 		}catch (IOException e){
-			System.err.println("Error: Wrong path to input file");
+			System.out.println("Error: Wrong path to input file");
 			return null;
 		}
 
@@ -43,14 +43,12 @@ public class Parser {
 		int numberOfConsumers = 0;
 		int numberOfStorage = 0;
 
-		int dailyMaxLoadDemand = 0;
-		double timeStepDuration = 0;
-		double storageChargeEfficiency = 0;
-
 		Config generalConf = conf.getConfig("general");
-		dailyMaxLoadDemand  = generalConf.getInt("dailyMaxLoadDemand");
-		timeStepDuration  = generalConf.getDouble("durationOfEachStep");
-		storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage");
+		int dailyMaxLoadDemand  = generalConf.getInt("dailyMaxLoadDemand");
+		double timeStepDuration  = generalConf.getDouble("durationOfEachStep");
+		double storageChargeEfficiency  = conf.getConfig("Storage").getDouble("chargeEfficiencyOfStorage");
+		double storageDischargeEfficiency = conf.getConfig("Storage").getDouble("dischargEfficiencyOfStorage");
+		//storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage");
 
 		while(scanner.hasNext()){
 
@@ -174,7 +172,7 @@ public class Parser {
 		totalNumberOfNodes = nodeArray.length;
 
 		Graph graph = new Graph(totalNumberOfNodes, numberOfConventionalGenerators, numberOfRenewableGenerators,
-				numberOfConsumers, dailyMaxLoadDemand, numberOfStorage, (float)timeStepDuration, (float)storageChargeEfficiency, (float)storageChargeEfficiency);
+				numberOfConsumers, dailyMaxLoadDemand, numberOfStorage, (float)timeStepDuration, (float)storageChargeEfficiency, (float)storageDischargeEfficiency);
 
 		graph.setNodeList(nodeArray);
 		graph.setEdges(edgesArray);

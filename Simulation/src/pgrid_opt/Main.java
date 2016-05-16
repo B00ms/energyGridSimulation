@@ -329,7 +329,6 @@ public class Main {
 			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
 				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
 			} else if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
-				System.out.println(((Storage) nodeList[i]).getNodeId());
 				sumCurrentStorage += ((Storage) nodeList[i]).getCurrentCharge();
 				maximumStorageCapacity += ((Storage) nodeList[i]).getMaximumCharge();
 				minumumStorageCapacity += ((Storage) nodeList[i]).getMinimumCharge();
@@ -377,15 +376,12 @@ public class Main {
 
 		if(totalCurrentProduction > sumLoads){
 			//TODO: Load curtailment, we're producing more then the demand.
-			//TODO: We could try and charge the batteries if they are not at capacity and if the demand is low.
+			//TODO: turn renewables off maybe if battery charging doesnt help enough?
 			System.out.println("curtailment");
-			sumCurrentStorage = 0;
 			for ( int i = 0; i < nodeList.length; i++){
 				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
-
 					if(totalCurrentProduction - ((Storage)nodeList[i]).getMaximumCharge() > sumLoads){
 						totalCurrentProduction -= ((Storage)nodeList[i]).setCurrentCharge(((Storage)nodeList[i]).getMaximumCharge());
-						sumCurrentStorage += ((Storage)nodeList[i]).getCurrentCharge();
 					}else
 						totalCurrentProduction -= ((Storage)nodeList[i]).setCurrentCharge(((Storage)nodeList[i]).setCurrentCharge(sumLoads-totalCurrentProduction));
 				}
@@ -393,6 +389,14 @@ public class Main {
 		} else if(totalCurrentProduction < sumLoads){
 			//TODO: Load shedding, we cannot meet the demand hence we have to load shedding.
 			//TODO: Or we can use the batteries to try and meet the demand
+			for ( int i = 0; i < nodeList.length; i++){
+				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
+					if(totalCurrentProduction + ((Storage)nodeList[i]).getMaximumCharge() > sumLoads){
+						totalCurrentProduction += ((Storage)nodeList[i]).discharge();
+					}else
+						totalCurrentProduction += ((Storage)nodeList[i]).discharge();
+				}
+			}
 			System.out.println("Shedding");
 		} else{
 			//Production and load are balanced.

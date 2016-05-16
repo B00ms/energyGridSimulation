@@ -228,10 +228,12 @@ public class DataModelPrint {
 								.getCurrentCharge()) {
 							((Storage) g.getNodeList()[i]).setCurrentCharge(((Storage) g.getNodeList()[i]).getMaximumCharge());
 						}
-						double val = (((Storage) g.getNodeList()[i]).getMaximumCharge()
-								- ((Storage) g.getNodeList()[i]).getCurrentCharge()) / delta / etac;
-						for (int j = g.getNGenerators() + g.getNConsumers(); j < g.getNNode()
-								- (g.getNstorage() + g.getNrgenetarors()); j++) {
+
+						double max = ((Storage) g.getNodeList()[i]).getMaximumCharge();
+						double current = ((Storage) g.getNodeList()[i]).getCurrentCharge();
+
+						double val = (((Storage) g.getNodeList()[i]).getMaximumCharge() - ((Storage) g.getNodeList()[i]).getCurrentCharge()) / delta / etac;
+						for (int j = g.getNGenerators() + g.getNConsumers(); j < g.getNNode() - (g.getNstorage() + g.getNrgenetarors()); j++) {
 							if (g.getEdges()[j].getCapacity() != 0.0F) {
 								cap = g.getEdges()[j].getCapacity();
 								break;
