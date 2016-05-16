@@ -56,10 +56,10 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public double setProduction(double production) {
-		if (maxp*dayAheadLimitMax < production){
+		if (maxp*dayAheadLimitMax <= production){
 			this.production = maxp*dayAheadLimitMax;
 			return maxp;
-		} else if(minp*dayAheadLimitMin > production){
+		} else if(minp*dayAheadLimitMin >= production){
 			this.production = minp*dayAheadLimitMin;
 			return minp;
 		} else {

@@ -7,9 +7,9 @@ public class Storage extends Node {
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId) {
 		super(nodeId);
-		setCurrentCharge(currentCharge);
-		setMaximumCharge(maximumCharge);
-		setMinimumCharge(minimumCharge);
+		this.currentCharge = currentCharge;
+		this.maximumCharge = maximumCharge;
+		this.minimumCharge = minimumCharge;
 	}
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge) {
@@ -19,15 +19,20 @@ public class Storage extends Node {
 	}
 
 	public double getCurrentCharge() {
-		return this.currentCharge;
+		return currentCharge;
 	}
 
-	public void setCurrentCharge(double avaliability) {
-		this.currentCharge = avaliability;
+	public double setCurrentCharge(double charge) {
+		if (charge >= maximumCharge)
+			currentCharge = maximumCharge;
+		else
+			currentCharge = charge;
+
+		return currentCharge;
 	}
 
 	public double getMaximumCharge() {
-		return this.maximumCharge;
+		return maximumCharge;
 	}
 
 	public void setMaximumCharge(double capacity) {
@@ -39,10 +44,10 @@ public class Storage extends Node {
 	}
 
 	public double getMinimumCharge() {
-		return this.minimumCharge;
+		return minimumCharge;
 	}
 
 	public void setMinimumCharge(double mincap) {
-		this.minimumCharge = mincap;
+		minimumCharge = mincap;
 	}
 }

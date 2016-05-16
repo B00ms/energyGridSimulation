@@ -63,15 +63,12 @@ public class Main {
 		}
 
 		long starttime = System.nanoTime();
-		//float[] wind = null;
-		//float[] solar = null;
+
 		Float[] loads = null;
 		float wcost = 0.0f;  //wind cost
 		float scost = 0.0f; //solar cost
 		Graph[] timestepsGraph = null;
 		Parser parser = new Parser();
-//		String[] s = parser.parseArg(args);
-
 		String outpath1 = "input";
 		String outpath2 = ".mod";
 		String solpath1 = "glpsol -d ";
@@ -83,11 +80,6 @@ public class Main {
 		String dirpath = generalConf.getString("output-folder"); //path to the output
 		String path = generalConf.getString("input-file"); // parse old input file
 
-		//Object[] o = parser.parseData(path);
-		//Graph graph = (Graph) o[0]; //Initial graph created from the input file
-		//solar = (float[]) o[1]; //Hourly production values for solar
-		//wind = (float[]) o[2]; //hourly production values for wind
-		//loads = (float[]) o[3]; //Total hourly load of all sinks
 		loads = parser.parseExpectedHourlyLoad();
 
 		Graph graph = parser.parseData("../network.csv");
@@ -321,12 +313,14 @@ public class Main {
 		double sumLoads = 0;
 		double renewableProduction = 0;
 		double conventionalProduction= 0;
-		double sumStorage = 0;
+		double sumCurrentStorage  = 0;
+		double maximumStorageCapacity = 0;
+		double minumumStorageCapacity = 0;
 
 		/*
 		 * In this loop we calculate the total demand, the total ->current<- production and, total ->current<- production of renewable generators.
 		 */
-		for(int i = 0; i < nodeList.length-1; i++)
+		for(int i = 0; i < nodeList.length; i++)
 		{
 			if(nodeList[i] != null && nodeList[i].getClass() == Consumer.class){
 				sumLoads += ((Consumer)nodeList[i]).getLoad();
@@ -335,7 +329,11 @@ public class Main {
 			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
 				renewableProduction += ((RewGenerator)nodeList[i]).getProduction();
 			} else if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
-				sumStorage += ((Storage) nodeList[i]).getMaximumCharge();
+				System.out.println(((Storage) nodeList[i]).getNodeId());
+				sumCurrentStorage += ((Storage) nodeList[i]).getCurrentCharge();
+				maximumStorageCapacity += ((Storage) nodeList[i]).getMaximumCharge();
+				minumumStorageCapacity += ((Storage) nodeList[i]).getMinimumCharge();
+
 			}
 		}
 		double totalCurrentProduction = conventionalProduction + renewableProduction;
@@ -355,19 +353,17 @@ public class Main {
 					if (totalCurrentProduction+((ConventionalGenerator)nodeList[i]).getMaxP()*dayAheadLimitMax > sumLoads){
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction); //Set production to the remainder so we can meet the demand exactly
 					}else {
-						// increase production by maximum of -7,5% of Pmax
 						totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getProduction() + ((ConventionalGenerator) nodeList[i]).getMaxP());
 					}
 				}
 			}
 		} else if ((totalCurrentProduction  - sumLoads) > 0) {
 			//we need to decrease energy production
-			System.err.println("Decreasing production");
+			System.out.println("Decreasing production");
 
 			for ( int i = grid.getNodeList().length-1; i >= 0; i--){
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
 					if (totalCurrentProduction-((ConventionalGenerator)nodeList[i]).getMinP()*dayAheadLimitMin > sumLoads){
-						// decrease production by maximum of -7,5% of Pmax
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP());
 					} else {
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction);
@@ -383,6 +379,17 @@ public class Main {
 			//TODO: Load curtailment, we're producing more then the demand.
 			//TODO: We could try and charge the batteries if they are not at capacity and if the demand is low.
 			System.out.println("curtailment");
+			sumCurrentStorage = 0;
+			for ( int i = 0; i < nodeList.length; i++){
+				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
+
+					if(totalCurrentProduction - ((Storage)nodeList[i]).getMaximumCharge() > sumLoads){
+						totalCurrentProduction -= ((Storage)nodeList[i]).setCurrentCharge(((Storage)nodeList[i]).getMaximumCharge());
+						sumCurrentStorage += ((Storage)nodeList[i]).getCurrentCharge();
+					}else
+						totalCurrentProduction -= ((Storage)nodeList[i]).setCurrentCharge(((Storage)nodeList[i]).setCurrentCharge(sumLoads-totalCurrentProduction));
+				}
+			}
 		} else if(totalCurrentProduction < sumLoads){
 			//TODO: Load shedding, we cannot meet the demand hence we have to load shedding.
 			//TODO: Or we can use the batteries to try and meet the demand
@@ -390,7 +397,6 @@ public class Main {
 		} else{
 			//Production and load are balanced.
 		}
-
 		return grid;
 	}
 
