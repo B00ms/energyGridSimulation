@@ -1,11 +1,23 @@
 package pgrid_opt;
 
+import java.io.File;
+
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
 public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>{
 
 
 	private int mttf;//mean time to failure
 	private int mttr;//mean time to repair
 	private boolean generatorFailure = false; //Indicates if the generator is working normally or if it has failed
+	private static Config conf;
+	private Config convGeneratorConf;
+	private static String OS = System.getProperty("os.name");
+
+	private double maxProductionIncrease;
+	private double dayAheadLimitMax;
+	private double dayAheadLimitMin;
 
 
 	public ConventionalGenerator(double minProduction, double maxProduction, double coef, String type, double production, int nodeId) {
@@ -14,6 +26,17 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		// only used with conventional generator.
 		this.mttf = 630;
 		this.mttr = 60;
+
+		if(OS.startsWith("Windows") || OS.startsWith("Linux")){
+			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
+		}else{
+			conf = ConfigFactory.parseFile(new File("config/application.conf"));
+		}
+
+		convGeneratorConf = conf.getConfig("conventionalGenerator");
+		maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
+		dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
+		dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
 	}
 
 	public ConventionalGenerator(double minProduction, double maxProduction, double coef, String type, double production) {
@@ -30,6 +53,19 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 
 	public void setGeneratorFailure(boolean generatorFailure) {
 		this.generatorFailure = generatorFailure;
+	}
+
+	public double setProduction(double production) {
+		if (maxp*dayAheadLimitMax < production){
+			this.production = maxp*dayAheadLimitMax;
+			return maxp;
+		} else if(minp*dayAheadLimitMin > production){
+			this.production = minp*dayAheadLimitMin;
+			return minp;
+		} else {
+			this.production = production;
+			return production;
+		}
 	}
 
 	/**

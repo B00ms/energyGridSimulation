@@ -2,8 +2,8 @@ package pgrid_opt;
 
 public class Generator extends Node {
 
-	private double maxp; //maximum production
-	private double minp; //minimum production
+	protected double maxp; //maximum production
+	protected double minp; //minimum production
 	private double lastmaxp,lastminp;
 	private double coef; //multiplication coefficient, used to get real production
 	private int reactivateAtTimeStep;

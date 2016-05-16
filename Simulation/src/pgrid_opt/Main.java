@@ -99,8 +99,7 @@ public class Main {
 		HashMap<String, Double[]> seasonalLoadCurve = new HashMap<>();
 		HashMap<String, Double[][]> expectedProduction = new HashMap<>();
 		seasonalLoadCurve.put("summer", parser.parseCSV(SUMMER_LOAD_CURVE));
-		//expectedProduction.put("summer", parser.parseCSV2D(SUMMER_EXPECTED_PRODUCTION));
-		//Set the seasonal curve
+
 		seasonalLoadCurve = setSeasonalVariety(seasonalLoadCurve);
 
 		// load simulation limit
@@ -318,7 +317,6 @@ public class Main {
 	 * Depending on the state of the grid this method will increase or decrease production in order to balance the system
 	 */
 	private static Graph checkGridEquilibrium(Graph grid, int timestep){
-		Logger logger = Logger.getLogger("name");
 		Node[] nodeList = grid.getNodeList();
 		double sumLoads = 0;
 		double renewableProduction = 0;
@@ -358,13 +356,10 @@ public class Main {
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction); //Set production to the remainder so we can meet the demand exactly
 					}else {
 						// increase production by maximum of -7,5% of Pmax
-						totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getProduction() + ((ConventionalGenerator) nodeList[i]).getMaxP()*dayAheadLimitMax);
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getProduction() + ((ConventionalGenerator) nodeList[i]).getMaxP());
 					}
 				}
 			}
-
-
-
 		} else if ((totalCurrentProduction  - sumLoads) > 0) {
 			//we need to decrease energy production
 			System.err.println("Decreasing production");
@@ -373,7 +368,7 @@ public class Main {
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
 					if (totalCurrentProduction-((ConventionalGenerator)nodeList[i]).getMinP()*dayAheadLimitMin > sumLoads){
 						// decrease production by maximum of -7,5% of Pmax
-						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP()*dayAheadLimitMax);
+						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP());
 					} else {
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction);
 					}
@@ -384,8 +379,17 @@ public class Main {
 			return null;//production and demand are balanced.
 		}
 
-		// calculate shedded load
-
+		if(totalCurrentProduction > sumLoads){
+			//TODO: Load curtailment, we're producing more then the demand.
+			//TODO: We could try and charge the batteries if they are not at capacity and if the demand is low.
+			System.out.println("curtailment");
+		} else if(totalCurrentProduction < sumLoads){
+			//TODO: Load shedding, we cannot meet the demand hence we have to load shedding.
+			//TODO: Or we can use the batteries to try and meet the demand
+			System.out.println("Shedding");
+		} else{
+			//Production and load are balanced.
+		}
 
 		return grid;
 	}
