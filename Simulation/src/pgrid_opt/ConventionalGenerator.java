@@ -56,15 +56,35 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public double setProduction(double production) {
-		if (maxp*dayAheadLimitMax <= production){
+
+		//For the edge case where we dont want to change production:
+		double productionIncrease = 0;
+		if (production-production != production)
+			productionIncrease = this.production-production;
+		else
+			productionIncrease = 0;
+
+		/* We check if not the production increase is <= the maximum power increase (xx% of maximum power generation)
+		 * If the increase is smaller than xx% of maxp we go inside the if and set the production
+		 * If not the increase of production to the highest possible value.
+		 */
+		if((productionIncrease < 0 && (Math.abs(productionIncrease) <= maxp*maxProductionIncrease))){
+			production = this.production + Math.abs(productionIncrease);
+		} else if(productionIncrease < 0)
+			production = this.production + maxp*maxProductionIncrease;
+
+		if (maxp*dayAheadLimitMax < production){
+			//New production is higher than maximum allowed production.
 			this.production = maxp*dayAheadLimitMax;
-			return maxp;
-		} else if(minp*dayAheadLimitMin >= production){
+			return this.production;
+		} else if(minp*dayAheadLimitMin > production){
+			//New production is lower than minimum allowed production.
 			this.production = minp*dayAheadLimitMin;
-			return minp;
+			return this.production;
 		} else {
+			//New production falls within the margins.
 			this.production = production;
-			return production;
+			return this.production;
 		}
 	}
 

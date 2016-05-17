@@ -266,7 +266,10 @@ public class Main {
 		//Set the load of a consumer using the previously calculated cumulative load error.
 		for (int i = 0; i < graph.getNodeList().length-1; i++){
 			if(graph.getNodeList()[i] != null && graph.getNodeList()[i].getClass() == Consumer.class){
-				((Consumer) graph.getNodeList()[i]).setLoad((float) (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError));
+				double testLoad = (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError);
+				testLoad = Math.abs(testLoad);
+				((Consumer) graph.getNodeList()[i]).setLoad((float) testLoad);
+				//((Consumer) graph.getNodeList()[i]).setLoad((float) (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError));
 			}
 		}
 	}
@@ -344,7 +347,7 @@ public class Main {
 
 		//Check if we need to increase current production
 		if((totalCurrentProduction  - sumLoads) < 0){
-			System.err.println("Increasing production");
+			System.out.println("Increasing production");
 
 			//We need to increase production until it meets demand.
 			for(int i = 0; i < grid.getNodeList().length-1; i++){
@@ -352,7 +355,8 @@ public class Main {
 					if (totalCurrentProduction+((ConventionalGenerator)nodeList[i]).getMaxP()*dayAheadLimitMax > sumLoads){
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction); //Set production to the remainder so we can meet the demand exactly
 					}else {
-						totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getProduction() + ((ConventionalGenerator) nodeList[i]).getMaxP());
+						//totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getProduction() + ((ConventionalGenerator) nodeList[i]).getMaxP());
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getMaxP());
 					}
 				}
 			}
@@ -363,17 +367,22 @@ public class Main {
 			for ( int i = grid.getNodeList().length-1; i >= 0; i--){
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
 					if (totalCurrentProduction-((ConventionalGenerator)nodeList[i]).getMinP()*dayAheadLimitMin > sumLoads){
-						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP());
+						//totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP());
+						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getMinP());
+
 					} else {
 						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction);
 					}
 				}
 			}
 		} else {
-			System.err.println("Grid is balanced");
+			System.out.println("Grid is balanced");
 			return null;//production and demand are balanced.
 		}
 
+		/*
+		 * Deal with curtailment and shedding
+		 */
 		if(totalCurrentProduction > sumLoads){
 			//TODO: Load curtailment, we're producing more then the demand.
 			//TODO: turn renewables off maybe if battery charging doesnt help enough?
