@@ -189,7 +189,7 @@ IN,179
 IN,180
 
 #Renewable generators
-#Global node type, node subtype, max generation capacity of node, curtailment cost, cost coefficient
+#Node type, Subtype, nodeId, max generation, curtailment cost, cost coefficient
 RG,W,181,350,300,0.5
 RG,W,182,350,300,0.5
 RG,W,183,350,300,0.5
@@ -204,19 +204,19 @@ RG,W,191,350,300,0.5
 RG,W,192,350,300,0.5
 RG,W,193,350,300,0.5
 RG,W,194,350,300,0.5
-RG,W12,195,350,300,0.5
-RG,S,196,350,300,1.25
-RG,S,197,350,300,1.25
-RG,S,197,350,300,1.25
-RG,S,198,350,300,1.25
-RG,S,199,350,300,1.25
-RG,S,200,350,300,1.25
-RG,S,201,350,300,1.25
-RG,S,202,350,300,1.25
-RG,S,203,350,300,1.25
-RG,S,204,350,300,1.25
-RG,S,205,350,300,1.25
-RG,S12,206,350,300,1.25
+RG,W,195,350,300,0.5
+RG,S,196,55,300,1.25
+RG,S,197,55,300,1.25
+RG,S,197,55,300,1.25
+RG,S,198,55,300,1.25
+RG,S,199,55,300,1.25
+RG,S,200,55,300,1.25
+RG,S,201,55,300,1.25
+RG,S,202,55,300,1.25
+RG,S,203,55,300,1.25
+RG,S,204,55,300,1.25
+RG,S,205,55,300,1.25
+RG,S,206,55,300,1.25
 
 #Storage
 #nodeType, nodeId, currentCharge, maxCharge, minCharge

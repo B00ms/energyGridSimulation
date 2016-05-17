@@ -93,11 +93,10 @@ public class Parser {
 			case "RG":
 				type = scanner.next();
 				nodeId = scanner.nextInt();
-				minProduction = scanner.nextDouble();
 				maxProduction = scanner.nextDouble();
 				double cost = scanner.nextDouble();
 
-				RewGenerator renewableGenerator = new RewGenerator(maxProduction, minProduction, cost, type, nodeId);
+				RewGenerator renewableGenerator = new RewGenerator(maxProduction, 0, cost, type, nodeId);
 				nodeList.add(renewableGenerator);
 				numberOfRenewableGenerators++;
 				break;
