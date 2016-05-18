@@ -14,9 +14,17 @@ public class MontoCarloHelper {
 
 	private RandomDataGenerator rand = new RandomDataGenerator();
 	private double shape, scale, mean, sigma;
-	private static Config conf = ConfigFactory.parseFile(new File("../config/application.conf"));
+	Config conf;
+	private static String OS = System.getProperty("os.name");
+
+//	private static Config conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 
 	public MontoCarloHelper(){
+		if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
+		}else{
+			conf = ConfigFactory.parseFile(new File("config/application.conf"));
+		}
 		Config monteConfig = conf.getConfig("monte-carlo");
 		this.shape = monteConfig.getDouble("shape");
 		this.scale = monteConfig.getDouble("scale");

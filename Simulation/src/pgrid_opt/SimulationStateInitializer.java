@@ -1,30 +1,45 @@
 package pgrid_opt;
 
-public class InstanceRandomizer {
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
+public class SimulationStateInitializer {
 	private Graph g;
 	private Graph[] gDay;
 	//private float[] solar;
 	//private float[] wind;
+
 	private Float[] loads;
+	private List<double[]> production;
+	private List<int[]> offerIncrease;
+	private List<int[]> offerDecrease;
+	Parser parser = new Parser();
 
 	/**
 	 * Create graphs for every timestep and apply load initialization
 	 * @param g original graph
 	 * @param gDay	timestep
-	 * @param solar	solar production
-	 * @param wind	wind production
-	 * @param loads	load
 	 * @return	list of graph for each timestep
 	 */
-	public Graph[] creategraphs(Graph g, Graph[] gDay, Float[] loads) {
+	public Graph[] creategraphs(Graph g, Graph[] gDay) {
 		this.g = g;
 		this.gDay = gDay;
 		//this.solar = solar;
 		//this.wind = wind;
-		this.loads = loads;
+
+		// parse expected hourly load from input file
+		this.loads = parser.parseExpectedHourlyLoad();
+
+		// parse offer prices euro/mwh
+		this.offerIncrease = parser.parseOfferIncreaseProduction();
+		this.offerDecrease = parser.parseOfferDecreaseProduction();
+
 		for (int i = 0; i < this.gDay.length; i++) {
 			this.gDay[i] = g.clone();
 		}
+		initializeExpectedProduction();
 		calculateLoads();
 		calculateRewProd();
 		checkGen();
@@ -104,7 +119,7 @@ public class InstanceRandomizer {
 		for (int i = 0; i < gDay.length-1; i++){
 			for (int j = 0; j < gDay[i].getNodeList().length-1; j++){
 				if(gDay[i].getNodeList()[i].getClass() == RewGenerator.class){
-					((RewGenerator)gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * ((RewGenerator)gDay[i].getNodeList()[j]).getProduction());
+					((RewGenerator)gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * ((RewGenerator) gDay[i].getNodeList()[j]).getProduction());
 				}
 			}
 		}
@@ -129,5 +144,42 @@ public class InstanceRandomizer {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Initialize production using input from expected production files
+	 */
+	private void initializeExpectedProduction(){
+		this.production = parser.parseExpectedProduction();
+
+		for (int i = 0; i < gDay.length - 1; i++) {
+			for (int j = 0; j < g.getNodeList().length-1; j++){
+				if(gDay[i].getNodeList()[j].getClass() == ConventionalGenerator.class){
+					((ConventionalGenerator) gDay[i].getNodeList()[j]).initializeProduction(production.get(j)[i]);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Increases or decreases the high of the seasonal curve according to some random double.
+	 *@param seasonalLoadCurve
+	 * @return the seasonal curve adjust up or down.
+	 */
+	private static HashMap<String, Double[]> setSeasonalVariety(HashMap<String, Double[]> seasonalLoadCurve) {
+
+		Iterator<String> it = seasonalLoadCurve.keySet().iterator();
+
+		while(it.hasNext()){
+			String key = it.next();
+			Double[] seasoncurve  = seasonalLoadCurve.get(key);
+
+			double multiplicationFactor = ThreadLocalRandom.current().nextDouble(3);
+			for(int i = 0; i < seasoncurve.length-1; i++){
+				seasoncurve[i] = seasoncurve[i] * (multiplicationFactor);
+			}
+			seasonalLoadCurve.put(key, seasoncurve);
+		}
+		return seasonalLoadCurve;
 	}
 }

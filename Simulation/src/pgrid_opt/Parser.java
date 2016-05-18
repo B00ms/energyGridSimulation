@@ -1,6 +1,8 @@
 package pgrid_opt;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -10,11 +12,23 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
+import au.com.bytecode.opencsv.CSVReader;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 public class Parser {
-	private Config conf = ConfigFactory.parseFile(new File("../config/application.conf"));
+	private static String OS = System.getProperty("os.name");
+	private Config conf;
+	private Config productionConf;
+
+	public Parser(){
+		if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
+		}else{
+			conf = ConfigFactory.parseFile(new File("config/application.conf"));
+		}
+		productionConf = conf.getConfig("conventionalGenerator").getConfig("offers");
+	}
 
 	/**
 	 * Parsers the initial input file and returns its contents as a java object that contains:
@@ -191,7 +205,12 @@ public class Parser {
 
 		Scanner scanner;
 		try {
-			scanner = new Scanner(Paths.get("../"+path));
+			if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+				scanner = new Scanner(Paths.get("../"+path));
+			}else{
+				scanner = new Scanner(Paths.get(path));
+			}
+
 			scanner.useDelimiter(",|\\n");
 
 			while(scanner.hasNext()){
@@ -205,6 +224,98 @@ public class Parser {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
+	}
+
+	/**
+	 * Parse expected production from config file
+	 * @return List<Double[]> expected production for each node
+	 */
+	public List<double[]> parseExpectedProduction(){
+		Config productionConf = conf.getConfig("conventionalGenerator").getConfig("production");
+		String path = productionConf.getString("summer"); // TODO for each season
+
+		List<double[]> expectedHourlyProduction = new ArrayList<>();
+		try{
+			CSVReader reader;
+			if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+				reader = new CSVReader(new FileReader("../"+path));
+			}else{
+				reader = new CSVReader(new FileReader(path));
+			}
+
+			String [] nextLine;
+			while ((nextLine = reader.readNext()) != null) {
+				double[] productionValues = new double[nextLine.length];
+				for (int i = 0; i < nextLine.length; i++) {
+					productionValues[i] = Double.parseDouble(nextLine[i]);
+				}
+				expectedHourlyProduction.add(productionValues);
+			}
+
+			return expectedHourlyProduction;
+		} catch (FileNotFoundException e){
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Parse and return the offers for increasing production for each conventional generator
+	 * @return
+	 */
+	public List<int[]> parseOfferIncreaseProduction(){
+		String path = productionConf.getString("increaseProduction");
+		List<int[]> offerUp = parseOffer(path);
+		return offerUp;
+	}
+
+	/**
+	 * Parse and return the offers for decreasing production for each conventional generator
+	 * @return
+	 */
+	public List<int[]> parseOfferDecreaseProduction(){
+		String path = productionConf.getString("decreaseProduction");
+		List<int[]> offerDown = parseOffer(path);
+		return offerDown;
+	}
+
+	/**
+	 * Parse offers from input csv files
+	 % D1 and D2 are MWh; PD1 and PD2 are euro/MWh
+	 * @param path
+	 * @return
+	 */
+	public List<int[]> parseOffer(String path){
+
+		List<int[]> offers = new ArrayList<>();
+		try{
+			CSVReader reader;
+			if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+				reader = new CSVReader(new FileReader("../"+path));
+			}else{
+				reader = new CSVReader(new FileReader(path));
+			}
+
+			String [] nextLine;
+			while ((nextLine = reader.readNext()) != null) {
+				int[] offerValues = new int[nextLine.length];
+				for (int i = 0; i < nextLine.length; i++) {
+					offerValues[i] = Integer.parseInt(nextLine[i]);
+				}
+				offers.add(offerValues);
+			}
+
+			return offers;
+		} catch (FileNotFoundException e){
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		return null;
 	}
 
@@ -293,7 +404,7 @@ public class Parser {
 	 * @param fileLocation
 	 * @return
 	 */
-	public Double[] parseCSV(String fileLocation){
+	public Double[] parseLoadCSV(String fileLocation){
 
 		try {
 			Scanner scanner = new Scanner(Paths.get(fileLocation));
@@ -313,6 +424,33 @@ public class Parser {
 			return null;
 		}
 	}
+
+//	public Graph parseProductionCSV(String fileLocation, Graph graph){
+//
+//		try {
+//			Scanner scanner = new Scanner(Paths.get(fileLocation));
+////			scanner.useDelimiter(",|\\s");
+//			scanner.useDelimiter("\r\n");
+////			List<Double>< loadCurve = new ArrayList<>();
+//			int i = 0;
+//			while(scanner.hasNext()){
+//
+//				String lineValue = scanner.next();
+//				if(!lineValue.isEmpty()){
+//					scanner.useDelimiter(",");
+////					loadCurve.add(Double.parseDouble(curveValue));
+//				}
+//				i++;
+//			}
+//			scanner.close();
+//
+////			return loadCurve.toArray(new Double[loadCurve.size()]);
+//			return graph;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
 
 	public Double[][] parseCSV2D(String fileLocation){
 

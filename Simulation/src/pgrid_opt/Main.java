@@ -9,13 +9,9 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Logger;
 
 import com.typesafe.config.ConfigFactory;
 public class Main {
@@ -53,54 +49,44 @@ public class Main {
 	public static void main(String[] args) {
 
 		String SUMMER_LOAD_CURVE;
-
-		if(OS.startsWith("Windows") || OS.startsWith("Linux")){
-			SUMMER_LOAD_CURVE = "../Expected Load summer.csv";
-			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
-		}else{
-			SUMMER_LOAD_CURVE = "..q/Expected Load summer.csv";
-			conf = ConfigFactory.parseFile(new File("config/application.conf"));
-		}
-
 		long starttime = System.nanoTime();
-
-		Float[] loads = null;
 		float wcost = 0.0f;  //wind cost
 		float scost = 0.0f; //solar cost
 		Graph[] timestepsGraph = null;
 		Parser parser = new Parser();
-		String outpath1 = "input";
-		String outpath2 = ".mod";
-		String solpath1 = "glpsol -d ";
-		String solpath2 = " -m ";
-		//String solpath3 = "sol";
+		Graph graph;
 
+		if(OS.startsWith("Windows") || OS.startsWith("Linux")){
+			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
+			graph = parser.parseData("../network.csv");
+		}else{
+			conf = ConfigFactory.parseFile(new File("config/application.conf"));
+			graph = parser.parseData("./network.csv");
+		}
+
+		// load general config
 		Config generalConf = conf.getConfig("general");
 		String model = generalConf.getString("model-file"); //path to the model
 		String dirpath = generalConf.getString("output-folder"); //path to the output
 		String path = generalConf.getString("input-file"); // parse old input file
 
-		loads = parser.parseExpectedHourlyLoad();
-
-		Graph graph = parser.parseData("../network.csv");
+		// load glpsol config
+		Config glpsolConf = conf.getConfig("glpsol-config");
+		String outpath1 = glpsolConf.getString("outpath1");
+		String outpath2 = glpsolConf.getString("outpath2");
+		String solpath1 = glpsolConf.getString("solpath1");
+		String solpath2 = glpsolConf.getString("solpath2");
 
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
-
-		//Hashmap for the 4 different seasonal curves
-		HashMap<String, Double[]> seasonalLoadCurve = new HashMap<>();
-		HashMap<String, Double[][]> expectedProduction = new HashMap<>();
-		seasonalLoadCurve.put("summer", parser.parseCSV(SUMMER_LOAD_CURVE));
-
-		seasonalLoadCurve = setSeasonalVariety(seasonalLoadCurve);
 
 		// load simulation limit
 		int simLimit = generalConf.getInt("simulation-runs");
 		for ( int numOfSim=0; numOfSim < simLimit; numOfSim++){
 			System.out.println("Simulation: "+ numOfSim);
-			InstanceRandomizer instanceRandomizer = new InstanceRandomizer();
+			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 			timestepsGraph = new Graph[generalConf.getInt(("numberOfTimeSteps"))];
-			timestepsGraph = instanceRandomizer.creategraphs(graph, timestepsGraph, loads);
+			timestepsGraph = simulationState.creategraphs(graph, timestepsGraph);
 			int i = 0;
 
 			double load = 0;
@@ -120,8 +106,7 @@ public class Main {
 
 			while (i < timestepsGraph.length - 1) {
 
-				//timestepsGraph[i] = setExpectedProduction(timestepsGraph[i], i, expectedProduction.get("summer"));
-				setGridState(timestepsGraph[i], i);
+				randomizeGridState(timestepsGraph[i], i);
 				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
@@ -151,13 +136,14 @@ public class Main {
 					System.out.println(output);
 					if (graph.getNstorage() > 0) {
 						timestepsGraph[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", timestepsGraph[i]); //Keeps track of the new state for storages.
-						timestepsGraph[i + 1] = instanceRandomizer.updateStorages(timestepsGraph[i], timestepsGraph[i + 1]); //Apply the new state of the storage for the next time step.
+						timestepsGraph[i + 1] = simulationState.updateStorages(timestepsGraph[i], timestepsGraph[i + 1]); //Apply the new state of the storage for the next time step.
 					}
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
 				}
 				++i;
 			}
+
 			if (graph.getNstorage() > 0) {
 				mp.printStorageData(timestepsGraph, String.valueOf(dirpath) + "storage.txt");
 
@@ -169,39 +155,17 @@ public class Main {
 					}
 			}
 		}
-			long endtime = System.nanoTime();
-			long duration = endtime - starttime;
-			System.out.println("Time used:" + duration / 1000000 + " millisecond");
-	}
 
-
-	/**
-	 * Increases or decreases the high of the seasonal curve according to some random double.
-	 *@param seasonalLoadCurve
-	 * @return the seasonal curve adjust up or down.
-	 */
-	private static HashMap<String, Double[]> setSeasonalVariety(HashMap<String, Double[]> seasonalLoadCurve) {
-
-		Iterator<String> it = seasonalLoadCurve.keySet().iterator();
-
-		while(it.hasNext()){
-			String key = it.next();
-			Double[] seasoncurve  = seasonalLoadCurve.get(key);
-
-			double multiplicationFactor = ThreadLocalRandom.current().nextDouble(3);
-			for(int i = 0; i < seasoncurve.length-1; i++){
-				seasoncurve[i] = seasoncurve[i] * (multiplicationFactor);
-			}
-			seasonalLoadCurve.put(key, seasoncurve);
-		}
-		return seasonalLoadCurve;
+		long endtime = System.nanoTime();
+		long duration = endtime - starttime;
+		System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
 
 	/**
 	 * Set the state of generators and loads.
 	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
-	private static void setGridState(Graph graph, int currentTimeStep){
+	private static void randomizeGridState(Graph graph, int currentTimeStep){
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
 		double sumLoadError = 0;

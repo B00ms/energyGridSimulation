@@ -55,6 +55,20 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		this.generatorFailure = generatorFailure;
 	}
 
+	public double initializeProduction(double production){
+
+		// check edge cases for initialization
+		if(production>this.maxp){
+			this.production = this.maxp*dayAheadLimitMax;
+		}else if(production<this.minp){
+			this.production = this.maxp*dayAheadLimitMin;
+		}else{
+			this.production = production;
+		}
+
+		return this.production;
+	}
+
 	public double setProduction(double production) {
 
 		//For the edge case where we dont want to change production:
