@@ -107,6 +107,7 @@ public class Main {
 			while (i < timestepsGraph.length - 1) {
 
 				randomizeGridState(timestepsGraph[i], i);
+				timestepsGraph = setLoadError(timestepsGraph, i);
 				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
@@ -159,6 +160,52 @@ public class Main {
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
+	}
+
+	private static Graph[] setLoadError(Graph[] timestepsGraph, int currentTimeStep) {
+
+		MontoCarloHelper mcHelper = new MontoCarloHelper();
+		for (int i = 0; i < timestepsGraph.length; i++){
+			double totalLoad = 0;
+			for(int n = 0; n < timestepsGraph[i].getNodeList().length; n++){
+				if(timestepsGraph[i].getNodeList()[n] != null && timestepsGraph[i].getNodeList()[n].getClass() == Consumer.class){
+					double mcDraw = mcHelper.getRandomNormDist();
+					double  previousError = 0;
+					//if(i > 0){
+						//Calculate and set the load error of a single consumer.
+						double error = (((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad() * mcDraw);
+						totalLoad += ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad();
+						if (i > 0)
+							previousError = ((Consumer)timestepsGraph[i-1].getNodeList()[n]).getLoadError();
+						System.out.print("NodeID: " + n);
+						System.out.print(" time: " + i + " mcDraw: " +  + mcDraw + " error: " + error + " previousError: " + previousError);
+
+						((Consumer)timestepsGraph[i].getNodeList()[n]).setLoadError(error+previousError); //plus load error of i-1 makes it cumulative.
+
+						//Calculate and set the real load of a single consumer
+						System.out.print(" Load: " + ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad());
+						double realLoad = ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad() + ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoadError();
+						((Consumer)timestepsGraph[i].getNodeList()[n]).setLoad(realLoad);
+
+						System.out.println(" realLoad: " + realLoad);
+					//}
+				}
+			}
+			System.out.println("Total load: "+ totalLoad);
+		}
+
+		/*
+		//System.out.println("next I: ");
+		for (int i = 0; i < currentTimeStep; i++){
+			for(int n = 0; n < timestepsGraph[i].getNodeList().length; n++){
+				if(timestepsGraph[i].getNodeList()[n] != null && timestepsGraph[i].getNodeList()[n].getClass() == Consumer.class){
+
+				}
+			}
+		}
+		 */
+		return timestepsGraph;
+
 	}
 
 	/**
@@ -216,10 +263,13 @@ public class Main {
 					break;
 				}
 			}
-			else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Consumer.class){
+		}
+			/*else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Consumer.class){
 				//Consumer so we want to calculate and set the real demand using the load error.
 				double mcDraw = monteCarloHelper.getRandomNormDist();
 				//System.out.println(mcDraw);
+				System.out.println(mcDraw + " " + (((Consumer) graph.getNodeList()[j]).getLoad()));
+
 				sumLoadError += (((Consumer) graph.getNodeList()[j]).getLoad() * mcDraw);
 			}
 			else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Storage.class){
@@ -230,12 +280,20 @@ public class Main {
 		//Set the load of a consumer using the previously calculated cumulative load error.
 		for (int i = 0; i < graph.getNodeList().length-1; i++){
 			if(graph.getNodeList()[i] != null && graph.getNodeList()[i].getClass() == Consumer.class){
-				double testLoad = (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError);
-				testLoad = Math.abs(testLoad);
-				((Consumer) graph.getNodeList()[i]).setLoad((float) testLoad);
+				//double testLoad = (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError);
+				//testLoad = Math.abs(testLoad);
+				//((Consumer) graph.getNodeList()[i]).setLoad((float) testLoad);
 				//((Consumer) graph.getNodeList()[i]).setLoad((float) (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError));
+
+				double mcDraw = monteCarloHelper.getRandomNormDist();
+				double load = ((Consumer) graph.getNodeList()[i]).getLoad();
+				double loadError = load * mcDraw;
+				((Consumer) graph.getNodeList()[i]).setLoadError(load * mcDraw);
+				((Consumer) graph.getNodeList()[i]).setLoad((float) load + loadError);
+
+
 			}
-		}
+		}*/
 	}
 
 

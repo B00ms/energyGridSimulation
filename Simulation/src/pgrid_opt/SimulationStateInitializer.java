@@ -53,7 +53,7 @@ public class SimulationStateInitializer {
 	 * @return
 	 */
 	public Graph updateStorages(Graph oldg, Graph newg) {
-		for (int i = 0; i < oldg.getNodeList().length-1; i++) {
+		for (int i = 0; i < oldg.getNodeList().length; i++) {
 			if(oldg.getNodeList()[i].getClass() == Storage.class) {
 				float etac = oldg.getEtac();
 				float etad = oldg.getEtad();
@@ -93,7 +93,7 @@ public class SimulationStateInitializer {
 
 
 		}*/
-		for (int i = 0; i < this.gDay.length - 1; i++) {
+		for (int i = 0; i < this.gDay.length; i++) {
 
 			if (this.g.getLoadmax() / 100 * 70 > ((ConventionalGenerator)g.getNodeList()[i]).getProduction()) {
 
@@ -116,8 +116,8 @@ public class SimulationStateInitializer {
 	 * "W" wind
 	 */
 	private void calculateRewProd() {
-		for (int i = 0; i < gDay.length-1; i++){
-			for (int j = 0; j < gDay[i].getNodeList().length-1; j++){
+		for (int i = 0; i < gDay.length; i++){
+			for (int j = 0; j < gDay[i].getNodeList().length; j++){
 				if(gDay[i].getNodeList()[i].getClass() == RewGenerator.class){
 					((RewGenerator)gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * ((RewGenerator) gDay[i].getNodeList()[j]).getProduction());
 				}
@@ -137,9 +137,10 @@ public class SimulationStateInitializer {
 						.setLoad(this.loads[i] / 100 * ((Consumer) this.g.getNodeList()[j]).getLoad());
 			}
 		}*/
-		for (int i = 0; i < gDay.length - 1; i++) {
-			for (int j = 0; j < g.getNodeList().length-1; j++){
+		for (int i = 0; i < gDay.length; i++) {
+			for (int j = 0; j < g.getNodeList().length; j++){
 				if(gDay[i].getNodeList()[j].getClass() == Consumer.class){
+					double load = loads[i] / 100 * ((Consumer)g.getNodeList()[j]).getLoad();
 					((Consumer)gDay[i].getNodeList()[j]).setLoad(loads[i] / 100 * ((Consumer)g.getNodeList()[j]).getLoad());
 				}
 			}
@@ -152,8 +153,8 @@ public class SimulationStateInitializer {
 	private void initializeExpectedProduction(){
 		this.production = parser.parseExpectedProduction();
 
-		for (int i = 0; i < gDay.length - 1; i++) {
-			for (int j = 0; j < g.getNodeList().length-1; j++){
+		for (int i = 0; i < gDay.length; i++) {
+			for (int j = 0; j < g.getNodeList().length; j++){
 				if(gDay[i].getNodeList()[j].getClass() == ConventionalGenerator.class){
 					((ConventionalGenerator) gDay[i].getNodeList()[j]).initializeProduction(production.get(j)[i]);
 				}
@@ -175,7 +176,7 @@ public class SimulationStateInitializer {
 			Double[] seasoncurve  = seasonalLoadCurve.get(key);
 
 			double multiplicationFactor = ThreadLocalRandom.current().nextDouble(3);
-			for(int i = 0; i < seasoncurve.length-1; i++){
+			for(int i = 0; i < seasoncurve.length; i++){
 				seasoncurve[i] = seasoncurve[i] * (multiplicationFactor);
 			}
 			seasonalLoadCurve.put(key, seasoncurve);

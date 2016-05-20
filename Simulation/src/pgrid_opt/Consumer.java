@@ -2,10 +2,12 @@ package pgrid_opt;
 
 public class Consumer extends Node {
 	private double load;
+	private double loadError;
 
 	public Consumer(double load, int nodeId) {
 		super(nodeId);
 		this.load = load;
+		loadError = 0;
 	}
 
 	public Consumer(double load) {
@@ -18,6 +20,19 @@ public class Consumer extends Node {
 
 	public void setLoad(double d) {
 		this.load = d;
+	}
+
+	/**
+	 * Add the parameter loadError to the load error of the Consumer
+	 * @param loadError
+	 */
+	public void setLoadError(double loadError)
+	{
+		this.loadError = loadError;
+	}
+
+	public double getLoadError(){
+		return loadError;
 	}
 
 	public boolean isRenew() {
