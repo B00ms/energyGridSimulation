@@ -104,10 +104,10 @@ public class Main {
 				e1.printStackTrace();
 			}
 
-			while (i < timestepsGraph.length - 1) {
+			timestepsGraph = setLoadError(timestepsGraph);
+			while (i < timestepsGraph.length) {
 
 				randomizeGridState(timestepsGraph[i], i);
-				timestepsGraph = setLoadError(timestepsGraph, i);
 				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
@@ -162,7 +162,7 @@ public class Main {
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
 
-	private static Graph[] setLoadError(Graph[] timestepsGraph, int currentTimeStep) {
+	private static Graph[] setLoadError(Graph[] timestepsGraph) {
 
 		MontoCarloHelper mcHelper = new MontoCarloHelper();
 		for (int i = 0; i < timestepsGraph.length; i++){
@@ -177,21 +177,21 @@ public class Main {
 						totalLoad += ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad();
 						if (i > 0)
 							previousError = ((Consumer)timestepsGraph[i-1].getNodeList()[n]).getLoadError();
-						System.out.print("NodeID: " + n);
-						System.out.print(" time: " + i + " mcDraw: " +  + mcDraw + " error: " + error + " previousError: " + previousError);
+						//System.out.print("NodeID: " + n);
+						//System.out.print(" time: " + i + " mcDraw: " +  + mcDraw + " error: " + error + " previousError: " + previousError);
 
 						((Consumer)timestepsGraph[i].getNodeList()[n]).setLoadError(error+previousError); //plus load error of i-1 makes it cumulative.
 
 						//Calculate and set the real load of a single consumer
-						System.out.print(" Load: " + ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad());
+						//System.out.print(" Load: " + ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad());
 						double realLoad = ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad() + ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoadError();
 						((Consumer)timestepsGraph[i].getNodeList()[n]).setLoad(realLoad);
 
-						System.out.println(" realLoad: " + realLoad);
+						//System.out.println(" realLoad: " + realLoad);
 					//}
 				}
 			}
-			System.out.println("Total load: "+ totalLoad);
+			//System.out.println("Total load: "+ totalLoad);
 		}
 
 		/*
