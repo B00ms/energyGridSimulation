@@ -315,36 +315,6 @@ public class Main {
 				}
 			}
 		}
-			/*else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Consumer.class){
-				//Consumer so we want to calculate and set the real demand using the load error.
-				double mcDraw = monteCarloHelper.getRandomNormDist();
-				//System.out.println(mcDraw);
-				System.out.println(mcDraw + " " + (((Consumer) graph.getNodeList()[j]).getLoad()));
-
-				sumLoadError += (((Consumer) graph.getNodeList()[j]).getLoad() * mcDraw);
-			}
-			else if(graph.getNodeList()[j] != null && graph.getNodeList()[j].getClass() == Storage.class){
-				// storage node currenlty not being adapted
-			}
-		}
-		System.out.println("Load error: " + sumLoadError);
-		//Set the load of a consumer using the previously calculated cumulative load error.
-		for (int i = 0; i < graph.getNodeList().length-1; i++){
-			if(graph.getNodeList()[i] != null && graph.getNodeList()[i].getClass() == Consumer.class){
-				//double testLoad = (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError);
-				//testLoad = Math.abs(testLoad);
-				//((Consumer) graph.getNodeList()[i]).setLoad((float) testLoad);
-				//((Consumer) graph.getNodeList()[i]).setLoad((float) (((Consumer) graph.getNodeList()[i]).getLoad() + sumLoadError));
-
-				double mcDraw = monteCarloHelper.getRandomNormDist();
-				double load = ((Consumer) graph.getNodeList()[i]).getLoad();
-				double loadError = load * mcDraw;
-				((Consumer) graph.getNodeList()[i]).setLoadError(load * mcDraw);
-				((Consumer) graph.getNodeList()[i]).setLoad((float) load + loadError);
-
-
-			}
-		}*/
 	}
 
 	/**
