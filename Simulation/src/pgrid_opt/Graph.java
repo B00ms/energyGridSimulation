@@ -28,7 +28,7 @@ public class Graph implements Cloneable {
 		setNstorage(nstorage);
 		setCcurt(200.0F); //TODO: movie to configuration file.
 		setEfficency(75);
-		setDelta(delta); //TODO: remove this because its not used.
+		setDelta(delta);
 		setEtac(etac);
 		setEtad(etad);
 	}

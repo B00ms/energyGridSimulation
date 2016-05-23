@@ -8,7 +8,6 @@ public class InnerNode extends Node{
 
 	@Override
 	public boolean isRenew() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

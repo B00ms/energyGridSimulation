@@ -44,7 +44,6 @@ public class Edge implements Comparable<Edge> {
 
 	@Override
 	public int compareTo(Edge o) {
-		// TODO Auto-generated method stub
 		if (o.getEndVertexes()[0] < endVertexOne)
 			return 1;
 		else if (o.getEndVertexes()[0] == endVertexOne)

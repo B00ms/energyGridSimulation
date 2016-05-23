@@ -9,21 +9,22 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.Date;
+import java.time.Instant;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Delayed;
 
 import com.typesafe.config.ConfigFactory;
-public class Main {
 
-	/*
-	 * Cut in and cut out margins for wind energy
-	 * V_rated is the optimal value for wind... I think.
-	 */
-	private final static double V_CUT_IN = 3;
-	private final static double V_CUT_OFF = 25;
-	private final static double V_RATED = 12;
-	private final static double P_RATED = 220;
+import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
+import net.e175.klaus.solarpositioning.DeltaT;
+import net.e175.klaus.solarpositioning.Grena3;
+import net.e175.klaus.solarpositioning.SPA;
+public class Main {
 
 	//Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
@@ -137,7 +138,8 @@ public class Main {
 					System.out.println(output);
 					if (graph.getNstorage() > 0) {
 						timestepsGraph[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", timestepsGraph[i]); //Keeps track of the new state for storages.
-						timestepsGraph[i + 1] = simulationState.updateStorages(timestepsGraph[i], timestepsGraph[i + 1]); //Apply the new state of the storage for the next time step.
+						if (i < 23)
+							timestepsGraph[i + 1] = simulationState.updateStorages(timestepsGraph[i], timestepsGraph[i + 1]); //Apply the new state of the storage for the next time step.
 					}
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
@@ -247,19 +249,68 @@ public class Main {
 					mcDraw = monteCarloHelper.getRandomWeibull();
 					//System.out.println(mcDraw);
 
-					if(mcDraw <= V_CUT_IN || mcDraw >= V_CUT_OFF){
+					double vCutIn = conf.getConfig("windGenerator").getInt("vCutIn");
+					double vCutOff = conf.getConfig("windGenerator").getInt("vCutOff");
+					double vRated = conf.getConfig("windGenerator").getInt("vRated");
+					double pRated = conf.getConfig("windGenerator").getInt("pRated");
+
+					if(mcDraw <= vCutIn || mcDraw >= vCutOff){
 						//Wind speed is outside the margins
 						((RewGenerator) graph.getNodeList()[j]).setProduction(0);
-					} else if(mcDraw >= V_CUT_IN && mcDraw <= V_RATED){
+					} else if(mcDraw >= vCutIn && mcDraw <= vRated){
 						//In a sweet spot for max wind production
-						double production = (P_RATED*((Math.pow(mcDraw, 3)-Math.pow(V_CUT_IN, 3))/(Math.pow(V_RATED, 3)-Math.pow(V_CUT_IN, 3))));//Should be the same as the matlab from Laura
+						double production = (pRated*((Math.pow(mcDraw, 3)-Math.pow(vCutIn, 3))/(Math.pow(vRated, 3)-Math.pow(vCutIn, 3))));//Should be the same as the matlab from Laura
 						((RewGenerator) graph.getNodeList()[j]).setProduction(production);
-					} else if (V_RATED <= mcDraw && mcDraw <= V_CUT_OFF ) {
-						((RewGenerator) graph.getNodeList()[j]).setProduction(P_RATED);
+					} else if (vRated <= mcDraw && mcDraw <= vCutOff ) {
+						((RewGenerator) graph.getNodeList()[j]).setProduction(pRated);
 					}
 					break;
 				case "S": //Solar generator
 					//Let's ignore the sun as well for now...
+					mcDraw = monteCarloHelper.getRandomGamma();
+
+					//TODO: move to configuration file, or make it a constant
+					double irradianceConstant = conf.getConfig("solarGenerator").getDouble("irradianceConstant"); //Solar constant
+					double eccentricityCorrFactor = 1+0.033; //Eccentricity correction Factor
+					double langitude = 53.218705; //TODO: should maybe be placed within solar generator nodes so we can easily switch locations
+					double longitude =  6.567793;
+
+					int month = Calendar.DECEMBER;
+					GregorianCalendar calendar = new GregorianCalendar(2016, month, 14, currentTimeStep, 0);
+					double deltaT = DeltaT.estimate(calendar);
+					//AzimuthZenithAngle azimuthZenithAgnle = Grena3.calculateSolarPosition(calendar, langitude, longitude, deltaT);
+					//double zenithAngle = azimuthZenithAgnle.getZenithAngle();
+					GregorianCalendar[] sunriseset = SPA.calculateSunriseTransitSet(calendar, langitude, longitude, deltaT);
+
+					int sunrise = sunriseset[0].get(Calendar.HOUR_OF_DAY);
+					int sunset = sunriseset[2].get(Calendar.HOUR_OF_DAY);
+
+					// We want to find the maximum Extraterrestial irradiance of the day.
+					double extratIrradianceMax = 0;
+					for (int i = 0; i < 24; i ++){
+						GregorianCalendar cal = new GregorianCalendar(2016, month, 14, i, 0);
+						AzimuthZenithAngle azimuthZenithAgnle = Grena3.calculateSolarPosition(cal, langitude, longitude, deltaT);
+						double zenithAngle = azimuthZenithAgnle.getZenithAngle();
+
+						double extratIrradiance = irradianceConstant * eccentricityCorrFactor * Math.cos( (2*Math.PI*calendar.get(Calendar.DAY_OF_YEAR)) / 365) * Math.cos(zenithAngle);
+						if (extratIrradiance > extratIrradianceMax)
+							extratIrradianceMax = extratIrradiance;
+					}
+					double sMax = extratIrradianceMax * mcDraw;
+					double irradiance;
+					if((currentTimeStep <= sunrise) || (currentTimeStep >= sunset))
+						irradiance = 0;
+					else
+						irradiance = sMax * Math.sin(Math.PI * (currentTimeStep - sunrise) / (sunset - sunrise));
+
+
+					double efficiency = conf.getConfig("solarGenerator").getDouble("panelEfficiency");
+					//surface array of panels in m², efficiency, irradiance of panels on the horizontal plane.
+					double production = 45 *  efficiency * irradiance;
+
+					((RewGenerator) graph.getNodeList()[j]).setProduction(production);
+					System.out.println("sunRise:" + sunrise + " currentTime:" + currentTimeStep + " sunset:" + sunset + " production:" + production +  " max irradiance:" + extratIrradianceMax + " MC draw:" + mcDraw + " nodeId:" + ((RewGenerator) graph.getNodeList()[j]).getNodeId());
+
 					break;
 				}
 			}
@@ -296,7 +347,6 @@ public class Main {
 		}*/
 	}
 
-
 	/**
 	 * Sets the state of conventional generators to on or off.
 	 * @param graph
@@ -314,19 +364,6 @@ public class Main {
 				((ConventionalGenerator) graph.getNodeList()[node]).setGeneratorFailure(true);
 			}
 		}
-		return graph;
-	}
-
-	private static Graph setExpectedProduction(Graph graph, int timeStep, Double[][] expectedProduction){
-
-		for(int i = 0; i < graph.getNodeList().length-1; i++){
-			if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class){
-				//TODO: this is a problem because we have 42 generators but we dont know the correct order of said generators.
-				//TODO: so lets use json to define the generator, then use the IDs from that definition to set the expected production.
-				((ConventionalGenerator) graph.getNodeList()[i]).setProduction(expectedProduction[i][i]);
-			}
-		}
-
 		return graph;
 	}
 
@@ -406,8 +443,6 @@ public class Main {
 		 * Deal with curtailment and shedding
 		 */
 		if(totalCurrentProduction > sumLoads){
-			//TODO: Load curtailment, we're producing more then the demand.
-			//TODO: turn renewables off maybe if battery charging doesnt help enough?
 			System.out.println("curtailment");
 			for ( int i = 0; i < nodeList.length; i++){
 				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
@@ -418,8 +453,6 @@ public class Main {
 				}
 			}
 		} else if(totalCurrentProduction < sumLoads){
-			//TODO: Load shedding, we cannot meet the demand hence we have to load shedding.
-			//TODO: Or we can use the batteries to try and meet the demand
 			for ( int i = 0; i < nodeList.length; i++){
 				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
 					if(totalCurrentProduction + ((Storage)nodeList[i]).getMaximumCharge() > sumLoads){

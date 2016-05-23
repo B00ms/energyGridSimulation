@@ -40,5 +40,10 @@
       <artifactId>opencsv</artifactId>
       <version>2.3</version>
     </dependency>
+    <dependency>
+    	<groupId>net.e175.klaus</groupId>
+    	<artifactId>solarpositioning</artifactId>
+    	<version>0.0.9</version>
+    </dependency>
   </dependencies>
 </project>

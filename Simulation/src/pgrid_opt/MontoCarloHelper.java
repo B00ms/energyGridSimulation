@@ -43,13 +43,6 @@ public class MontoCarloHelper {
 	}
 
 	/**
-	 * TODO: maybe implement this (Generate x amount of random numbers before generating the actual random numbers)
-	 */
-	private void burnin(){
-
-	}
-
-	/**
 	 *
 	 * @return A random double from a Weibull distribution
 	 */
@@ -72,6 +65,11 @@ public class MontoCarloHelper {
 	public double getRandomUniformDist(){
 		//Comes for an approximate uniform distribution
 		return rand.nextUniform(0, 1);
+	}
+
+	public double getRandomGamma(){
+		//Parameters as defined in carpinelli2014
+		return rand.nextGamma(8.9166, 0.0311);
 	}
 
 }
