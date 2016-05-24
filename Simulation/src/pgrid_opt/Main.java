@@ -112,6 +112,7 @@ public class Main {
 				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
+				timestepsGraph[i].printGraph(i);
 				try {
 					StringBuffer output = new StringBuffer();
 					String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
@@ -309,7 +310,7 @@ public class Main {
 					double production = 45 *  efficiency * irradiance;
 
 					((RewGenerator) graph.getNodeList()[j]).setProduction(production);
-					System.out.println("sunRise:" + sunrise + " currentTime:" + currentTimeStep + " sunset:" + sunset + " production:" + production +  " max irradiance:" + extratIrradianceMax + " MC draw:" + mcDraw + " nodeId:" + ((RewGenerator) graph.getNodeList()[j]).getNodeId());
+					//System.out.println("sunRise:" + sunrise + " currentTime:" + currentTimeStep + " sunset:" + sunset + " production:" + production +  " max irradiance:" + extratIrradianceMax + " MC draw:" + mcDraw + " nodeId:" + ((RewGenerator) graph.getNodeList()[j]).getNodeId());
 
 					break;
 				}

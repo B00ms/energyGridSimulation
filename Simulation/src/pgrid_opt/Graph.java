@@ -1,5 +1,11 @@
 package pgrid_opt;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+
 public class Graph implements Cloneable {
 	private int nnode; //Total Number of nodes in the graph
 	private int ngenerators; //Number of conventional generators
@@ -249,5 +255,68 @@ public class Graph implements Cloneable {
 	 */
 	public void setEtac(float etac) {
 		this.etac = etac;
+	}
+
+	public void printGraph(int graphNumber){
+		String outputPath = "../graphstate/graph"+graphNumber+".dgs";
+		try {
+			File file = new File(outputPath);
+
+			if(!file.exists())
+				file.createNewFile();
+
+			FileWriter fileWriter = new FileWriter(file, false);
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+			bufferedWriter.write("DGS004"); bufferedWriter.newLine();
+			bufferedWriter.write("null 0 0 "); bufferedWriter.newLine();
+			bufferedWriter.write("st 0"); bufferedWriter.newLine();
+			bufferedWriter.write("cg  \"ui.quality\":true"); bufferedWriter.newLine();
+			bufferedWriter.write("cg  \"ui.antialias\":true"); bufferedWriter.newLine();
+			bufferedWriter.write("cg  \"ui.stylesheet\":\"url(mysheet.css)\""); bufferedWriter.newLine();
+
+			for (int i = 0; i < nodelist.length; i++){
+				Node node = nodelist[i];
+
+				if(node.getClass() == ConventionalGenerator.class){
+					ConventionalGenerator convGenerator = (ConventionalGenerator) nodelist[i];
+					bufferedWriter.write("an " + "\"" + convGenerator.getNodeId() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"ui.label\":" + "\"" + convGenerator.getNodeId() +"\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"ui.class\":" + "\"" + convGenerator.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+				} else if(node.getClass() == RewGenerator.class){
+					RewGenerator rewGenerator = (RewGenerator) nodelist[i];
+					bufferedWriter.write("an " + "\"" + rewGenerator.getNodeId() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"ui.label\":" + "\"" + rewGenerator.getNodeId() +"\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"ui.class\":" + "\"" + rewGenerator.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+				} else if (node.getClass() == InnerNode.class){
+					InnerNode innderNode = (InnerNode) nodelist[i];
+					bufferedWriter.write("an " + "\"" + innderNode.getNodeId() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + innderNode.getNodeId() + "\" \"ui.label\":" + "\"" + innderNode.getNodeId() +"\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + innderNode.getNodeId() + "\" \"ui.class\":" + "\"" + innderNode.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+				} else if (node.getClass() == Consumer.class){
+					Consumer consumerNode = (Consumer) nodelist[i];
+					bufferedWriter.write("an " + "\"" + consumerNode.getNodeId() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + consumerNode.getNodeId() + "\" \"ui.label\":" + "\"" + consumerNode.getNodeId() +"\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + consumerNode.getNodeId() + "\" \"ui.class\":" + "\"" + consumerNode.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+				} else if (node.getClass() == Storage.class){
+					Storage storageNode = (Storage ) nodelist[i];
+					bufferedWriter.write("an " + "\"" + storageNode.getNodeId() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"ui.label\":" + "\"" + storageNode.getNodeId() +"\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"ui.class\":" + "\"" + storageNode.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+				}
+			}
+
+			for(int i = 0; i < edges.length; i ++){
+				bufferedWriter.write("ae \"edge" + i + "\" \"" + edges[i].getEndVertexes()[0] + "\" \"" + edges[i].getEndVertexes()[1] + "\""); bufferedWriter.newLine();
+				bufferedWriter.write("ce \"" + edges[i].getEndVertexes()[0] + " \"flow\":" +"\"" + edges[i].getFlow() + "\""); bufferedWriter.newLine();
+				bufferedWriter.write("ce \"" + edges[i].getEndVertexes()[0] + " \"flow\":" +"\"" + edges[i].getCapacity() + "\""); bufferedWriter.newLine();
+			}
+
+			bufferedWriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("rawr rawr rawr");
 	}
 }
