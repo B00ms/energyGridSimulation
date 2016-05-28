@@ -5,6 +5,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Scanner;
+
+import org.apache.commons.math3.optim.nonlinear.scalar.LineSearch;
+
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 public class Graph implements Cloneable {
 	private int nnode; //Total Number of nodes in the graph
@@ -257,10 +263,18 @@ public class Graph implements Cloneable {
 		this.etac = etac;
 	}
 
-	public void printGraph(int graphNumber){
-		String outputPath = "../graphstate/graph"+graphNumber+".dgs";
+	/**
+	 * Outputs the graph in .DGS format.
+	 * @param graphNumber
+	 */
+	public void printGraph(int graphNumber, int numOfSim){
+		String outputPath = "../graphstate/simulation"+numOfSim+"/";
+		String fileName = "graphstate"+graphNumber+".dgs";
 		try {
 			File file = new File(outputPath);
+			file.mkdir();
+
+			file = new File(outputPath+fileName);
 
 			if(!file.exists())
 				file.createNewFile();
@@ -283,6 +297,7 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("an " + "\"" + convGenerator.getNodeId() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"ui.label\":" + "\"" + convGenerator.getNodeId() +"\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"ui.class\":" + "\"" + convGenerator.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"failure\":" + convGenerator.getGeneratorFailure()); bufferedWriter.newLine();
 				} else if(node.getClass() == RewGenerator.class){
 					RewGenerator rewGenerator = (RewGenerator) nodelist[i];
 					bufferedWriter.write("an " + "\"" + rewGenerator.getNodeId() + "\""); bufferedWriter.newLine();
@@ -307,9 +322,8 @@ public class Graph implements Cloneable {
 			}
 
 			for(int i = 0; i < edges.length; i ++){
-				bufferedWriter.write("ae \"edge" + i + "\" \"" + edges[i].getEndVertexes()[0] + "\" \"" + edges[i].getEndVertexes()[1] + "\""); bufferedWriter.newLine();
-				bufferedWriter.write("ce \"" + edges[i].getEndVertexes()[0] + " \"flow\":" +"\"" + edges[i].getFlow() + "\""); bufferedWriter.newLine();
-				bufferedWriter.write("ce \"" + edges[i].getEndVertexes()[0] + " \"flow\":" +"\"" + edges[i].getCapacity() + "\""); bufferedWriter.newLine();
+				bufferedWriter.write("ae \"edge" + i + "\" \"" + edges[i].getEndVertexes()[0] + "\" \"" + edges[i].getEndVertexes()[1] + "\"" + " \"flow\":" +"\"" + edges[i].getFlow() + "\"" + " \"capacity\":" +"\"" + edges[i].getCapacity() + "\"");
+				bufferedWriter.newLine();
 			}
 
 			bufferedWriter.close();
@@ -318,5 +332,55 @@ public class Graph implements Cloneable {
 			e.printStackTrace();
 		}
 		System.out.println("rawr rawr rawr");
+	}
+
+	/**
+	 * For a single graph: copy the flow of the output file to the graph in the simulation
+	 * @return
+	 */
+	public Graph setFlowFromOutputFile(Graph graph, int timestep){
+ 		String OS = System.getProperty("os.name");
+		Config conf;
+		if(OS.startsWith("Windows") || OS.startsWith("Linux")){
+			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
+		}else{
+			conf = ConfigFactory.parseFile(new File("config/application.conf"));
+		}
+		String path = conf.getConfig("general").getString("output-folder");
+		path += "sol"+timestep+".txt";
+
+		Scanner scanner;
+		try {
+			scanner = new Scanner(Paths.get(path));
+			scanner.useDelimiter(",");
+
+			Scanner lineScanner;
+
+			while (scanner.hasNext()){
+				String line = scanner.nextLine();
+				lineScanner = new Scanner(line);
+				lineScanner.useDelimiter(",|\n");
+				if (line.isEmpty()){
+					lineScanner.close();
+					break;
+				}
+
+				int nodeOneId = lineScanner.nextInt();
+				int nodeTwoId = lineScanner.nextInt();
+				double flow = Double.parseDouble(lineScanner.next());
+
+				for (int i = 0; i < graph.getEdges().length; i++){
+					if (graph.getEdges()[i].getEndVertexes()[0] == nodeOneId && graph.getEdges()[i].getEndVertexes()[1] == nodeTwoId){
+						graph.getEdges()[i].setFlow(flow);
+						break;
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return graph;
+
+
 	}
 }

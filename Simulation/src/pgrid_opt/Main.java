@@ -112,7 +112,7 @@ public class Main {
 				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
-				timestepsGraph[i].printGraph(i);
+
 				try {
 					StringBuffer output = new StringBuffer();
 					String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
@@ -121,6 +121,9 @@ public class Main {
 
 					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 					proc.waitFor();
+
+					timestepsGraph[i] = timestepsGraph[i].setFlowFromOutputFile(graph, i);
+					timestepsGraph[i].printGraph(i, numOfSim);
 
 					if(new File(dirpath+"/sol"+i+".txt").exists())
 						Files.move(Paths.get(dirpath+"/sol"+i+".txt"), Paths.get(solutionPath+"/sol"+i+".txt"), StandardCopyOption.REPLACE_EXISTING);
