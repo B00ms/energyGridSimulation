@@ -144,6 +144,7 @@ public class Main {
 					}
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
+					System.exit(0);
 				}
 				++i;
 			}
