@@ -287,7 +287,7 @@ public class Graph implements Cloneable {
 			bufferedWriter.write("st 0"); bufferedWriter.newLine();
 			bufferedWriter.write("cg  \"ui.quality\":true"); bufferedWriter.newLine();
 			bufferedWriter.write("cg  \"ui.antialias\":true"); bufferedWriter.newLine();
-			bufferedWriter.write("cg  \"ui.stylesheet\":\"url(mysheet.css)\""); bufferedWriter.newLine();
+			bufferedWriter.write("cg  \"ui.stylesheet\":\"url(mySheet.css)\""); bufferedWriter.newLine();
 
 			for (int i = 0; i < nodelist.length; i++){
 				Node node = nodelist[i];
@@ -297,13 +297,25 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("an " + "\"" + convGenerator.getNodeId() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"ui.label\":" + "\"" + convGenerator.getNodeId() +"\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"ui.class\":" + "\"" + convGenerator.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"failure\":" + convGenerator.getGeneratorFailure()); bufferedWriter.newLine();
-				} else if(node.getClass() == RewGenerator.class){
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"subType\":" + "\"" + convGenerator.getType() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"production\":" + "\"" +convGenerator.getProduction() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"maxProduction\":" + "\"" + convGenerator.getMaxP() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"minProduction\":" + "\"" + convGenerator.getMinP() + "\""); bufferedWriter.newLine();
+
+				}else if (node.getClass() == RewGenerator.class){
 					RewGenerator rewGenerator = (RewGenerator) nodelist[i];
 					bufferedWriter.write("an " + "\"" + rewGenerator.getNodeId() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"ui.label\":" + "\"" + rewGenerator.getNodeId() +"\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"ui.class\":" + "\"" + rewGenerator.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
-				} else if (node.getClass() == InnerNode.class){
+
+					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"subType\":" + "\"" + rewGenerator.getType() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"production\":" + "\"" + rewGenerator.getProduction()+ "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"maxProduction\":" + "\"" + rewGenerator.getMaxP()+ "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"minProduction\":" + "\"" + rewGenerator.getMinP()+ "\""); bufferedWriter.newLine();
+
+				}else if (node.getClass() == InnerNode.class){
 					InnerNode innderNode = (InnerNode) nodelist[i];
 					bufferedWriter.write("an " + "\"" + innderNode.getNodeId() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + innderNode.getNodeId() + "\" \"ui.label\":" + "\"" + innderNode.getNodeId() +"\""); bufferedWriter.newLine();
@@ -313,16 +325,25 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("an " + "\"" + consumerNode.getNodeId() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + consumerNode.getNodeId() + "\" \"ui.label\":" + "\"" + consumerNode.getNodeId() +"\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + consumerNode.getNodeId() + "\" \"ui.class\":" + "\"" + consumerNode.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+
+					bufferedWriter.write("cn " + "\"" + consumerNode.getNodeId() + "\" \"load\":" + "\"" + consumerNode.getLoad() + "\""); bufferedWriter.newLine();
 				} else if (node.getClass() == Storage.class){
 					Storage storageNode = (Storage ) nodelist[i];
 					bufferedWriter.write("an " + "\"" + storageNode.getNodeId() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"ui.label\":" + "\"" + storageNode.getNodeId() +"\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"ui.class\":" + "\"" + storageNode.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"currentCharge\":" + "\"" + storageNode.getCurrentCharge() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"maxCharge\":" + "\"" + storageNode.getMaximumCharge() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"minCharge\":" + "\"" + storageNode.getMinimumCharge() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"chargeEfficiency\":" + "\"" + storageNode.getChargeEfficiency() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"dischargeEfficiency\":" + "\"" + storageNode.getDischargeEfficiency() + "\""); bufferedWriter.newLine();
 				}
 			}
 
 			for(int i = 0; i < edges.length; i ++){
-				bufferedWriter.write("ae \"edge" + i + "\" \"" + edges[i].getEndVertexes()[0] + "\" \"" + edges[i].getEndVertexes()[1] + "\"" + " \"flow\":" +"\"" + edges[i].getFlow() + "\"" + " \"capacity\":" +"\"" + edges[i].getCapacity() + "\"");
+				bufferedWriter.write("ae \"edge" + i + "\" \"" + edges[i].getEndVertexes()[0] + "\" \"" + edges[i].getEndVertexes()[1] + "\"" + " \"flow\":" +"\"" + edges[i].getFlow() + "\"" + " \"capacity\":" +"\"" + edges[i].getCapacity() + "\""
+			+ " \"reactance\":\"" + edges[i].getWeight() + "\"");
 				bufferedWriter.newLine();
 			}
 

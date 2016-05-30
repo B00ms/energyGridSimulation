@@ -73,4 +73,12 @@ public class Storage extends Node {
 	public void setMinimumCharge(double mincap) {
 		minimumCharge = mincap;
 	}
+
+	public double getChargeEfficiency() {
+		return chargeEfficiency;
+	}
+
+	public double getDischargeEfficiency() {
+		return dischargeEfficiency;
+	}
 }
