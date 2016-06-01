@@ -372,7 +372,8 @@ public class Main {
 				double offeredProduction = offer.getProduction();
 				if (demand > 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
-					demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()+offer.getProduction();
+					totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
 					offers.remove(i); // remove offer from list
 				}
 			}
@@ -415,7 +416,6 @@ public class Main {
 				if (demand > 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
 					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()-offer.getProduction();
-					demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
 					totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
 					offers.remove(i); // remove offer from list
 				}
