@@ -86,7 +86,7 @@ public class Parser {
 				production = minProduction;
 
 				ConventionalGenerator convGenerator = new ConventionalGenerator(minProduction, maxProduction, coef, type, production, nodeId);
-				generatorList.add(convGenerator); //Using a different array for convetional generators because we want to sort it.
+				generatorList.add(convGenerator); //Using a different array for conventional generators because we want to sort it.
 				numberOfConventionalGenerators++;
 				break;
 			case "C":
@@ -142,6 +142,19 @@ public class Parser {
 			}
 		}
 		Collections.sort(generatorList);
+
+		// add offers to generatorList for conventional generators
+		List<List<Offer>> offerIncrease = this.parseOfferIncreaseProduction();
+		List<List<Offer>> offerDecrease = this.parseOfferDecreaseProduction();
+
+		for(int i=0; i< generatorList.size(); i++){
+			ConventionalGenerator cgen = generatorList.get(i);
+			// store offers to generators
+			cgen.setOfferIncreaseProduction(offerIncrease.get(i));
+			cgen.setOfferDecreaseProduction(offerDecrease.get(i));
+			generatorList.set(i, cgen);
+		}
+
 		nodeList.addAll(generatorList); //Merge conventional generator nodes with the rest.
 		Node[] nodeArray = nodeList.toArray(new Node[0]);
 
@@ -267,9 +280,9 @@ public class Parser {
 	 * Parse and return the offers for increasing production for each conventional generator
 	 * @return
 	 */
-	public List<int[]> parseOfferIncreaseProduction(){
+	public List<List<Offer>> parseOfferIncreaseProduction(){
 		String path = productionConf.getString("increaseProduction");
-		List<int[]> offerUp = parseOffer(path);
+		List<List<Offer>> offerUp = parseOffer(path);
 		return offerUp;
 	}
 
@@ -277,9 +290,9 @@ public class Parser {
 	 * Parse and return the offers for decreasing production for each conventional generator
 	 * @return
 	 */
-	public List<int[]> parseOfferDecreaseProduction(){
+	public List<List<Offer>> parseOfferDecreaseProduction(){
 		String path = productionConf.getString("decreaseProduction");
-		List<int[]> offerDown = parseOffer(path);
+		List<List<Offer>> offerDown = parseOffer(path);
 		return offerDown;
 	}
 
@@ -289,9 +302,9 @@ public class Parser {
 	 * @param path
 	 * @return
 	 */
-	public List<int[]> parseOffer(String path){
+	public List<List<Offer>> parseOffer(String path){
 
-		List<int[]> offers = new ArrayList<>();
+		List<List<Offer>> generatorOffers = new ArrayList<>();
 		try{
 			CSVReader reader;
 			if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
@@ -301,15 +314,19 @@ public class Parser {
 			}
 
 			String [] nextLine;
+			int i = 0;
 			while ((nextLine = reader.readNext()) != null) {
-				int[] offerValues = new int[nextLine.length];
-				for (int i = 0; i < nextLine.length; i++) {
-					offerValues[i] = Integer.parseInt(nextLine[i]);
-				}
-				offers.add(offerValues);
+				List<Offer> offerList = new ArrayList<Offer>();
+
+				// U1 MWh, PU1 euro/MWh
+				offerList.add(new Offer(Integer.parseInt(nextLine[0]), Integer.parseInt(nextLine[1]), i, 0));
+				// U2 MWh, PU2 euro/MWh
+				offerList.add(new Offer(Integer.parseInt(nextLine[2]), Integer.parseInt(nextLine[3]), i, 1));
+				generatorOffers.add(offerList);
+				i++;
 			}
 
-			return offers;
+			return generatorOffers;
 		} catch (FileNotFoundException e){
 			e.printStackTrace();
 		} catch (IOException e) {

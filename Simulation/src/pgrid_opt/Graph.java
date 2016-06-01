@@ -138,6 +138,8 @@ public class Graph implements Cloneable {
 
 				conventionalGenerator.setMTTF(((ConventionalGenerator) nodelist[i]).getMTTF());
 				conventionalGenerator.setMTTR(((ConventionalGenerator) nodelist[i]).getMTTR());
+				conventionalGenerator.setOfferIncreaseProduction(((ConventionalGenerator) nodelist[i]).getIncreaseProductionOffers());
+				conventionalGenerator.setOfferDecreaseProduction(((ConventionalGenerator) nodelist[i]).getDecreaseProductionOffers());
 				tempNodeList[i] = conventionalGenerator;
 			} else if(getNodeList()[i].getClass() == RewGenerator.class){
 

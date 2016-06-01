@@ -13,8 +13,6 @@ public class SimulationStateInitializer {
 
 	private Float[] loads;
 	private List<double[]> production;
-	private List<int[]> offerIncrease;
-	private List<int[]> offerDecrease;
 	Parser parser = new Parser();
 
 	/**
@@ -31,10 +29,6 @@ public class SimulationStateInitializer {
 
 		// parse expected hourly load from input file
 		this.loads = parser.parseExpectedHourlyLoad();
-
-		// parse offer prices euro/mwh
-		this.offerIncrease = parser.parseOfferIncreaseProduction();
-		this.offerDecrease = parser.parseOfferDecreaseProduction();
 
 		for (int i = 0; i < this.gDay.length; i++) {
 			this.gDay[i] = g.clone();

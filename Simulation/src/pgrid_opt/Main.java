@@ -11,11 +11,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.Date;
 import java.time.Instant;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Delayed;
 
 import com.typesafe.config.ConfigFactory;
@@ -30,26 +26,8 @@ public class Main {
 	private static String OS = System.getProperty("os.name");
 	private static Config conf;
 
-	//From cheapest to most expensive.
-	//private final static String[] priceIndex = {"nuclear", "oil", "coal"};
-	//TODO: price index is currently not used.
-	private final static Map<String, Double[]> PRICE_INDEX;
-	static {
-		//Production prices for 4 different levels of production 25%, 50%, 75%, 100%
-		Double[] nuclearPrices = 	{1.0, 2.0, 3.0, 4.0};
-		Double[] oilPrices = 		{1.0, 2.0, 3.0, 4.0};
-		Double[] coalPrices = 		{1.0, 2.0, 3.0, 4.0};
-
-		Map<String, Double[]> tempMap = new HashMap<>();
-		tempMap.put("nuclear", nuclearPrices);
-		tempMap.put("oil", oilPrices);
-		tempMap.put("coal", coalPrices);
-		PRICE_INDEX = Collections.unmodifiableMap(tempMap);
-		}
-
 	public static void main(String[] args) {
 
-		String SUMMER_LOAD_CURVE;
 		long starttime = System.nanoTime();
 		float wcost = 0.0f;  //wind cost
 		float scost = 0.0f; //solar cost
@@ -103,6 +81,7 @@ public class Main {
 				Files.createDirectories(Paths.get(solutionPath)); //create a new directory to safe the output in
 			} catch (IOException e1) {
 				e1.printStackTrace();
+				System.exit(0);
 			}
 
 			timestepsGraph = setLoadError(timestepsGraph);
@@ -115,7 +94,7 @@ public class Main {
 
 				try {
 					StringBuffer output = new StringBuffer();
-					String command = String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
+					String command = ""+ String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
 					command = command + " --nopresol --output filename.out ";
 					System.out.println(command);
 
@@ -378,37 +357,91 @@ public class Main {
 		Double maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
 		Double dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
 		Double dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
+		double demand = (totalCurrentProduction  - sumLoads);
 
 		//Check if we need to increase current production
 		if((totalCurrentProduction  - sumLoads) < 0){
 			System.out.println("Increasing production");
 
-			//We need to increase production until it meets demand.
-			for(int i = 0; i < grid.getNodeList().length-1; i++){
-				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-					if (totalCurrentProduction+((ConventionalGenerator)nodeList[i]).getMaxP()*dayAheadLimitMax > sumLoads){
-						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction); //Set production to the remainder so we can meet the demand exactly
-					}else {
-						//totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getProduction() + ((ConventionalGenerator) nodeList[i]).getMaxP());
-						totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getMaxP());
-					}
+			List<Offer> offers = new ArrayList<>();
+
+			// find cheapest offers
+			for (int i = 0; i < nodeList.length - 1; i++) {
+				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
+
+					List<Offer> offerList = ((ConventionalGenerator)nodeList[i]).getIncreaseProductionOffers();
+					offers.addAll(offerList);
 				}
 			}
+
+			// sort offers best value for money
+			Collections.sort(offers);
+
+			for (int i = 0; i < offers.size(); i++) {
+				Offer offer = offers.get(i);
+				double offeredProduction = offer.getProduction();
+				if (demand > 0 && offer.getAvailable()) {
+					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
+					demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+					offers.remove(i); // remove offer from list
+				}
+			}
+
+//			handleIncreaseProductionOffers(nodeList, (totalCurrentProduction  - sumLoads));
+//
+//			//We need to increase production until it meets demand.
+//			for(int i = 0; i < nodeList.length-1; i++){
+//				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
+//					if (totalCurrentProduction+((ConventionalGenerator)nodeList[i]).getMaxP()*dayAheadLimitMax > sumLoads){
+//						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction); //Set production to the remainder so we can meet the demand exactly
+//					}else {
+//						//totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getProduction() + ((ConventionalGenerator) nodeList[i]).getMaxP());
+//						totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator) nodeList[i]).getMaxP());
+//					}
+//				}
+//			}
 		} else if ((totalCurrentProduction  - sumLoads) > 0) {
 			//we need to decrease energy production
 			System.out.println("Decreasing production");
 
-			for ( int i = grid.getNodeList().length-1; i >= 0; i--){
-				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-					if (totalCurrentProduction-((ConventionalGenerator)nodeList[i]).getMinP()*dayAheadLimitMin > sumLoads){
-						//totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP());
-						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getMinP());
+			// todo take offers from cheapest nodes to decrease production.
+			List<Offer> offers = new ArrayList<>();
 
-					} else {
-						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction);
-					}
+			// find cheapest offers
+			for (int i = 0; i < nodeList.length - 1; i++) {
+				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
+					List<Offer> offerList = ((ConventionalGenerator)nodeList[i]).getDecreaseProductionOffers();
+					offers.addAll(offerList);
 				}
 			}
+
+			// sort offers best value for money
+			Collections.sort(offers);
+
+			// decrease production
+			for (int i = 0; i < offers.size(); i++) {
+				Offer offer = offers.get(i);
+				double offeredProduction = offer.getProduction();
+				if (demand > 0 && offer.getAvailable()) {
+					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
+					demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+					offers.remove(i); // remove offer from list
+				}
+			}
+
+//			handleDecreaseProductionOffers(nodeList, (totalCurrentProduction  - sumLoads));
+
+//			for ( int i = nodeList.length-1; i >= 0; i--){
+//				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
+//					if (totalCurrentProduction-((ConventionalGenerator)nodeList[i]).getMinP()*dayAheadLimitMin > sumLoads){
+//						//totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getProduction() - ((ConventionalGenerator)nodeList[i]).getMaxP());
+//						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction( ((ConventionalGenerator)nodeList[i]).getMinP());
+//
+//					} else {
+//						totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction);
+//					}
+//				}
+//			}
 		} else {
 			System.out.println("Grid is balanced");
 			return null;//production and demand are balanced.
@@ -441,6 +474,68 @@ public class Main {
 			//Production and load are balanced.
 		}
 		return grid;
+	}
+
+
+	public static double handleIncreaseProductionOffers(Node[] nodeList, double demand){
+		List<Offer> offers = new ArrayList<>();
+
+		// find cheapest offers
+		for (int i = 0; i < nodeList.length - 1; i++) {
+			if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
+
+				List<Offer> offerList = ((ConventionalGenerator)nodeList[i]).getDecreaseProductionOffers();
+				offers.addAll(offerList);
+			}
+		}
+
+		// sort offers best value for money
+		Collections.sort(offers);
+
+		for (int i = 0; i < offers.size(); i++) {
+			Offer offer = offers.get(i);
+			double offeredProduction = offer.getProduction();
+			if (demand > 0) {
+				((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(0);
+				demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+				offers.remove(i); // remove offer from list
+			}else{
+				return demand;
+			}
+		}
+
+		return demand;
+	}
+
+	public static double handleDecreaseProductionOffers(Node[] nodeList, double demand){
+		List<Offer> offers = new ArrayList<>();
+
+		// find cheapest offers
+		for (int i = 0; i < nodeList.length - 1; i++) {
+			if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
+//					Offer bestOffer = ((ConventionalGenerator) nodeList[i]).getBestIncreaseOffer();
+//					offers.add(bestOffer);
+				List<Offer> offerList = ((ConventionalGenerator)nodeList[i]).getDecreaseProductionOffers();
+				offers.addAll(offerList);
+			}
+		}
+
+		// sort offers best value for money
+		Collections.sort(offers);
+
+		for (int i = 0; i < offers.size(); i++) {
+			Offer offer = offers.get(i);
+			double offeredProduction = offer.getProduction();
+			if (demand > 0) {
+				((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(0);
+				demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+				offers.remove(i); // remove offer from list
+			}else{
+				return demand;
+			}
+		}
+
+		return demand;
 	}
 
 }

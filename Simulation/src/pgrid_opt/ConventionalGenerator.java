@@ -1,6 +1,7 @@
 package pgrid_opt;
 
 import java.io.File;
+import java.util.List;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -19,6 +20,8 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	private double dayAheadLimitMax;
 	private double dayAheadLimitMin;
 
+	private List<Offer> offerIncreaseProduction;
+	private List<Offer> offerDecreaseProduction;
 
 	public ConventionalGenerator(double minProduction, double maxProduction, double coef, String type, double production, int nodeId) {
 		super(minProduction, maxProduction, coef, type, production, nodeId);
@@ -127,6 +130,60 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 
 	public int getMTTR(){
 		return this.mttr;
+	}
+
+	public void setOfferIncreaseProduction(List<Offer> offerIncreaseProduction){
+		this.offerIncreaseProduction = offerIncreaseProduction;
+	}
+
+	public void setOfferDecreaseProduction(List<Offer> offerDecreaseProduction){
+		this.offerDecreaseProduction = offerDecreaseProduction;
+	}
+
+	public List<Offer> getIncreaseProductionOffers(){
+		return this.offerIncreaseProduction;
+	}
+
+	public List<Offer> getDecreaseProductionOffers(){
+		return this.offerDecreaseProduction;
+	}
+
+	public Offer getBestIncreaseOffer(){
+		Offer bestOffer = null;
+		bestOffer = this.getBestOffer(this.offerIncreaseProduction);
+		return bestOffer;
+	}
+
+	public Offer getBestDecreaseOffer(){
+		Offer bestOffer = null;
+		bestOffer = this.getBestOffer(this.offerDecreaseProduction);
+		return bestOffer;
+	}
+
+	public Offer getBestOffer(List<Offer> offerList){
+		Offer bestOffer = null;
+
+		for(Offer offer : offerList){
+			if(offer.getAvailable()){
+				if(bestOffer == null){
+					bestOffer = offer;
+				}
+
+				if(offer.getPrice() < bestOffer.getPrice()){
+					bestOffer = offer;
+				}
+			}
+		}
+
+		return bestOffer;
+	}
+
+	public void takeIncreaseOffer(int i){
+		this.offerIncreaseProduction.get(i).setAvailable(false);
+	}
+
+	public void takeDecreaseOffer(int i){
+		this.offerIncreaseProduction.get(i).setAvailable(false);
 	}
 
 	@Override
