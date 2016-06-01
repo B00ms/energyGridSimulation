@@ -370,11 +370,17 @@ public class Main {
 			for (int i = 0; i < offers.size(); i++) {
 				Offer offer = offers.get(i);
 				double offeredProduction = offer.getProduction();
-				if (demand > 0 && offer.getAvailable()) {
+				if (demand < 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
 					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()+offer.getProduction();
-					totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
+
+					if(Math.abs(demand) <= newProduction) {
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(demand));
+					}else{
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
+					}
 					offers.remove(i); // remove offer from list
+					demand = (totalCurrentProduction  - sumLoads); // update demand
 				}
 			}
 
@@ -416,8 +422,16 @@ public class Main {
 				if (demand > 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
 					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()-offer.getProduction();
-					totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
+
+					if(demand <= newProduction){
+						// only decrease production until demand is met
+						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(demand);
+					}else{
+						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
+					}
+
 					offers.remove(i); // remove offer from list
+					demand = (totalCurrentProduction  - sumLoads); // update demand
 				}
 			}
 
@@ -462,7 +476,8 @@ public class Main {
 				}
 			}
 			System.out.println("Shedding");
-		} else{
+		} else {
+			System.out.println("Balanced");
 			//Production and load are balanced.
 		}
 		return grid;
