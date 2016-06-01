@@ -64,7 +64,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		if(production>this.maxp){
 			this.production = this.maxp*dayAheadLimitMax;
 		}else if(production<this.minp){
-			this.production = this.maxp*dayAheadLimitMin;
+			this.production = this.minp*dayAheadLimitMin;
 		}else{
 			this.production = production;
 		}
