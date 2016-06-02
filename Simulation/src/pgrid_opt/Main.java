@@ -101,7 +101,7 @@ public class Main {
 					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 					proc.waitFor();
 
-					timestepsGraph[i] = timestepsGraph[i].setFlowFromOutputFile(graph, i);
+					timestepsGraph[i] = timestepsGraph[i].setFlowFromOutputFile(timestepsGraph[i], i);
 					timestepsGraph[i].printGraph(i, numOfSim);
 
 					if(new File(dirpath+"/sol"+i+".txt").exists())
