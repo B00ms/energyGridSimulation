@@ -139,9 +139,9 @@ public class DataModelPrint {
 					if(g.getNodeList()[i].getClass() == RewGenerator.class){
 						counter++;
 						if( counter != g.getNrgenetarors())
-							writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getProduction());
+							writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getMaxP());
 						else
-							writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getProduction() + ";");
+							writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getMaxP() + ";");
 					}
 				}
 
