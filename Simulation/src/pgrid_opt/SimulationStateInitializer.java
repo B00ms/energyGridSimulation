@@ -150,7 +150,8 @@ public class SimulationStateInitializer {
 		for (int i = 0; i < gDay.length; i++) {
 			for (int j = 0; j < g.getNodeList().length; j++){
 				if(gDay[i].getNodeList()[j].getClass() == ConventionalGenerator.class){
-					((ConventionalGenerator) gDay[i].getNodeList()[j]).initializeProduction(production.get(j)[i]);
+					double expectedProduction = production.get(j)[i];
+					((ConventionalGenerator) gDay[i].getNodeList()[j]).initializeProduction(expectedProduction);
 				}
 			}
 		}

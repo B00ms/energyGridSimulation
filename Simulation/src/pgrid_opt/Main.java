@@ -86,8 +86,7 @@ public class Main {
 
 			timestepsGraph = setLoadError(timestepsGraph);
 			while (i < timestepsGraph.length) {
-
-				randomizeGridState(timestepsGraph[i], i);
+				timestepsGraph[i] = randomizeGridState(timestepsGraph[i], i);
 				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
 
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); //This creates a new input file.
@@ -173,23 +172,13 @@ public class Main {
 						double realLoad = ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad() + ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoadError();
 						((Consumer)timestepsGraph[i].getNodeList()[n]).setLoad(realLoad);
 
-						//System.out.println(" realLoad: " + realLoad);
+//						System.out.println(" realLoad: " + realLoad);
 					//}
 				}
 			}
-			//System.out.println("Total load: "+ totalLoad);
+//			System.out.println("Total load: "+ totalLoad);
 		}
 
-		/*
-		//System.out.println("next I: ");
-		for (int i = 0; i < currentTimeStep; i++){
-			for(int n = 0; n < timestepsGraph[i].getNodeList().length; n++){
-				if(timestepsGraph[i].getNodeList()[n] != null && timestepsGraph[i].getNodeList()[n].getClass() == Consumer.class){
-
-				}
-			}
-		}
-		 */
 		return timestepsGraph;
 
 	}
@@ -198,12 +187,9 @@ public class Main {
 	 * Set the state of generators and loads.
 	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
-	private static void randomizeGridState(Graph graph, int currentTimeStep){
+	private static Graph randomizeGridState(Graph graph, int currentTimeStep){
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
-		double sumLoadError = 0;
-		//int i = currentTimeStep;
-		//for(int i = 0; i < graphs.length-1; i ++){
 		for (int j=0; j < graph.getNodeList().length-1; j++){
 			//Check the class of the current node and deal with it accordingly.
 			if(graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class ||
@@ -217,21 +203,20 @@ public class Main {
 				case "O": // Oil Thermal generator
 					mcDraw = monteCarloHelper.getRandomUniformDist();
 					//System.out.println(mcDraw);
-					graph = handleConventionalGenerator(graph, j, currentTimeStep, mcDraw);
+					graph = handleConventionalGenerator(graph, j, mcDraw);
 					break;
 				case "N": // Nuclear Thermal generator
 					mcDraw = monteCarloHelper.getRandomUniformDist();
 					//System.out.println(mcDraw);
-					graph = handleConventionalGenerator(graph, j, currentTimeStep, mcDraw);
+					graph = handleConventionalGenerator(graph, j, mcDraw);
 					break;
 				case "C": // Coal Thermal generator
 					mcDraw = monteCarloHelper.getRandomUniformDist();
 					//System.out.println(mcDraw);
-					graph = handleConventionalGenerator(graph, j, currentTimeStep, mcDraw);
+					graph = handleConventionalGenerator(graph, j, mcDraw);
 					break;
 				case "W": //Wind park generator
 					mcDraw = monteCarloHelper.getRandomWeibull();
-					//System.out.println(mcDraw);
 
 					double vCutIn = conf.getConfig("windGenerator").getInt("vCutIn");
 					double vCutOff = conf.getConfig("windGenerator").getInt("vCutOff");
@@ -299,21 +284,26 @@ public class Main {
 				}
 			}
 		}
+
+		return graph;
 	}
+
+
 
 	/**
 	 * Sets the state of conventional generators to on or off.
 	 * @param graph
 	 * @param node
-	 * @param currentTimeStep
 	 * @param mcDraw
 	 * @return
 	 */
-	private static Graph handleConventionalGenerator(Graph graph, int node, int currentTimeStep, double mcDraw){
+	private static Graph handleConventionalGenerator(Graph graph, int node, double mcDraw){
 		//double convGeneratorProb = 0.5; //Probability of failure for conventional generators
 
 		if(((ConventionalGenerator) graph.getNodeList()[node]).getGeneratorFailure() == false){//0 means that the reactor can fail.
-			if(mcDraw < 1/((ConventionalGenerator) graph.getNodeList()[node]).getMTTF()){
+			int nodeMTTF = ((ConventionalGenerator) graph.getNodeList()[node]).getMTTF();
+			float mttf = (float) 1/nodeMTTF;
+			if(mcDraw < mttf){
 				//Our draw is smaller meaning that the generator has failed.
 				((ConventionalGenerator) graph.getNodeList()[node]).setGeneratorFailure(true);
 			}
@@ -380,10 +370,17 @@ public class Main {
 			for (int i = 0; i < offers.size(); i++) {
 				Offer offer = offers.get(i);
 				double offeredProduction = offer.getProduction();
-				if (demand > 0 && offer.getAvailable()) {
+				if (demand < 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
-					demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()+offer.getProduction();
+
+					if(Math.abs(demand) <= newProduction) {
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(demand));
+					}else{
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
+					}
 					offers.remove(i); // remove offer from list
+					demand = (totalCurrentProduction  - sumLoads); // update demand
 				}
 			}
 
@@ -424,8 +421,17 @@ public class Main {
 				double offeredProduction = offer.getProduction();
 				if (demand > 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
-					demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()-offer.getProduction();
+
+					if(demand <= newProduction){
+						// only decrease production until demand is met
+						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(demand);
+					}else{
+						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
+					}
+
 					offers.remove(i); // remove offer from list
+					demand = (totalCurrentProduction  - sumLoads); // update demand
 				}
 			}
 
@@ -470,11 +476,14 @@ public class Main {
 				}
 			}
 			System.out.println("Shedding");
-		} else{
+		} else {
+			System.out.println("Balanced");
 			//Production and load are balanced.
 		}
 		return grid;
 	}
+
+
 
 
 	public static double handleIncreaseProductionOffers(Node[] nodeList, double demand){
