@@ -29,6 +29,8 @@ param storagemax {storage};
 param mintprod {tgen} >=0;
 param maxtprod {tgen} >=0;
 param loads {consumers} >=0;
+param production {tgen} >= 0;
+param rewproduction {rgen};
 
 #phase angle constraint 
 var theta {nodes} >= -pi/2, <= pi/2;
@@ -53,24 +55,30 @@ subject to flowcapmin { i in nodes,j in nodes : capacity[i,j] <> 0} :
 	((theta[i]-theta[j])/weight[i,j])*m_factor, >= -capacity[i,j];
 
 #Minimum generation of a renewable node
-subject to flowcons { i in inner } :
-	sum{ j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum{ j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
+#subject to flowcons { i in inner } :
+#	sum{ j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum{ j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
 
 #Max generation of a renewable node
-subject to rgenmin { i in rgen } :
-	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= rprodmin[i];
+#subject to rgenmin { i in rgen } :
+#	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= rprodmin[i];
 
 #Minimum generation of a renewable node
-subject to rgenmax { i in rgen } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= rprodmax[i];
-
+#subject to rgenmax { i in rgen } :
+#	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= rprodmax[i];
+	
+subject to setRewProduction { i in rgen } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = rewproduction[i];
+	
 #Minimum generation of a conventional generation node
-subject to genmin { i in tgen } :
-	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= mintprod[i];
+#subject to genmin { i in tgen } :
+#	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= mintprod[i];
 
 #maximum dischage of conventional generation nodes
-subject to genmax { i in tgen } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= maxtprod[i];
+#subject to genmax { i in tgen } :
+#	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= maxtprod[i];
+	
+subject to genproduction { i in tgen } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
 #Minimum discharge of storage nodes
 subject to sgenmin { i in storage } :
@@ -80,12 +88,14 @@ subject to sgenmin { i in storage } :
 subject to sgenmax { i in storage } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
 
-
 #The amount of energy send to a consumer should be lower or equal to the load of the consumer
 subject to loadfix {i in consumers} :
-	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, = loads[i];
-
-
+	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, <= loads[i];
+	
+#Flow to a consumer can never be lower than zero
+subject to loadMinValue {i in consumers} :	
+	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, >= 0;
+	
 #Balance supply and demand of energy.
 subject to prodloadeq :
 	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum { i in consumers, j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
@@ -126,5 +136,3 @@ printf : "\n" >> "sol" & outname & ".txt";
 
 #printf {i in tgen, j in nodes : capacity[i,j] <> 0} : "Theta: %.4f, %.4f \n", theta[i], theta[j];
 end;
-
-

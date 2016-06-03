@@ -329,6 +329,13 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("cn " + "\"" + consumerNode.getNodeId() + "\" \"ui.class\":" + "\"" + consumerNode.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
 
 					bufferedWriter.write("cn " + "\"" + consumerNode.getNodeId() + "\" \"load\":" + "\"" + consumerNode.getLoad() + "\""); bufferedWriter.newLine();
+					for(int j = 0; j < edges.length; j++){
+						if( edges[j].getEndVertexes()[0] == consumerNode.getNodeId() || edges[j].getEndVertexes()[1] == consumerNode.getNodeId()){
+							double flow = edges[j].getFlow();
+							bufferedWriter.write("cn " + "\"" + consumerNode.getNodeId() + "\" \"flow\":" + "\"" + flow + "\""); bufferedWriter.newLine();
+							break;
+						}
+					}
 				} else if (node.getClass() == Storage.class){
 					Storage storageNode = (Storage ) nodelist[i];
 					bufferedWriter.write("an " + "\"" + storageNode.getNodeId() + "\""); bufferedWriter.newLine();
@@ -370,7 +377,7 @@ public class Graph implements Cloneable {
 			conf = ConfigFactory.parseFile(new File("config/application.conf"));
 		}
 		String path = conf.getConfig("general").getString("output-folder");
-		path += "sol"+timestep+".txt";
+		path += "/sol"+timestep+".txt";
 
 		Scanner scanner;
 		try {

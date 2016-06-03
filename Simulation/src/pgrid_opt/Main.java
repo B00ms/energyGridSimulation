@@ -14,6 +14,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Delayed;
 
+import org.apache.commons.math3.genetics.TournamentSelection;
+
 import com.typesafe.config.ConfigFactory;
 
 import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
@@ -480,6 +482,8 @@ public class Main {
 			System.out.println("Balanced");
 			//Production and load are balanced.
 		}
+		System.out.print("Total production: " + totalCurrentProduction+ " ");
+		System.out.println("total load: " + sumLoads);
 		return grid;
 	}
 

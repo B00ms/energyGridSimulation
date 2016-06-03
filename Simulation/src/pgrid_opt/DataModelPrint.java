@@ -184,6 +184,28 @@ public class DataModelPrint {
 				}
 			}
 			counter = 0;
+			writer.println("param production :=");
+			for (int i = 0; i < g.getNodeList().length; i++) {
+				if(g.getNodeList()[i].getClass() == ConventionalGenerator.class){
+					counter++;
+					if (counter != g.getNGenerators())
+						writer.println(((ConventionalGenerator) g.getNodeList()[i]).getNodeId() + " " + (float)((ConventionalGenerator) g.getNodeList()[i]).getProduction());
+					else
+						writer.println(((ConventionalGenerator) g.getNodeList()[i]).getNodeId() + " " + (float)((ConventionalGenerator) g.getNodeList()[i]).getProduction() + ";");
+				}
+			}
+			counter = 0;
+			writer.println("param rewproduction :=");
+			for (int i = 0; i < g.getNodeList().length; i++) {
+				if(g.getNodeList()[i].getClass() == RewGenerator.class){
+					counter++;
+					if (counter != g.getNrgenetarors())
+						writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getProduction());
+					else
+						writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getProduction() + ";");
+				}
+			}
+			counter = 0;
 			if (g.getNstorage() != 0) {
 				writer.println("param storagemax :=");
 				for (int i = 0; i < g.getNodeList().length; i++) {
