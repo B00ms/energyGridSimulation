@@ -55,8 +55,8 @@ subject to flowcapmin { i in nodes,j in nodes : capacity[i,j] <> 0} :
 	((theta[i]-theta[j])/weight[i,j])*m_factor, >= -capacity[i,j];
 
 #Minimum generation of a renewable node
-#subject to flowcons { i in inner } :
-#	sum{ j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum{ j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
+subject to flowcons { i in inner } :
+	sum{ j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum{ j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
 
 #Max generation of a renewable node
 #subject to rgenmin { i in rgen } :
