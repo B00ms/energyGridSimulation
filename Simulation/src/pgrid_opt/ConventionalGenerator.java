@@ -183,7 +183,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public void takeDecreaseOffer(int i){
-		this.offerIncreaseProduction.get(i).setAvailable(false);
+		this.offerDecreaseProduction.get(i).setAvailable(false);
 	}
 
 	@Override
