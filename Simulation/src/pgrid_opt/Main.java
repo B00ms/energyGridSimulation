@@ -415,6 +415,7 @@ public class Main {
 		double maximumStorageCapacity = 0;
 		double minumumStorageCapacity = 0;
 
+
 		/*
 		 * In this loop we calculate the total demand, the total ->current<-
 		 * production and, total ->current<- production of renewable generators.
@@ -440,8 +441,18 @@ public class Main {
 		Double maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
 		Double dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
 		Double dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
-		double demand = (totalCurrentProduction - sumLoads);
+		int beginTime = renewableConfig.getInt("beginChargeTime");
+		int endTime = renewableConfig.getInt("endChargeTime");
 
+		boolean dischargeAllowed = true;
+		if(timestep <= beginTime && timestep <= endTime){
+			System.out.print(" ");
+			grid = chargeStorage(grid, timestep);
+			dischargeAllowed = false;
+		}
+
+
+		double demand = (totalCurrentProduction - sumLoads);
 		// Check if we need to increase current production
 		if ((totalCurrentProduction - sumLoads) < 0) {
 			System.out.print("Increasing production ");
@@ -530,28 +541,38 @@ public class Main {
 		/*
 		 * Deal with curtailment and shedding
 		 */
-		int beginTime = renewableConfig.getInt("beginChargeTime");
-		int endTime = renewableConfig.getInt("endChargeTime");
-		grid = chargeOrDischargeStorage(grid, timestep, beginTime, endTime);
+		if(dischargeAllowed)
+			grid = chargeOrDischargeStorage(grid, timestep);
 
 		System.out.print("Total production: " + totalCurrentProduction + " ");
 		System.out.println("total load: " + sumLoads);
 		return grid;
 	}
 
-	private static Graph chargeOrDischargeStorage(Graph graph, int timestep, int beginTime, int endTime){
-		double chargeCheck = 0;
+	private static Graph chargeStorage(Graph graph, int timestep){
+
+		for(int i = 0; i < graph.getNodeList().length; i++){
+			if(graph.getNodeList()[i].getClass() == Storage.class){
+				Storage storage = (Storage)graph.getNodeList()[i];
+				if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentCharge()){
+					sumLoads += ((Storage)graph.getNodeList()[i]).setCurrentCharge(((Storage)graph.getNodeList()[i]).getMaximumCharge());
+				}
+			}
+		}
+		return graph;
+	}
+
+	private static Graph chargeOrDischargeStorage(Graph graph, int timestep){
 		Node[] nodeList = graph.getNodeList();
 		if (totalCurrentProduction > sumLoads) {
 			System.out.print("curtailment ");
 			//Charge the batteries
 			for (int i = 0; i < nodeList.length; i++) {
 				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class) {
-					chargeCheck  = ((Storage) nodeList[i]).getMaximumCharge() * 0.5;
-					if (totalCurrentProduction - ((Storage) nodeList[i]).getMaximumCharge() > sumLoads && timestep <= beginTime && timestep <= endTime){
+					if (totalCurrentProduction - ((Storage) nodeList[i]).getMaximumCharge() > sumLoads){
 						System.out.print("battery charging");
 						totalCurrentProduction -= ((Storage) nodeList[i]).setCurrentCharge(((Storage) nodeList[i]).getMaximumCharge());
-					} else if (timestep >= beginTime && timestep <= endTime)
+					} else
 						totalCurrentProduction -= ((Storage) nodeList[i]).setCurrentCharge(((Storage) nodeList[i]).setCurrentCharge(sumLoads - totalCurrentProduction)); //charge the remainder to fully meet the demand.
 				}
 			}
