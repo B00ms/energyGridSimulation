@@ -165,11 +165,10 @@ public class Main {
 
 	/**
 	 * Calculates the expected load and production of an entire day
-	 * @param graph
+	 * @param graphs
 	 * @return Array where [0] = expectedLoad and [1] = expectedProduction
 	 */
 	private static Double[] expectedLoadAndProduction(Graph[] graphs) {
-		// TODO Auto-generated method stub
 		double expectedLoad = 0;
 		double expectedProduction = 0;
 
@@ -270,16 +269,19 @@ public class Main {
 					// System.out.println(mcDraw);
 					graph = handleConventionalGenerator(graph, j, mcDraw);
 					break;
-				case "W": // Wind park generator
-					graph = handleRenewableGenerator(graph, currentTimeStep);
-					break;
-				case "S": // Solar generator
-					// Let's ignore the sun as well for now...
-					graph = handleRenewableGenerator(graph, currentTimeStep);
-					break;
+				// TODO: alot of overhead currently does action for Wind and solar generator
+//				case "W": // Wind park generator
+//					graph = handleRenewableGenerator(graph, currentTimeStep);
+//					break;
+//				case "S": // Solar generator
+//					graph = handleRenewableGenerator(graph, currentTimeStep);
+//					break;
 				}
 			}
 		}
+
+		// handle renewable generators
+		graph = handleRenewableGenerator(graph, currentTimeStep);
 
 		return graph;
 	}
@@ -299,7 +301,6 @@ public class Main {
 					|| graph.getNodeList()[j].getClass() == RewGenerator.class)) {
 				String generatorType = ((Generator) graph.getNodeList()[j]).getType();
 				double mcDraw = 0; // This will hold our Monte Carlo draw
-									// (hahaha mac draw)
 				switch (generatorType) {
 				case "W": // Wind park generator
 					mcDraw = monteCarloHelper.getRandomWeibull();
