@@ -173,7 +173,7 @@ public class Main {
 		double expectedProduction = 0;
 
 		for(int hour=0; hour < 24; hour++){
-			graphs[hour] = handleRenewableGenerator(graphs[hour], hour); //set renewable production.
+			graphs[hour] = randomizeRenewableGenerator(graphs[hour], hour); //set renewable production.
 
 			for(int i = 0; i < graphs[hour].getNodeList().length; i++){
 				if(graphs[hour].getNodeList()[i].getClass() == Consumer.class){
@@ -237,10 +237,24 @@ public class Main {
 	/**
 	 * Set the state of generators and loads.
 	 *
-	 * @return Graphs of which the state has been changed using Monte Carlo
-	 *         draws
+	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
 	private static Graph randomizeGridState(Graph graph, int currentTimeStep) {
+		// randomize conventional generator data
+		graph = randomizeConventionalGenerator(graph);
+
+		// randomize renewable generators
+		graph = randomizeRenewableGenerator(graph, currentTimeStep);
+
+		return graph;
+	}
+
+	/**
+	 * Randomize conventional generator data
+	 * @param graph
+	 * @return
+	 */
+	private static Graph randomizeConventionalGenerator(Graph graph){
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
 		for (int j = 0; j < graph.getNodeList().length - 1; j++) {
@@ -249,39 +263,29 @@ public class Main {
 					|| graph.getNodeList()[j].getClass() == RewGenerator.class)) {
 				String generatorType = ((Generator) graph.getNodeList()[j]).getType();
 				double mcDraw = 0; // This will hold our Monte Carlo draw
-									// (hahaha mac draw)
+				// (hahaha mac draw)
 				switch (generatorType) {
-				case "H": // Hydro-eletric generator
-					// Ignore this for now, might be added at a later stage
-					break;
-				case "O": // Oil Thermal generator
-					mcDraw = monteCarloHelper.getRandomUniformDist();
-					// System.out.println(mcDraw);
-					graph = handleConventionalGenerator(graph, j, mcDraw);
-					break;
-				case "N": // Nuclear Thermal generator
-					mcDraw = monteCarloHelper.getRandomUniformDist();
-					// System.out.println(mcDraw);
-					graph = handleConventionalGenerator(graph, j, mcDraw);
-					break;
-				case "C": // Coal Thermal generator
-					mcDraw = monteCarloHelper.getRandomUniformDist();
-					// System.out.println(mcDraw);
-					graph = handleConventionalGenerator(graph, j, mcDraw);
-					break;
-				// TODO: alot of overhead currently does action for Wind and solar generator
-//				case "W": // Wind park generator
-//					graph = handleRenewableGenerator(graph, currentTimeStep);
-//					break;
-//				case "S": // Solar generator
-//					graph = handleRenewableGenerator(graph, currentTimeStep);
-//					break;
+					case "H": // Hydro-eletric generator
+						// TODO Ignore this for now, might be added at a later stage
+						break;
+					case "O": // Oil Thermal generator
+						mcDraw = monteCarloHelper.getRandomUniformDist();
+						// System.out.println(mcDraw);
+						graph = handleConventionalGeneratorFailure(graph, j, mcDraw);
+						break;
+					case "N": // Nuclear Thermal generator
+						mcDraw = monteCarloHelper.getRandomUniformDist();
+						// System.out.println(mcDraw);
+						graph = handleConventionalGeneratorFailure(graph, j, mcDraw);
+						break;
+					case "C": // Coal Thermal generator
+						mcDraw = monteCarloHelper.getRandomUniformDist();
+						// System.out.println(mcDraw);
+						graph = handleConventionalGeneratorFailure(graph, j, mcDraw);
+						break;
 				}
 			}
 		}
-
-		// handle renewable generators
-		graph = handleRenewableGenerator(graph, currentTimeStep);
 
 		return graph;
 	}
@@ -289,10 +293,10 @@ public class Main {
 	/**
 	 * Does monte carlo draws for wind and solor generators and sets their production according to these draws.
 	 * @param graph
-	 * @param currentTimeStep
+	 * @param currentTimeStep used for solar data generation
 	 * @return The graph in which renewable production has been set.
 	 */
-	private static Graph handleRenewableGenerator(Graph graph, int currentTimeStep) {
+	private static Graph randomizeRenewableGenerator(Graph graph, int currentTimeStep) {
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
 		for (int j = 0; j < graph.getNodeList().length - 1; j++) {
@@ -382,13 +386,12 @@ public class Main {
 
 	/**
 	 * Sets the state of conventional generators to on or off.
-	 *
 	 * @param graph
 	 * @param node
 	 * @param mcDraw
 	 * @return
 	 */
-	private static Graph handleConventionalGenerator(Graph graph, int node, double mcDraw) {
+	private static Graph handleConventionalGeneratorFailure(Graph graph, int node, double mcDraw) {
 		// double convGeneratorProb = 0.5; //Probability of failure for
 		// conventional generators
 
