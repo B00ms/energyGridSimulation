@@ -413,7 +413,7 @@ public class Main {
 		double conventionalProduction = 0;
 		double sumCurrentStorage = 0;
 		double maximumStorageCapacity = 0;
-		double minumumStorageCapacity = 0;
+		double minimumStorageCapacity = 0;
 
 
 		/*
@@ -428,9 +428,10 @@ public class Main {
 			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class) {
 				renewableProduction += ((RewGenerator) nodeList[i]).getProduction();
 			} else if (nodeList[i] != null && nodeList[i].getClass() == Storage.class) {
+				// todo fixen sumCurrent storage can be negative atm?
 				sumCurrentStorage += ((Storage) nodeList[i]).getCurrentCharge();
 				maximumStorageCapacity += ((Storage) nodeList[i]).getMaximumCharge();
-				minumumStorageCapacity += ((Storage) nodeList[i]).getMinimumCharge();
+				minimumStorageCapacity += ((Storage) nodeList[i]).getMinimumCharge();
 
 			}
 		}
@@ -438,9 +439,7 @@ public class Main {
 
 		Config convGeneratorConf = conf.getConfig("conventionalGenerator");
 		Config renewableConfig = conf.getConfig("Storage");
-		Double maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
-		Double dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
-		Double dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
+
 		int beginTime = renewableConfig.getInt("beginChargeTime");
 		int endTime = renewableConfig.getInt("endChargeTime");
 
