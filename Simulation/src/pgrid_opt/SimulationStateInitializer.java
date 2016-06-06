@@ -125,12 +125,6 @@ public class SimulationStateInitializer {
 	 * Consumer has percentage of total load predefined (perloads)
 	 */
 	private void calculateLoads() {
-		/*for (int i = 0; i < this.gDay.length - 1; i++) {
-			for (int j = this.g.getNGenerators(); j < this.g.getNGenerators() + this.g.getNConsumers(); j++) {
-				((Consumer) this.gDay[i].getNodeList()[j])
-						.setLoad(this.loads[i] / 100 * ((Consumer) this.g.getNodeList()[j]).getLoad());
-			}
-		}*/
 		for (int i = 0; i < gDay.length; i++) {
 			for (int j = 0; j < g.getNodeList().length; j++){
 				if(gDay[i].getNodeList()[j].getClass() == Consumer.class){
