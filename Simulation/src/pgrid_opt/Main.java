@@ -28,6 +28,8 @@ public class Main {
 	// Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
 	private static Config conf;
+	private static double totalCurrentProduction = 0;
+	private static double sumLoads = 0;
 
 	public static void main(String[] args) {
 
@@ -88,9 +90,10 @@ public class Main {
 				e1.printStackTrace();
 				System.exit(0);
 			}
-			expectedLoadAndProduction(timestepsGraph);
+			Double[] exptectedLoadAndProduction = expectedLoadAndProduction(timestepsGraph);
 			timestepsGraph = setLoadError(timestepsGraph);
 			while (i < timestepsGraph.length) {
+				System.out.println("TimeStep: "+ i);
 
 				timestepsGraph[i] = randomizeGridState(timestepsGraph[i], i);
 				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
@@ -405,7 +408,7 @@ public class Main {
 	 */
 	private static Graph checkGridEquilibrium(Graph grid, int timestep) {
 		Node[] nodeList = grid.getNodeList();
-		double sumLoads = 0;
+		sumLoads = 0;
 		double renewableProduction = 0;
 		double conventionalProduction = 0;
 		double sumCurrentStorage = 0;
@@ -430,9 +433,10 @@ public class Main {
 
 			}
 		}
-		double totalCurrentProduction = conventionalProduction + renewableProduction;
+		totalCurrentProduction = conventionalProduction + renewableProduction;
 
 		Config convGeneratorConf = conf.getConfig("conventionalGenerator");
+		Config renewableConfig = conf.getConfig("Storage");
 		Double maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
 		Double dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
 		Double dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
@@ -440,7 +444,7 @@ public class Main {
 
 		// Check if we need to increase current production
 		if ((totalCurrentProduction - sumLoads) < 0) {
-			System.out.println("Increasing production");
+			System.out.print("Increasing production ");
 
 			List<Offer> offers = new ArrayList<>();
 
@@ -477,23 +481,9 @@ public class Main {
 				}
 			}
 
-			// handleIncreaseProductionOffers(nodeList, (totalCurrentProduction - sumLoads));
-			// //We need to increase production until it meets demand.
-			// for(int i = 0; i < nodeList.length-1; i++){
-					//if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-					// if (totalCurrentProduction+((ConventionalGenerator)nodeList[i]).getMaxP()*dayAheadLimitMax > sumLoads){
-					// 		totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction);
-					// 		Set production to the remainder so we can meet the demand exactly
-					// }else {
-					// 		totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(((ConventionalGenerator)nodeList[i]).getProduction() + ((ConventionalGenerator)nodeList[i]).getMaxP());
-					// 		totalCurrentProduction += ((ConventionalGenerator) nodeList[i]).setProduction(((ConventionalGenerator)nodeList[i]).getMaxP());
-					// }
-
-				// }
-			// }
 		} else if ((totalCurrentProduction - sumLoads) > 0) {
 			// we need to decrease energy production
-			System.out.println("Decreasing production");
+			System.out.print("Decreasing production ");
 
 			// todo take offers from cheapest nodes to decrease production.
 			List<Offer> offers = new ArrayList<>();
@@ -532,42 +522,41 @@ public class Main {
 																	// demand
 				}
 			}
-
-			// handleDecreaseProductionOffers(nodeList, (totalCurrentProduction - sumLoads));
-
-			// for ( int i = nodeList.length-1; i >= 0; i--){
-				// if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-					// if (totalCurrentProduction-((ConventionalGenerator)nodeList[i]).getMinP()*dayAheadLimitMin > sumLoads){
-						//totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(((ConventionalGenerator)nodeList[i]).getProduction() -((ConventionalGenerator)nodeList[i]).getMaxP());
-						// totalCurrentProduction += ((ConventionalGenerator)nodeList[i]).setProduction(((ConventionalGenerator)nodeList[i]).getMinP());
-					//
-					// } else {
-						// totalCurrentProduction +=
-						// ((ConventionalGenerator)nodeList[i]).setProduction(sumLoads-totalCurrentProduction);
-					// }
-				// }
-			// }
 		} else {
-			System.out.println("Grid is balanced");
+			System.out.print("Grid is balanced ");
 			return null;// production and demand are balanced.
 		}
 
 		/*
 		 * Deal with curtailment and shedding
 		 */
+		int beginTime = renewableConfig.getInt("beginChargeTime");
+		int endTime = renewableConfig.getInt("endChargeTime");
+		grid = chargeOrDischargeStorage(grid, timestep, beginTime, endTime);
+
+		System.out.print("Total production: " + totalCurrentProduction + " ");
+		System.out.println("total load: " + sumLoads);
+		return grid;
+	}
+
+	private static Graph chargeOrDischargeStorage(Graph graph, int timestep, int beginTime, int endTime){
+		double chargeCheck = 0;
+		Node[] nodeList = graph.getNodeList();
 		if (totalCurrentProduction > sumLoads) {
-			System.out.println("curtailment");
+			System.out.print("curtailment ");
+			//Charge the batteries
 			for (int i = 0; i < nodeList.length; i++) {
 				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class) {
-					if (totalCurrentProduction - ((Storage) nodeList[i]).getMaximumCharge() > sumLoads) {
-						totalCurrentProduction -= ((Storage) nodeList[i])
-								.setCurrentCharge(((Storage) nodeList[i]).getMaximumCharge());
-					} else
-						totalCurrentProduction -= ((Storage) nodeList[i]).setCurrentCharge(
-								((Storage) nodeList[i]).setCurrentCharge(sumLoads - totalCurrentProduction));
+					chargeCheck  = ((Storage) nodeList[i]).getMaximumCharge() * 0.5;
+					if (totalCurrentProduction - ((Storage) nodeList[i]).getMaximumCharge() > sumLoads && timestep <= beginTime && timestep <= endTime){
+						System.out.print("battery charging");
+						totalCurrentProduction -= ((Storage) nodeList[i]).setCurrentCharge(((Storage) nodeList[i]).getMaximumCharge());
+					} else if (timestep >= beginTime && timestep <= endTime)
+						totalCurrentProduction -= ((Storage) nodeList[i]).setCurrentCharge(((Storage) nodeList[i]).setCurrentCharge(sumLoads - totalCurrentProduction)); //charge the remainder to fully meet the demand.
 				}
 			}
 		} else if (totalCurrentProduction < sumLoads) {
+			System.out.print("battery discharge ");
 			for (int i = 0; i < nodeList.length; i++) {
 				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class) {
 					if (totalCurrentProduction + ((Storage) nodeList[i]).getMaximumCharge() > sumLoads) {
@@ -576,14 +565,12 @@ public class Main {
 						totalCurrentProduction += ((Storage) nodeList[i]).discharge();
 				}
 			}
-			System.out.println("Shedding");
 		} else {
-			System.out.println("Balanced");
+			System.out.print("Balanced ");
 			// Production and load are balanced.
 		}
-		System.out.print("Total production: " + totalCurrentProduction + " ");
-		System.out.println("total load: " + sumLoads);
-		return grid;
+
+		return graph;
 	}
 
 	public static double handleIncreaseProductionOffers(Node[] nodeList, double demand) {
