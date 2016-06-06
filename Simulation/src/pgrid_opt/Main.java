@@ -271,17 +271,17 @@ public class Main {
 					case "O": // Oil Thermal generator
 						mcDraw = monteCarloHelper.getRandomUniformDist();
 						// System.out.println(mcDraw);
-						graph = handleConventionalGeneratorFailure(graph, j, mcDraw);
+						graph = checkConventionalGeneratorFailure(graph, j, mcDraw);
 						break;
 					case "N": // Nuclear Thermal generator
 						mcDraw = monteCarloHelper.getRandomUniformDist();
 						// System.out.println(mcDraw);
-						graph = handleConventionalGeneratorFailure(graph, j, mcDraw);
+						graph = checkConventionalGeneratorFailure(graph, j, mcDraw);
 						break;
 					case "C": // Coal Thermal generator
 						mcDraw = monteCarloHelper.getRandomUniformDist();
 						// System.out.println(mcDraw);
-						graph = handleConventionalGeneratorFailure(graph, j, mcDraw);
+						graph = checkConventionalGeneratorFailure(graph, j, mcDraw);
 						break;
 				}
 			}
@@ -386,12 +386,13 @@ public class Main {
 
 	/**
 	 * Sets the state of conventional generators to on or off.
+	 * based on monte carlo draw
 	 * @param graph
 	 * @param node
 	 * @param mcDraw
 	 * @return
 	 */
-	private static Graph handleConventionalGeneratorFailure(Graph graph, int node, double mcDraw) {
+	private static Graph checkConventionalGeneratorFailure(Graph graph, int node, double mcDraw) {
 		// double convGeneratorProb = 0.5; //Probability of failure for
 		// conventional generators
 

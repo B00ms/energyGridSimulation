@@ -408,6 +408,7 @@ public class Graph implements Cloneable {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.exit(0);
 		}
 		return graph;
 
