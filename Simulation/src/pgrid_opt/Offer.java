@@ -13,7 +13,6 @@ public class Offer implements Comparable<Offer>{
     public Offer(double production, double price, int nodeIndex, int offerId){
         this.production = production;
         this.price = price;
-        this.value = price/production;
         this.available = true;
         this.nodeIndex = nodeIndex;
         this.offerId = offerId;
@@ -21,7 +20,6 @@ public class Offer implements Comparable<Offer>{
 
     public void setProduction(int production){
         this.production = production;
-        this.value = this.price/this.production;
     }
 
     public double getProduction(){
@@ -30,7 +28,6 @@ public class Offer implements Comparable<Offer>{
 
     public void setPrice(int price){
         this.price = price;
-        this.value = this.price/this.production;
     }
 
     public double getPrice(){
@@ -45,10 +42,6 @@ public class Offer implements Comparable<Offer>{
         return this.available;
     }
 
-    public double getValueForMoney(){
-        return this.value;
-    }
-
     public int getNodeIndex(){
         return this.nodeIndex;
     }
@@ -59,9 +52,9 @@ public class Offer implements Comparable<Offer>{
 
     @Override
     public int compareTo(Offer o) {
-        if(this.getValueForMoney() < o.getValueForMoney()){
+        if(this.getPrice() < o.getPrice()){
             return -1;
-        }else if(this.getValueForMoney() > o.getValueForMoney()){
+        }else if(this.getPrice() > o.getPrice()){
             return 1;
         }else{
             return 0;
