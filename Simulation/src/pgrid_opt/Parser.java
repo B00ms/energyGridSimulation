@@ -67,9 +67,9 @@ public class Parser {
 		double storageDischargeEfficiency = conf.getConfig("Storage").getDouble("dischargEfficiencyOfStorage");
 		//storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage"); */
 		int dailyMaxLoadDemand  = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "dailyMaxLoadDemand");
-		double timeStepDuration  = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "durationOfEachStep");
-		double storageChargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
-		double storageDischargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
+		double timeStepDuration  = config.getConfigDoubleValue(CONFIGURATION_TYPE.GENERAL, "durationOfEachStep");
+		double storageChargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
+		double storageDischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
 		//storageChargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "chargeEfficiencyOfStorage");
 
 

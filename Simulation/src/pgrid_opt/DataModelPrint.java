@@ -217,6 +217,7 @@ public class DataModelPrint {
 						}
 
 						double val = (((Storage) g.getNodeList()[i]).getCurrentCharge()	- ((Storage) g.getNodeList()[i]).getMinimumCharge()) / delta * etad;
+						System.out.println(val);
 						for (int j = 0; j < g.getNNode(); j++) {
 							if (g.getEdges()[j].getCapacity() != 0.0F) {
 								cap = g.getEdges()[j].getCapacity();

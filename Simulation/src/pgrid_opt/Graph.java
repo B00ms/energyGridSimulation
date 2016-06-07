@@ -20,7 +20,7 @@ public class Graph implements Cloneable {
 	private float ccurt; //Renewable cut costs
 	private float etac; //Duration of each time step
 	private float etad; //Charge and discharge efficiency of storages
-	private float delta; //Number of storage systems.
+	private float delta; //Length of the time step.
 	private Node[] nodelist;
 	private Edge[][] network;
 	private Edge[] edges;

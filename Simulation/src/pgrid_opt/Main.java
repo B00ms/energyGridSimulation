@@ -118,6 +118,13 @@ public class Main {
 					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 					proc.waitFor();
 
+					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); // Using the new input file, we apply the model to solve the cost function given the new state of the grid.
+					String line = "";
+					while ((line = reader.readLine()) != null) {
+						output.append(String.valueOf(line) + "\n");
+					}
+					System.out.println(output);
+
 					timestepsGraph[i] = timestepsGraph[i].setFlowFromOutputFile(timestepsGraph[i], i);
 					timestepsGraph[i].printGraph(i, numOfSim);
 
@@ -133,12 +140,7 @@ public class Main {
 						Files.copy(Paths.get(dirpath + "/update.txt"), Paths.get(solutionPath + "/update" + i + ".txt"),
 								StandardCopyOption.REPLACE_EXISTING);
 
-					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); // Using the new input file, we apply the model to solve the cost function given the new state of the grid.
-					String line = "";
-					while ((line = reader.readLine()) != null) {
-						output.append(String.valueOf(line) + "\n");
-					}
-					System.out.println(output);
+
 					if (graph.getNstorage() > 0) {
 						timestepsGraph[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
 								timestepsGraph[i]); // Keeps track of the new
@@ -315,10 +317,10 @@ public class Main {
 					double vCutOff = conf.getConfig("windGenerator").getInt("vCutOff");
 					double vRated = conf.getConfig("windGenerator").getInt("vRated");
 					double pRated = conf.getConfig("windGenerator").getInt("pRated");*/
-					double vCutIn = config.getConfigIntValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vCutIn");
-					double vCutOff = config.getConfigIntValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vCutOff");
-					double vRated = config.getConfigIntValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vRated");
-					double pRated = config.getConfigIntValue(CONFIGURATION_TYPE.WIND_GENERATOR, "pRated");
+					double vCutIn = config.getConfigDoubleValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vCutIn");
+					double vCutOff = config.getConfigDoubleValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vCutOff");
+					double vRated = config.getConfigDoubleValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vRated");
+					double pRated = config.getConfigDoubleValue(CONFIGURATION_TYPE.WIND_GENERATOR, "pRated");
 
 					if (mcDraw <= vCutIn || mcDraw >= vCutOff) {
 						// Wind speed is outside the margins
