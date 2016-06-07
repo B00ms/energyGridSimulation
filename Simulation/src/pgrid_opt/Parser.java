@@ -68,11 +68,11 @@ public class Parser {
 		//storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage"); */
 		int dailyMaxLoadDemand  = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "dailyMaxLoadDemand");
 		double timeStepDuration  = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "durationOfEachStep");
-		double storageChargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "chargeEfficiencyOfStorage");
-		double storageDischargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "dischargEfficiencyOfStorage");
+		double storageChargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
+		double storageDischargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
 		//storageChargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "chargeEfficiencyOfStorage");
-		
-		
+
+
 		while(scanner.hasNext()){
 
 			String data = scanner.next();
@@ -223,7 +223,7 @@ public class Parser {
 
 		//TODO: later on we have to change this to be dynamic because we want to run for 4 different seasons.
 		/*String path = loadConfig.getString("summer");*/
-		String path = config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "loadCurve");
+		String path = config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "summer");
 		List<Float> expectedHourlyLoad = new ArrayList<>();
 
 		Scanner scanner;
@@ -258,7 +258,7 @@ public class Parser {
 		/*Config productionConf = conf.getConfig("conventionalGenerator").getConfig("production");
 		String path = productionConf.getString("summer"); // TODO for each season
 		 */
-		String path = config.getConfigStringValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "expectedProduction");
+		String path = config.getConfigStringValue(CONFIGURATION_TYPE.PRODUCTION, "summer");
 		List<double[]> expectedHourlyProduction = new ArrayList<>();
 		try{
 			CSVReader reader;

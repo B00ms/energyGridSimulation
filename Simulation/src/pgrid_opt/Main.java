@@ -43,7 +43,7 @@ public class Main {
 			conf = ConfigFactory.parseFile(new File("config/application.conf"));
 			graph = parser.parseData("./network.csv");
 		}*/
-		
+
 		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 
 		// load general config
@@ -53,7 +53,7 @@ public class Main {
 		String dirpath = generalConf.getString("output-folder"); // path to the output
 		String path = generalConf.getString("input-file"); // parse old input file
 		*/
-		String model = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file"); 
+		String model = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file");
 		String dirpath = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
 		String path = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file");
 
@@ -69,7 +69,7 @@ public class Main {
 		String outpath2 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "outpath2");
 		String solpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath1");
 		String solpath2 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath2");
-		
+
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
 
@@ -204,7 +204,7 @@ public class Main {
 		Double[] result = new Double[]{expectedLoad, expectedProduction};
 		return result;
 	}
-	
+
 	/**
 	 * Calculates and sets the real load by taking into account monte carlo draws.
 	 * @param timestepsGraph
@@ -338,12 +338,12 @@ public class Main {
 
 					// TODO: move to configuration file, or make it a constant
 					/*double irradianceConstant = conf.getConfig("solarGenerator").getDouble("irradianceConstant"); // Solar constant*/
-					double irradianceConstant = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "irradianceConstant"); 
+					double irradianceConstant = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "irradianceConstant");
 					/*double eccentricityCorrFactor = 1 + 0.033;*/ // Eccentricity correction Factor
-					double eccentricityCorrFactor = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "eccentricity"); 
-					/*double langitude = 53.218705; 
+					double eccentricityCorrFactor = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "eccentricity");
+					/*double langitude = 53.218705;
 					double longitude = 6.567793;*/
-					double langitude = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "langitude"); ; 
+					double langitude = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "langitude"); ;
 					double longitude = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "longitude"); ;
 
 					int month = Calendar.DECEMBER;
@@ -556,7 +556,7 @@ public class Main {
 		return grid;
 	}
 
-	
+
 	/**
 	 * Charges storage but only if the current charge is less than 50% of its capacity.
 	 * @param graph
