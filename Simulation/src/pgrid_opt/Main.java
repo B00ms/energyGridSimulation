@@ -16,14 +16,16 @@ import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
 import net.e175.klaus.solarpositioning.DeltaT;
 import net.e175.klaus.solarpositioning.Grena3;
 import net.e175.klaus.solarpositioning.SPA;
+import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 
 public class Main {
 
 	// Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
-	private static Config conf;
+	//private static Config conf;
 	private static double totalCurrentProduction = 0;
 	private static double sumLoads = 0;
+	private static ConfigCollection config = new ConfigCollection();
 
 	public static void main(String[] args) {
 
@@ -34,36 +36,51 @@ public class Main {
 		Parser parser = new Parser();
 		Graph graph;
 
-		if (OS.startsWith("Windows") || OS.startsWith("Linux")) {
+		/*if (OS.startsWith("Windows") || OS.startsWith("Linux")) {
 			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 			graph = parser.parseData("../network.csv");
 		} else {
 			conf = ConfigFactory.parseFile(new File("config/application.conf"));
 			graph = parser.parseData("./network.csv");
-		}
+		}*/
+		
+		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 
 		// load general config
+		/*
 		Config generalConf = conf.getConfig("general");
 		String model = generalConf.getString("model-file"); // path to the model
 		String dirpath = generalConf.getString("output-folder"); // path to the output
 		String path = generalConf.getString("input-file"); // parse old input file
+		*/
+		String model = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file"); 
+		String dirpath = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
+		String path = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file");
 
 		// load glpsol config
+		/*
 		Config glpsolConf = conf.getConfig("glpsol-config");
 		String outpath1 = glpsolConf.getString("outpath1");
 		String outpath2 = glpsolConf.getString("outpath2");
 		String solpath1 = glpsolConf.getString("solpath1");
 		String solpath2 = glpsolConf.getString("solpath2");
-
+		*/
+		String outpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "outpath1");
+		String outpath2 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "outpath2");
+		String solpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath1");
+		String solpath2 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath2");
+		
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
 
 		// load simulation limit
-		int simLimit = generalConf.getInt("simulation-runs");
+		/*int simLimit = generalConf.getInt("simulation-runs");*/
+		int simLimit = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "simulation-runs");
 		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
-			timestepsGraph = new Graph[generalConf.getInt(("numberOfTimeSteps"))];
+			/*timestepsGraph = new Graph[generalConf.getInt(("numberOfTimeSteps"))];*/
+			timestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
 			timestepsGraph = simulationState.creategraphs(graph, timestepsGraph);
 			int i = 0;
 
@@ -294,10 +311,14 @@ public class Main {
 				case "W": // Wind park generator
 					mcDraw = monteCarloHelper.getRandomWeibull();
 
-					double vCutIn = conf.getConfig("windGenerator").getInt("vCutIn");
+					/*double vCutIn = conf.getConfig("windGenerator").getInt("vCutIn");
 					double vCutOff = conf.getConfig("windGenerator").getInt("vCutOff");
 					double vRated = conf.getConfig("windGenerator").getInt("vRated");
-					double pRated = conf.getConfig("windGenerator").getInt("pRated");
+					double pRated = conf.getConfig("windGenerator").getInt("pRated");*/
+					double vCutIn = config.getConfigIntValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vCutIn");
+					double vCutOff = config.getConfigIntValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vCutOff");
+					double vRated = config.getConfigIntValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vRated");
+					double pRated = config.getConfigIntValue(CONFIGURATION_TYPE.WIND_GENERATOR, "pRated");
 
 					if (mcDraw <= vCutIn || mcDraw >= vCutOff) {
 						// Wind speed is outside the margins
@@ -316,10 +337,14 @@ public class Main {
 					mcDraw = monteCarloHelper.getRandomGamma();
 
 					// TODO: move to configuration file, or make it a constant
-					double irradianceConstant = conf.getConfig("solarGenerator").getDouble("irradianceConstant"); // Solar constant
-					double eccentricityCorrFactor = 1 + 0.033; // Eccentricity correction Factor
-					double langitude = 53.218705; // TODO: should maybe be placed within solar generator nodes so we can easily switch locations
-					double longitude = 6.567793;
+					/*double irradianceConstant = conf.getConfig("solarGenerator").getDouble("irradianceConstant"); // Solar constant*/
+					double irradianceConstant = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "irradianceConstant"); 
+					/*double eccentricityCorrFactor = 1 + 0.033;*/ // Eccentricity correction Factor
+					double eccentricityCorrFactor = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "eccentricity"); 
+					/*double langitude = 53.218705; 
+					double longitude = 6.567793;*/
+					double langitude = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "langitude"); ; 
+					double longitude = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "longitude"); ;
 
 					int month = Calendar.DECEMBER;
 					GregorianCalendar calendar = new GregorianCalendar(2016, month, 14, currentTimeStep, 0);
@@ -353,7 +378,8 @@ public class Main {
 					else
 						irradiance = sMax * Math.sin(Math.PI * (currentTimeStep - sunrise) / (sunset - sunrise));
 
-					double efficiency = conf.getConfig("solarGenerator").getDouble("panelEfficiency");
+				/*	double efficiency = conf.getConfig("solarGenerator").getDouble("panelEfficiency");*/
+					double efficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "panelEfficiency");
 					// surface array of panels in m², efficiency, irradiance of
 					// panels on the horizontal plane.
 					double production = 45 * efficiency * irradiance;
@@ -427,11 +453,13 @@ public class Main {
 		}
 		totalCurrentProduction = conventionalProduction + renewableProduction;
 
-		Config convGeneratorConf = conf.getConfig("conventionalGenerator");
-		Config renewableConfig = conf.getConfig("Storage");
+		/*Config convGeneratorConf = conf.getConfig("conventionalGenerator");
+		Config renewableConfig = conf.getConfig("Storage");*/
 
-		int beginTime = renewableConfig.getInt("beginChargeTime");
-		int endTime = renewableConfig.getInt("endChargeTime");
+		/*int beginTime = renewableConfig.getInt("beginChargeTime");
+		int endTime = renewableConfig.getInt("endChargeTime");*/
+		int beginTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime" );
+		int endTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime" );
 
 		boolean dischargeAllowed = true;
 		if(timestep <= beginTime && timestep <= endTime){

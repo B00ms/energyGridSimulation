@@ -13,21 +13,24 @@ import java.util.List;
 import java.util.Scanner;
 
 import au.com.bytecode.opencsv.CSVReader;
+import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 public class Parser {
-	private static String OS = System.getProperty("os.name");
+	/*private static String OS = System.getProperty("os.name");
 	private Config conf;
-	private Config productionConf;
+	private Config productionConf;*/
+	private ConfigCollection config = new ConfigCollection();
 
 	public Parser(){
-		if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+		/*if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
 			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 		}else{
 			conf = ConfigFactory.parseFile(new File("config/application.conf"));
 		}
-		productionConf = conf.getConfig("conventionalGenerator").getConfig("offers");
+		productionConf = conf.getConfig("conventionalGenerator").getConfig("offers");*/
 	}
 
 	/**
@@ -57,13 +60,19 @@ public class Parser {
 		int numberOfConsumers = 0;
 		int numberOfStorage = 0;
 
-		Config generalConf = conf.getConfig("general");
-		int dailyMaxLoadDemand  = generalConf.getInt("dailyMaxLoadDemand");
+		/*Config generalConf = conf.getConfig("general");*/
+		/*int dailyMaxLoadDemand  = generalConf.getInt("dailyMaxLoadDemand");
 		double timeStepDuration  = generalConf.getDouble("durationOfEachStep");
 		double storageChargeEfficiency  = conf.getConfig("Storage").getDouble("chargeEfficiencyOfStorage");
 		double storageDischargeEfficiency = conf.getConfig("Storage").getDouble("dischargEfficiencyOfStorage");
-		//storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage");
-
+		//storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage"); */
+		int dailyMaxLoadDemand  = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "dailyMaxLoadDemand");
+		double timeStepDuration  = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "durationOfEachStep");
+		double storageChargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "chargeEfficiencyOfStorage");
+		double storageDischargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "dischargEfficiencyOfStorage");
+		//storageChargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "chargeEfficiencyOfStorage");
+		
+		
 		while(scanner.hasNext()){
 
 			String data = scanner.next();
@@ -209,16 +218,17 @@ public class Parser {
 
 	public Float[] parseExpectedHourlyLoad(){
 
-		Config generalConf = conf.getConfig("conventionalGenerator");
-		Config loadConfig = generalConf.getConfig("load-curves");
+		/*Config generalConf = conf.getConfig("conventionalGenerator");
+		Config loadConfig = generalConf.getConfig("load-curves");*/
 
 		//TODO: later on we have to change this to be dynamic because we want to run for 4 different seasons.
-		String path = loadConfig.getString("summer");
+		/*String path = loadConfig.getString("summer");*/
+		String path = config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "loadCurve");
 		List<Float> expectedHourlyLoad = new ArrayList<>();
 
 		Scanner scanner;
 		try {
-			if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+			if(config.getOS().startsWith("Windows") || config.getOS().startsWith("Linux")) {
 				scanner = new Scanner(Paths.get("../"+path));
 			}else{
 				scanner = new Scanner(Paths.get(path));
@@ -245,13 +255,14 @@ public class Parser {
 	 * @return List<Double[]> expected production for each node
 	 */
 	public List<double[]> parseExpectedProduction(){
-		Config productionConf = conf.getConfig("conventionalGenerator").getConfig("production");
+		/*Config productionConf = conf.getConfig("conventionalGenerator").getConfig("production");
 		String path = productionConf.getString("summer"); // TODO for each season
-
+		 */
+		String path = config.getConfigStringValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "expectedProduction");
 		List<double[]> expectedHourlyProduction = new ArrayList<>();
 		try{
 			CSVReader reader;
-			if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+			if(config.getOS().startsWith("Windows") || config.getOS().startsWith("Linux")) {
 				reader = new CSVReader(new FileReader("../"+path));
 			}else{
 				reader = new CSVReader(new FileReader(path));
@@ -265,7 +276,7 @@ public class Parser {
 				}
 				expectedHourlyProduction.add(productionValues);
 			}
-
+			reader.close();
 			return expectedHourlyProduction;
 		} catch (FileNotFoundException e){
 			e.printStackTrace();
@@ -281,7 +292,8 @@ public class Parser {
 	 * @return
 	 */
 	public List<List<Offer>> parseOfferIncreaseProduction(){
-		String path = productionConf.getString("increaseProduction");
+		/*String path = productionConf.getString("increaseProduction");*/
+		String path = config.getConfigStringValue(CONFIGURATION_TYPE.OFFERS, "increaseProduction");
 		List<List<Offer>> offerUp = parseOffer(path);
 		return offerUp;
 	}
@@ -291,7 +303,8 @@ public class Parser {
 	 * @return
 	 */
 	public List<List<Offer>> parseOfferDecreaseProduction(){
-		String path = productionConf.getString("decreaseProduction");
+		/*String path = productionConf.getString("decreaseProduction");*/
+		String path = config.getConfigStringValue(CONFIGURATION_TYPE.OFFERS, "decreaseProduction");
 		List<List<Offer>> offerDown = parseOffer(path);
 		return offerDown;
 	}
@@ -307,7 +320,7 @@ public class Parser {
 		List<List<Offer>> generatorOffers = new ArrayList<>();
 		try{
 			CSVReader reader;
-			if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
+			if(config.getOS().startsWith("Windows") || config.getOS().startsWith("Linux")) {
 				reader = new CSVReader(new FileReader("../"+path));
 			}else{
 				reader = new CSVReader(new FileReader(path));
