@@ -9,13 +9,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.Date;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.Delayed;
-
-import org.apache.commons.math3.genetics.TournamentSelection;
-
 import com.typesafe.config.ConfigFactory;
 
 import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
@@ -476,15 +470,12 @@ public class Main {
 							+ offer.getProduction();
 
 					if (Math.abs(demand) <= newProduction) {
-						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()])
-								.setProduction(Math.abs(demand));
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(demand));
 					} else {
-						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()])
-								.setProduction(newProduction);
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
 					}
 					offers.remove(i); // remove offer from list
-					demand = (totalCurrentProduction - sumLoads); // update
-																	// demand
+					demand = (totalCurrentProduction - sumLoads); // update demand
 				}
 			}
 
@@ -517,11 +508,9 @@ public class Main {
 
 					if (demand <= newProduction) {
 						// only decrease production until demand is met
-						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()])
-								.setProduction(demand);
+						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(demand);
 					} else {
-						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()])
-								.setProduction(newProduction);
+						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
 					}
 
 					offers.remove(i); // remove offer from list
@@ -551,7 +540,6 @@ public class Main {
 	private static Graph chargeStorage(Graph graph){
 		for(int i = 0; i < graph.getNodeList().length; i++){
 			if(graph.getNodeList()[i].getClass() == Storage.class){
-				Storage storage = (Storage)graph.getNodeList()[i];
 				if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentCharge()){
 					sumLoads += ((Storage)graph.getNodeList()[i]).setCurrentCharge(((Storage)graph.getNodeList()[i]).getMaximumCharge()*0.5);
 				}
