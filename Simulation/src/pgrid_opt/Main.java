@@ -553,7 +553,7 @@ public class Main {
 			if(graph.getNodeList()[i].getClass() == Storage.class){
 				Storage storage = (Storage)graph.getNodeList()[i];
 				if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentCharge()){
-					sumLoads += ((Storage)graph.getNodeList()[i]).setCurrentCharge(((Storage)graph.getNodeList()[i]).getMaximumCharge());
+					sumLoads += ((Storage)graph.getNodeList()[i]).setCurrentCharge(((Storage)graph.getNodeList()[i]).getMaximumCharge()*0.5);
 				}
 			}
 		}
