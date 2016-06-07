@@ -51,10 +51,8 @@ public class Main {
 		// load general config
 		Config generalConf = conf.getConfig("general");
 		String model = generalConf.getString("model-file"); // path to the model
-		String dirpath = generalConf.getString("output-folder"); // path to the
-																	// output
-		String path = generalConf.getString("input-file"); // parse old input
-															// file
+		String dirpath = generalConf.getString("output-folder"); // path to the output
+		String path = generalConf.getString("input-file"); // parse old input file
 
 		// load glpsol config
 		Config glpsolConf = conf.getConfig("glpsol-config");
@@ -91,7 +89,7 @@ public class Main {
 				System.exit(0);
 			}
 			Double[] exptectedLoadAndProduction = expectedLoadAndProduction(timestepsGraph);
-			timestepsGraph = setLoadError(timestepsGraph);
+			timestepsGraph = setRealLoad(timestepsGraph);
 			while (i < timestepsGraph.length) {
 				System.out.println("TimeStep: "+ i);
 
@@ -195,9 +193,13 @@ public class Main {
 		Double[] result = new Double[]{expectedLoad, expectedProduction};
 		return result;
 	}
-
-	private static Graph[] setLoadError(Graph[] timestepsGraph) {
-
+	
+	/**
+	 * Calculates and sets the real load by taking into account monte carlo draws.
+	 * @param timestepsGraph
+	 * @return The graph where the real load has been set for each Consumer.
+	 */
+	private static Graph[] setRealLoad(Graph[] timestepsGraph) {
 		MontoCarloHelper mcHelper = new MontoCarloHelper();
 		for (int i = 0; i < timestepsGraph.length; i++) {
 			double totalLoad = 0;
@@ -206,37 +208,27 @@ public class Main {
 						&& timestepsGraph[i].getNodeList()[n].getClass() == Consumer.class) {
 					double mcDraw = mcHelper.getRandomNormDist();
 					double previousError = 0;
-					// if(i > 0){
+
 					// Calculate and set the load error of a single consumer.
 					double error = (((Consumer) timestepsGraph[i].getNodeList()[n]).getLoad() * mcDraw);
 					totalLoad += ((Consumer) timestepsGraph[i].getNodeList()[n]).getLoad();
 					if (i > 0)
 						previousError = ((Consumer) timestepsGraph[i - 1].getNodeList()[n]).getLoadError();
-					// System.out.print("NodeID: " + n);
-					// System.out.print(" time: " + i + " mcDraw: " + + mcDraw + " error: " + error + " previousError: " + previousError);
 
 					((Consumer) timestepsGraph[i].getNodeList()[n]).setLoadError(error + previousError); // plus load error of i-1 makes it cumulative.
 
 					// Calculate and set the real load of a single consumer
-					// System.out.print(" Load: " + ((Consumer)timestepsGraph[i].getNodeList()[n]).getLoad());
 					double realLoad = ((Consumer) timestepsGraph[i].getNodeList()[n]).getLoad()
 							+ ((Consumer) timestepsGraph[i].getNodeList()[n]).getLoadError();
 					((Consumer) timestepsGraph[i].getNodeList()[n]).setLoad(realLoad);
-
-					// System.out.println(" realLoad: " + realLoad);
-					// }
 				}
 			}
-			// System.out.println("Total load: "+ totalLoad);
 		}
-
 		return timestepsGraph;
-
 	}
 
 	/**
 	 * Set the state of generators and loads.
-	 *
 	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
 	private static Graph randomizeGridState(Graph graph, int currentTimeStep) {
@@ -451,7 +443,7 @@ public class Main {
 		boolean dischargeAllowed = true;
 		if(timestep <= beginTime && timestep <= endTime){
 			System.out.print(" ");
-			grid = chargeStorage(grid, timestep);
+			grid = chargeStorage(grid);
 			dischargeAllowed = false;
 		}
 
@@ -542,19 +534,21 @@ public class Main {
 			return null;// production and demand are balanced.
 		}
 
-		/*
-		 * Deal with curtailment and shedding
-		 */
 		if(dischargeAllowed)
-			grid = chargeOrDischargeStorage(grid, timestep);
+			grid = chargeOrDischargeStorage(grid);
 
 		System.out.print("Total production: " + totalCurrentProduction + " ");
 		System.out.println("total load: " + sumLoads);
 		return grid;
 	}
 
-	private static Graph chargeStorage(Graph graph, int timestep){
-
+	
+	/**
+	 * Charges storage but only if the current charge is less than 50% of its capacity.
+	 * @param graph
+	 * @return graph in which the state of storages has been set.
+	 */
+	private static Graph chargeStorage(Graph graph){
 		for(int i = 0; i < graph.getNodeList().length; i++){
 			if(graph.getNodeList()[i].getClass() == Storage.class){
 				Storage storage = (Storage)graph.getNodeList()[i];
@@ -566,7 +560,12 @@ public class Main {
 		return graph;
 	}
 
-	private static Graph chargeOrDischargeStorage(Graph graph, int timestep){
+	/**
+	 * Charges or discharges storage depending depending on the state of production and load.
+	 * @param graph
+	 * @return
+	 */
+	private static Graph chargeOrDischargeStorage(Graph graph){
 		Node[] nodeList = graph.getNodeList();
 		if (totalCurrentProduction > sumLoads) {
 			System.out.print("curtailment ");
