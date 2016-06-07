@@ -272,7 +272,6 @@ public class Main {
 				}
 			}
 		}
-
 		return graph;
 	}
 
@@ -503,8 +502,7 @@ public class Main {
 				double offeredProduction = offer.getProduction();
 				if (demand > 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
-					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()
-							- offer.getProduction();
+					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()- offer.getProduction();
 
 					if (demand <= newProduction) {
 						// only decrease production until demand is met
@@ -514,8 +512,7 @@ public class Main {
 					}
 
 					offers.remove(i); // remove offer from list
-					demand = (totalCurrentProduction - sumLoads); // update
-																	// demand
+					demand = (totalCurrentProduction - sumLoads); // update demand
 				}
 			}
 		} else {
