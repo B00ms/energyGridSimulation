@@ -82,7 +82,7 @@ public class Main {
 				e1.printStackTrace();
 				System.exit(0);
 			}
-			Double[] exptectedLoadAndProduction = expectedLoadAndProduction(timestepsGraph);
+			Double[] expectedLoadAndProduction = expectedLoadAndProduction(timestepsGraph);
 			timestepsGraph = setRealLoad(timestepsGraph);
 			while (i < timestepsGraph.length) {
 				System.out.println("TimeStep: "+ i);
@@ -167,6 +167,7 @@ public class Main {
 		for(int hour=0; hour < 24; hour++){
 			graphs[hour] = randomizeRenewableGenerator(graphs[hour], hour); //set renewable production.
 
+			// calculate expected load
 			for(int i = 0; i < graphs[hour].getNodeList().length; i++){
 				if(graphs[hour].getNodeList()[i].getClass() == Consumer.class){
 					expectedLoad += ((Consumer)graphs[hour].getNodeList()[i]).getLoad();
@@ -176,8 +177,11 @@ public class Main {
 					expectedLoad -=  ((RewGenerator)graphs[hour].getNodeList()[i]).getProduction();
 				}
 			}
-			graphs[hour] = checkGridEquilibrium(graphs[hour], hour);
 
+			// calculate expected conventional generator production
+			graphs[hour] = planExpectedProductionConvGen(graphs[hour], hour, expectedLoad);
+
+			// get expected production
 			for (int i = 0; i < graphs[hour].getNodeList().length; i ++){
 				if (graphs[hour].getNodeList()[i].getClass() == ConventionalGenerator.class){
 					expectedProduction +=  ((ConventionalGenerator)graphs[hour].getNodeList()[i]).getProduction();
@@ -187,7 +191,7 @@ public class Main {
 		Double[] result = new Double[]{expectedLoad, expectedProduction};
 		return result;
 	}
-	
+
 	/**
 	 * Calculates and sets the real load by taking into account monte carlo draws.
 	 * @param timestepsGraph
@@ -392,6 +396,74 @@ public class Main {
 		return graph;
 	}
 
+
+	private static Graph planExpectedProductionConvGen(Graph grid, int timestep, double expectedLoad) {
+		Node[] nodeList = grid.getNodeList();
+		double totalMaxProductionAvailableConv = 0;
+		double totalMaxProductionAvailableRenew = 0;
+		double sumLoads = 0;
+
+		for(int i = 0; i < nodeList.length; i++)
+		{
+			if(nodeList[i] != null && nodeList[i].getClass() == Consumer.class){
+				sumLoads += ((Consumer)nodeList[i]).getLoad();
+			} else if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
+				totalMaxProductionAvailableConv += ((ConventionalGenerator)nodeList[i]).getDayAheadMaxP();
+			} else if (nodeList[i] != null && nodeList[i].getClass() == RewGenerator.class){
+				totalMaxProductionAvailableRenew += ((RewGenerator)nodeList[i]).getProduction();
+			} else if (nodeList[i] != null && nodeList[i].getClass() == Storage.class){
+			}
+		}
+
+		double expectedProduction = 0;
+		double remainingLoad =(expectedLoad - expectedProduction);
+		Config convGeneratorConf = conf.getConfig("conventionalGenerator");
+		Double dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
+		Double dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
+		Double maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
+
+		if (expectedLoad > 0) {
+
+			// order by cheapest generator maxp
+//			Comparator<ConventionalGenerator> rankOrder =  new Comparator<ConventionalGenerator>() {
+//				public int compare(ConventionalGenerator cg1, ConventionalGenerator cg2) {
+//					if(cg1.getMaxP() < cg2.getMaxP()){
+//						return -1;
+//					}else if(cg1.getMaxP() > cg2.getMin()){
+//						return 1;
+//					}else{
+//						return 0;
+//					}
+//				}
+//			};
+
+			for ( int i = nodeList.length-1; i >= 0; i--){
+
+				remainingLoad =(expectedLoad - expectedProduction);
+				if( remainingLoad > 0 ){
+					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
+						double minP = ((ConventionalGenerator) nodeList[i]).getDayAheadMinP();
+						double maxP = ((ConventionalGenerator) nodeList[i]).getDayAheadMaxP();
+
+						if(remainingLoad<maxP && remainingLoad > minP){
+							expectedProduction += ((ConventionalGenerator)nodeList[i]).setScheduledProduction(remainingLoad);
+						}else{
+							expectedProduction += ((ConventionalGenerator)nodeList[i]).setScheduledProduction(maxP);
+						}
+					}
+				}else{
+					break; // remaining load fulfilled
+				}
+
+			}
+
+		}else{
+			// current expected load is already met.
+		}
+
+		return grid;
+	}
+
 	/**
 	 * Depending on the state of the grid this method will increase or decrease
 	 * production in order to balance the system
@@ -528,7 +600,7 @@ public class Main {
 		return grid;
 	}
 
-	
+
 	/**
 	 * Charges storage but only if the current charge is less than 50% of its capacity.
 	 * @param graph
@@ -582,66 +654,66 @@ public class Main {
 		return graph;
 	}
 
-	public static double handleIncreaseProductionOffers(Node[] nodeList, double demand) {
-		List<Offer> offers = new ArrayList<>();
-
-		// find cheapest offers
-		for (int i = 0; i < nodeList.length - 1; i++) {
-			if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
-
-				List<Offer> offerList = ((ConventionalGenerator) nodeList[i]).getDecreaseProductionOffers();
-				offers.addAll(offerList);
-			}
-		}
-
-		// sort offers best value for money
-		Collections.sort(offers);
-
-		for (int i = 0; i < offers.size(); i++) {
-			Offer offer = offers.get(i);
-			double offeredProduction = offer.getProduction();
-			if (demand > 0) {
-				((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(0);
-				demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
-				offers.remove(i); // remove offer from list
-			} else {
-				return demand;
-			}
-		}
-
-		return demand;
-	}
-
-	public static double handleDecreaseProductionOffers(Node[] nodeList, double demand) {
-		List<Offer> offers = new ArrayList<>();
-
-		// find cheapest offers
-		for (int i = 0; i < nodeList.length - 1; i++) {
-			if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
-				// Offer bestOffer = ((ConventionalGenerator)
-				// nodeList[i]).getBestIncreaseOffer();
-				// offers.add(bestOffer);
-				List<Offer> offerList = ((ConventionalGenerator) nodeList[i]).getDecreaseProductionOffers();
-				offers.addAll(offerList);
-			}
-		}
-
-		// sort offers best value for money
-		Collections.sort(offers);
-
-		for (int i = 0; i < offers.size(); i++) {
-			Offer offer = offers.get(i);
-			double offeredProduction = offer.getProduction();
-			if (demand > 0) {
-				((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(0);
-				demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
-				offers.remove(i); // remove offer from list
-			} else {
-				return demand;
-			}
-		}
-
-		return demand;
-	}
+//	public static double handleIncreaseProductionOffers(Node[] nodeList, double demand) {
+//		List<Offer> offers = new ArrayList<>();
+//
+//		// find cheapest offers
+//		for (int i = 0; i < nodeList.length - 1; i++) {
+//			if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
+//
+//				List<Offer> offerList = ((ConventionalGenerator) nodeList[i]).getDecreaseProductionOffers();
+//				offers.addAll(offerList);
+//			}
+//		}
+//
+//		// sort offers best value for money
+//		Collections.sort(offers);
+//
+//		for (int i = 0; i < offers.size(); i++) {
+//			Offer offer = offers.get(i);
+//			double offeredProduction = offer.getProduction();
+//			if (demand > 0) {
+//				((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(0);
+//				demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+//				offers.remove(i); // remove offer from list
+//			} else {
+//				return demand;
+//			}
+//		}
+//
+//		return demand;
+//	}
+//
+//	public static double handleDecreaseProductionOffers(Node[] nodeList, double demand) {
+//		List<Offer> offers = new ArrayList<>();
+//
+//		// find cheapest offers
+//		for (int i = 0; i < nodeList.length - 1; i++) {
+//			if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
+//				// Offer bestOffer = ((ConventionalGenerator)
+//				// nodeList[i]).getBestIncreaseOffer();
+//				// offers.add(bestOffer);
+//				List<Offer> offerList = ((ConventionalGenerator) nodeList[i]).getDecreaseProductionOffers();
+//				offers.addAll(offerList);
+//			}
+//		}
+//
+//		// sort offers best value for money
+//		Collections.sort(offers);
+//
+//		for (int i = 0; i < offers.size(); i++) {
+//			Offer offer = offers.get(i);
+//			double offeredProduction = offer.getProduction();
+//			if (demand > 0) {
+//				((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(0);
+//				demand -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offeredProduction);
+//				offers.remove(i); // remove offer from list
+//			} else {
+//				return demand;
+//			}
+//		}
+//
+//		return demand;
+//	}
 
 }

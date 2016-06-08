@@ -33,7 +33,7 @@ public class SimulationStateInitializer {
 		for (int i = 0; i < this.gDay.length; i++) {
 			this.gDay[i] = g.clone();
 		}
-		initializeExpectedProduction();
+//		initializeExpectedProduction();
 		calculateLoads();
 		calculateRewProd();
 		checkGen();

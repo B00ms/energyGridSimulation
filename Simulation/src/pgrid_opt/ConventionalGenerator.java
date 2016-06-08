@@ -85,18 +85,18 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		 * If the increase is smaller than xx% of maxp we go inside the if and set the production
 		 * If not the increase of production to the highest possible value.
 		 */
-		if((productionIncrease < 0 && (Math.abs(productionIncrease) <= maxp*maxProductionIncrease))){
+		if((productionIncrease < 0 && (Math.abs(productionIncrease) <= maxp))){
 			production = this.production + Math.abs(productionIncrease);
 		} else if(productionIncrease < 0)
-			production = this.production + maxp*maxProductionIncrease;
+			production = this.production + maxp;
 
-		if (maxp*dayAheadLimitMax < production){
+		if (maxp < production){
 			//New production is higher than maximum allowed production.
-			this.production = maxp*dayAheadLimitMax;
+			this.production = maxp;
 			return this.production;
-		} else if(minp*dayAheadLimitMin > production){
+		} else if(minp > production){
 			//New production is lower than minimum allowed production.
-			this.production = minp*dayAheadLimitMin;
+			this.production = minp;
 			return this.production;
 		} else {
 			//New production falls within the margins.
@@ -105,6 +105,11 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		}
 	}
 
+	/**
+	 * Scheduled production lies between minp+7,5% and maxp-7,5% to leave room for buffer
+	 * @param production new production
+	 * @return production
+	 */
 	public double setScheduledProduction(double production) {
 		double productionIncrease = 0;
 		if (production-production != production)
@@ -215,6 +220,14 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 
 	public void takeDecreaseOffer(int i){
 		this.offerDecreaseProduction.get(i).setAvailable(false);
+	}
+
+	public double getDayAheadMaxP(){
+		return this.maxp*dayAheadLimitMax;
+	}
+
+	public double getDayAheadMinP(){
+		return this.minp*dayAheadLimitMin;
 	}
 
 	@Override
