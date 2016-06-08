@@ -568,7 +568,7 @@ public class Main {
 		for(int i = 0; i < graph.getNodeList().length; i++){
 			if(graph.getNodeList()[i].getClass() == Storage.class){
 				if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentCharge()){
-					sumLoads += ((Storage)graph.getNodeList()[i]).setCurrentCharge(((Storage)graph.getNodeList()[i]).getMaximumCharge()*0.5);
+					sumLoads += ((Storage)graph.getNodeList()[i]).charge(((Storage)graph.getNodeList()[i]).getMaximumCharge()*0.5);
 				}
 			}
 		}
@@ -589,9 +589,9 @@ public class Main {
 				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class) {
 					if (totalCurrentProduction - ((Storage) nodeList[i]).getMaximumCharge() > sumLoads){
 						System.out.print("battery charging");
-						totalCurrentProduction -= ((Storage) nodeList[i]).setCurrentCharge(((Storage) nodeList[i]).getMaximumCharge());
+						totalCurrentProduction -= ((Storage) nodeList[i]).charge(((Storage) nodeList[i]).getMaximumCharge());
 					} else
-						totalCurrentProduction -= ((Storage) nodeList[i]).setCurrentCharge(((Storage) nodeList[i]).setCurrentCharge(sumLoads - totalCurrentProduction)); //charge the remainder to fully meet the demand.
+						totalCurrentProduction -= ((Storage) nodeList[i]).charge(((Storage) nodeList[i]).charge(sumLoads - totalCurrentProduction)); //charge the remainder to fully meet the demand.
 				}
 			}
 		} else if (totalCurrentProduction < sumLoads) {

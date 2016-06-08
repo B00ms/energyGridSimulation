@@ -31,6 +31,7 @@ param maxtprod {tgen} >=0;
 param loads {consumers} >=0;
 param production {tgen} >= 0;
 param rewproduction {rgen};
+param flowfromstorage {storage};
 
 #phase angle constraint 
 var theta {nodes} >= -pi/2, <= pi/2;
@@ -80,13 +81,17 @@ subject to setRewProduction { i in rgen } :
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
+
 #Minimum discharge of storage nodes
-subject to sgenmin { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= storagemin[i];
+#subject to sgenmin { i in storage } :
+#	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= storagemin[i];
 
 #Demand of consumer nodes.
-subject to sgenmax { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
+#subject to sgenmax { i in storage } :
+#	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
+	
+subject to storageFlow { i in storage } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];		
 
 #The amount of energy send to a consumer should be lower or equal to the load of the consumer
 subject to loadfix {i in consumers} :

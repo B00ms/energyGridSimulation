@@ -12,6 +12,7 @@ public class Storage extends Node {
 	private Config conf;
 	private double chargeEfficiency;
 	private double dischargeEfficiency;
+	private double flowFromStorage = 0;
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId) {
 		super(nodeId);
@@ -30,27 +31,42 @@ public class Storage extends Node {
 	}
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge) {
-		setCurrentCharge(currentCharge);
+		charge(currentCharge);
 		setMaximumCharge(maximumCharge);
 		setMinimumCharge(minimumCharge);
 	}
 
-	public double discharge(){
-		double tempCurrentCharge = currentCharge * dischargeEfficiency;
-		currentCharge = tempCurrentCharge;
-		return currentCharge;
+	public double getFlowFromStorage(){
+		return flowFromStorage;
 	}
 
 	public double getCurrentCharge() {
 		return currentCharge;
 	}
 
-	public double setCurrentCharge(double charge) {
+	/**
+	 * Charge the storage using the given charge
+	 * @param charge
+	 * @return
+	 */
+	public double charge(double charge) {
+		double tempCurrentCharge;
 		if (charge >= maximumCharge)
-			currentCharge = maximumCharge * chargeEfficiency;
+			tempCurrentCharge = maximumCharge * chargeEfficiency;
 		else
-			currentCharge = charge * chargeEfficiency;
+			tempCurrentCharge = charge * chargeEfficiency;
 
+		flowFromStorage = charge*-1;
+		//flowFromStorage = 0;
+		currentCharge = tempCurrentCharge;
+		return currentCharge;
+	}
+
+	public double discharge(){
+		double tempCurrentCharge = currentCharge * dischargeEfficiency;
+		flowFromStorage = currentCharge - tempCurrentCharge;
+		//flowFromStorage = 0;
+		currentCharge = tempCurrentCharge;
 		return currentCharge;
 	}
 
