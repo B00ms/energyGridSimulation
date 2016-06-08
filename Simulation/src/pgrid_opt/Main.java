@@ -161,10 +161,12 @@ public class Main {
 	 * @return Array where [0] = expectedLoad and [1] = expectedProduction
 	 */
 	private static Double[] expectedLoadAndProduction(Graph[] graphs) {
-		double expectedLoad = 0;
-		double expectedProduction = 0;
+		double sumExpectedLoad = 0;
+		double sumExpectedProduction = 0;
+//		List<Double[double,double]> result = new Double[23];
 
 		for(int hour=0; hour < 24; hour++){
+			double expectedLoad = 0, expectedProduction = 0; // initialize expected loads,production
 			graphs[hour] = randomizeRenewableGenerator(graphs[hour], hour); //set renewable production.
 
 			// calculate expected load
@@ -187,8 +189,12 @@ public class Main {
 					expectedProduction +=  ((ConventionalGenerator)graphs[hour].getNodeList()[i]).getProduction();
 				}
 			}
+			sumExpectedLoad += expectedLoad;
+			sumExpectedProduction += expectedProduction;
+
+//			result[hour] = new Double[]{expectedLoad, expectedProduction};
 		}
-		Double[] result = new Double[]{expectedLoad, expectedProduction};
+		Double[] result = new Double[]{sumExpectedLoad, sumExpectedProduction};
 		return result;
 	}
 
