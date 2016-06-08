@@ -29,41 +29,19 @@ public class Main {
 	public static void main(String[] args) {
 
 		long starttime = System.nanoTime();
-		float wcost = 0.0f; // wind cost
-		float scost = 0.0f; // solar cost
 		Graph[] timestepsGraph = null;
 		Parser parser = new Parser();
 		Graph graph;
 
-		/*if (OS.startsWith("Windows") || OS.startsWith("Linux")) {
-			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
-			graph = parser.parseData("../network.csv");
-		} else {
-			conf = ConfigFactory.parseFile(new File("config/application.conf"));
-			graph = parser.parseData("./network.csv");
-		}*/
 
 		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 
 		// load general config
-		/*
-		Config generalConf = conf.getConfig("general");
-		String model = generalConf.getString("model-file"); // path to the model
-		String dirpath = generalConf.getString("output-folder"); // path to the output
-		String path = generalConf.getString("input-file"); // parse old input file
-		*/
 		String model = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file");
 		String dirpath = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
 		String path = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file");
 
 		// load glpsol config
-		/*
-		Config glpsolConf = conf.getConfig("glpsol-config");
-		String outpath1 = glpsolConf.getString("outpath1");
-		String outpath2 = glpsolConf.getString("outpath2");
-		String solpath1 = glpsolConf.getString("solpath1");
-		String solpath2 = glpsolConf.getString("solpath2");
-		*/
 		String outpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "outpath1");
 		String outpath2 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "outpath2");
 		String solpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath1");
@@ -78,18 +56,10 @@ public class Main {
 		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
-			/*timestepsGraph = new Graph[generalConf.getInt(("numberOfTimeSteps"))];*/
+
 			timestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
 			timestepsGraph = simulationState.creategraphs(graph, timestepsGraph);
 			int i = 0;
-
-			double load = 0;
-			for (int q = 0; q < timestepsGraph[0].getNodeList().length - 1; q++) {
-				if (timestepsGraph[0].getNodeList()[q] != null
-						&& timestepsGraph[0].getNodeList()[q].getClass() == Consumer.class) {
-					load += ((Consumer) timestepsGraph[0].getNodeList()[q]).getLoad();
-				}
-			}
 
 			String solutionPath = dirpath + "simRes" + numOfSim + "";
 			try {
@@ -168,6 +138,7 @@ public class Main {
 			}
 		}
 
+		// todo compare expected load/prod versus actual load/prod
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
