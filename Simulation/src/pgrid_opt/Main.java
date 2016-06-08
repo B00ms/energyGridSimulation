@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import com.typesafe.config.ConfigFactory;
 
 import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
 import net.e175.klaus.solarpositioning.DeltaT;
@@ -450,11 +449,9 @@ public class Main {
 		}
 
 		double expectedProduction = 0;
-		double remainingLoad =(expectedLoad - expectedProduction);
-		Config convGeneratorConf = conf.getConfig("conventionalGenerator");
-		Double dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
-		Double dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
-		Double maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
+		double dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
+		double dayAheadLimitMin = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
+		double maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease" );
 
 		if (expectedLoad > 0) {
 
@@ -473,7 +470,7 @@ public class Main {
 
 			for ( int i = nodeList.length-1; i >= 0; i--){
 
-				remainingLoad =(expectedLoad - expectedProduction);
+				double remainingLoad =(expectedLoad - expectedProduction);
 				if( remainingLoad > 0 ){
 					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
 						double minP = ((ConventionalGenerator) nodeList[i]).getDayAheadMinP();
@@ -538,8 +535,8 @@ public class Main {
 
 		/*int beginTime = renewableConfig.getInt("beginChargeTime");
 		int endTime = renewableConfig.getInt("endChargeTime");*/
-		int beginTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime" );
-		int endTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime" );
+		int beginTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+		int endTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
 
 		boolean dischargeAllowed = true;
 		if(timestep <= beginTime && timestep <= endTime){
@@ -646,7 +643,7 @@ public class Main {
 		for(int i = 0; i < graph.getNodeList().length; i++){
 			if(graph.getNodeList()[i].getClass() == Storage.class){
 				if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentCharge()){
-					sumLoads += ((Storage)graph.getNodeList()[i]).charge(((Storage)graph.getNodeList()[i]).getMaximumCharge()*0.5);
+					sumLoads += ((Storage)graph.getNodeList()[i]).charge(((Storage) graph.getNodeList()[i]).getMaximumCharge() * 0.5);
 				}
 			}
 		}
