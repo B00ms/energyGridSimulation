@@ -206,6 +206,19 @@ public class DataModelPrint {
 				}
 			}
 			counter = 0;
+			writer.println("param flowfromstorage :=");
+			for (int i = 0; i < g.getNodeList().length; i++) {
+				if(g.getNodeList()[i].getClass() == Storage.class){
+					counter++;
+					//System.out.println(((Storage) g.getNodeList()[i]).getFlowFromStorage());
+					if (counter != g.getNstorage()) {
+						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowFromStorage());
+					} else {
+						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowFromStorage() + ";");
+					}
+				}
+			}
+			counter = 0;
 			if (g.getNstorage() != 0) {
 				writer.println("param storagemax :=");
 				for (int i = 0; i < g.getNodeList().length; i++) {
@@ -213,10 +226,13 @@ public class DataModelPrint {
 						double cap = 0;
 
 						if (((Storage) g.getNodeList()[i]).getMinimumCharge() > ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
-							((Storage) g.getNodeList()[i]).setCurrentCharge(((Storage) g.getNodeList()[i]).getMinimumCharge());
+							((Storage) g.getNodeList()[i]).charge(((Storage) g.getNodeList()[i]).getMinimumCharge());
 						}
-
+						Storage stor = (Storage) g.getNodeList()[i];
 						double val = (((Storage) g.getNodeList()[i]).getCurrentCharge()	- ((Storage) g.getNodeList()[i]).getMinimumCharge()) / delta * etad;
+						//System.out.print(stor.getCurrentCharge() + " ");
+						//System.out.println(val);
+						//TODO: val is negative sometimes.
 						for (int j = 0; j < g.getNNode(); j++) {
 							if (g.getEdges()[j].getCapacity() != 0.0F) {
 								cap = g.getEdges()[j].getCapacity();
@@ -248,7 +264,7 @@ public class DataModelPrint {
 
 						if (((Storage) g.getNodeList()[i]).getMaximumCharge() < ((Storage) g.getNodeList()[i])
 								.getCurrentCharge()) {
-							((Storage) g.getNodeList()[i]).setCurrentCharge(((Storage) g.getNodeList()[i]).getMaximumCharge());
+							((Storage) g.getNodeList()[i]).charge(((Storage) g.getNodeList()[i]).getMaximumCharge());
 						}
 
 						double max = ((Storage) g.getNodeList()[i]).getMaximumCharge();

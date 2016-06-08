@@ -6,14 +6,17 @@ import java.util.List;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+
 public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>{
 
 
 	private int mttf;//mean time to failure
 	private int mttr;//mean time to repair
 	private boolean generatorFailure = false; //Indicates if the generator is working normally or if it has failed
-	private static Config conf;
-	private Config convGeneratorConf;
+	/*private static Config conf;
+	private Config convGeneratorConf;*/
+	private ConfigCollection config = new ConfigCollection();
 	private static String OS = System.getProperty("os.name");
 
 	private double maxProductionIncrease;
@@ -27,27 +30,31 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		super(minProduction, maxProduction, coef, type, production, nodeId);
 
 		// only used with conventional generator.
-		this.mttf = 630;
-		this.mttr = 60;
+		this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
+		this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttr");
 
-		if(OS.startsWith("Windows") || OS.startsWith("Linux")){
+		/*if(OS.startsWith("Windows") || OS.startsWith("Linux")){
 			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 		}else{
 			conf = ConfigFactory.parseFile(new File("config/application.conf"));
-		}
+		}*/
 
-		convGeneratorConf = conf.getConfig("conventionalGenerator");
+		/*convGeneratorConf = conf.getConfig("conventionalGenerator");
 		maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
 		dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
-		dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");
+		dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");*/
+		
+		maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease");
+		dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
+		dayAheadLimitMin =  config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
 	}
 
 	public ConventionalGenerator(double minProduction, double maxProduction, double coef, String type, double production) {
 		super(minProduction, maxProduction, coef, type, production);
 
 		// only used with conventional generator.
-		this.mttf = 630;
-		this.mttr = 60;
+		this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
+		this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttr");
 	}
 
 	public boolean getGeneratorFailure() {

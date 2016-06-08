@@ -58,9 +58,9 @@ public class SimulationStateInitializer {
 					flow += oldg.getEdges()[j].getFlow();
 				}
 				if (flow >= 0.0F)
-					((Storage) newg.getNodeList()[i]).setCurrentCharge(av - flow / etad * delta);
+					((Storage) newg.getNodeList()[i]).charge(av - flow / etad * delta);
 				else
-					((Storage) newg.getNodeList()[i]).setCurrentCharge(av - flow * etac * delta);
+					((Storage) newg.getNodeList()[i]).charge(av - flow * etac * delta);
 			}
 		}
 		return newg;

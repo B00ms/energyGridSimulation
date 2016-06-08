@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-import org.apache.commons.math3.optim.nonlinear.scalar.LineSearch;
-
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 
 public class Graph implements Cloneable {
 	private int nnode; //Total Number of nodes in the graph
@@ -23,7 +20,7 @@ public class Graph implements Cloneable {
 	private float ccurt; //Renewable cut costs
 	private float etac; //Duration of each time step
 	private float etad; //Charge and discharge efficiency of storages
-	private float delta; //Number of storage systems.
+	private float delta; //Length of the time step.
 	private Node[] nodelist;
 	private Edge[][] network;
 	private Edge[] edges;
@@ -351,7 +348,7 @@ public class Graph implements Cloneable {
 			}
 
 			for(int i = 0; i < edges.length; i ++){
-				bufferedWriter.write("ae \"edge" + i + "\" \"" + edges[i].getEndVertexes()[0] + "\" \"" + edges[i].getEndVertexes()[1] + "\"" + " \"flow\":" +"\"" + edges[i].getFlow() + "\"" + " \"capacity\":" +"\"" + edges[i].getCapacity() + "\""
+				bufferedWriter.write("ae \"edge" + i + "\" \"" + edges[i].getEndVertexes()[0] + "\" > \"" + edges[i].getEndVertexes()[1] + "\"" + " \"flow\":" +"\"" + edges[i].getFlow() + "\"" + " \"capacity\":" +"\"" + edges[i].getCapacity() + "\""
 			+ " \"reactance\":\"" + edges[i].getWeight() + "\"");
 				bufferedWriter.newLine();
 			}
@@ -369,15 +366,18 @@ public class Graph implements Cloneable {
 	 * @return
 	 */
 	public Graph setFlowFromOutputFile(Graph graph, int timestep){
- 		String OS = System.getProperty("os.name");
-		Config conf;
-		if(OS.startsWith("Windows") || OS.startsWith("Linux")){
+ 		/*String OS = System.getProperty("os.name");
+		Config conf;*/
+		/*if(OS.startsWith("Windows") || OS.startsWith("Linux")){
 			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
 		}else{
 			conf = ConfigFactory.parseFile(new File("config/application.conf"));
-		}
-		String path = conf.getConfig("general").getString("output-folder");
-		path += "/sol"+timestep+".txt";
+		}*/
+		/*String path = conf.getConfig("general").getString("output-folder");*/
+		ConfigCollection config = new ConfigCollection();
+		String path = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
+
+		path += "sol"+timestep+".txt";
 
 		Scanner scanner;
 		try {
