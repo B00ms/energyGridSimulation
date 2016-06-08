@@ -454,20 +454,6 @@ public class Main {
 		double maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease" );
 
 		if (expectedLoad > 0) {
-
-			// order by cheapest generator maxp
-//			Comparator<ConventionalGenerator> rankOrder =  new Comparator<ConventionalGenerator>() {
-//				public int compare(ConventionalGenerator cg1, ConventionalGenerator cg2) {
-//					if(cg1.getMaxP() < cg2.getMaxP()){
-//						return -1;
-//					}else if(cg1.getMaxP() > cg2.getMin()){
-//						return 1;
-//					}else{
-//						return 0;
-//					}
-//				}
-//			};
-
 			for ( int i = nodeList.length-1; i >= 0; i--){
 
 				double remainingLoad =(expectedLoad - expectedProduction);
@@ -485,7 +471,6 @@ public class Main {
 				}else{
 					break; // remaining load fulfilled
 				}
-
 			}
 
 		}else{
