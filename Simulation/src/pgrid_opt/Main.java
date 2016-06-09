@@ -448,12 +448,13 @@ public class Main {
 						double minP = ((ConventionalGenerator) nodeList[i]).getDayAheadMinP();
 						double maxP = ((ConventionalGenerator) nodeList[i]).getDayAheadMaxP();
 
-						if(remainingLoad<maxP && remainingLoad > minP){
-							expectedProduction += ((ConventionalGenerator)nodeList[i]).setScheduledProduction(remainingLoad);
+						if(remainingLoad<maxP && remainingLoad > minP) {
+							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(remainingLoad);
+						} else if(remainingLoad < minP){
+							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(minP);
 						}else{
-							expectedProduction += ((ConventionalGenerator)nodeList[i]).setScheduledProduction(maxP);
+							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(maxP);
 						}
-						// use
 					}
 				}else{
 					break; // remaining load fulfilled
@@ -521,7 +522,6 @@ public class Main {
 		//deltaP
 		double deltaP = (totalCurrentProduction - sumLoads);
 		// Check if we need to increase current production
-		//deltaP
 		if (deltaP < 0) {
 			System.out.print("Increasing production ");
 
@@ -547,8 +547,9 @@ public class Main {
 					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()
 							+ offer.getProduction();
 
+
 					if (Math.abs(deltaP) <= newProduction) {
-						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(demand));
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(deltaP));
 					} else {
 						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
 					}
