@@ -258,7 +258,7 @@ public class Parser {
 	 */
 	public List<double[]> parseExpectedProduction(){
 		/*Config productionConf = conf.getConfig("conventionalGenerator").getConfig("production");
-		String path = productionConf.getString("summer"); // TODO for each season
+		String path = productionConf.getString("summer"); //TODO: for each season
 		 */
 		String path = config.getConfigStringValue(CONFIGURATION_TYPE.PRODUCTION, "summer");
 		List<double[]> expectedHourlyProduction = new ArrayList<>();

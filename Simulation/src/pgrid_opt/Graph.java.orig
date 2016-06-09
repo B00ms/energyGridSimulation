@@ -35,7 +35,7 @@ public class Graph implements Cloneable {
 		setNrgenetarors(nrgenerators);
 		setNConsumers(nconsumers);
 		setNstorage(nstorage);
-		setCcurt(200.0F); //TODO: move to configuration file
+		setCcurt(200.0F); //TODO: movie to configuration file.
 		setEfficency(75);
 		setDelta(delta);
 		setEtac(etac);
@@ -366,6 +366,10 @@ public class Graph implements Cloneable {
 	 * @return
 	 */
 	public Graph setFlowFromOutputFile(Graph graph, int timestep){
+<<<<<<< HEAD
+		/*String path = conf.getConfig("general").getString("output-folder");*/
+=======
+>>>>>>> 5e26fed10a79da30801639c18932a68b42a8bd3a
 		ConfigCollection config = new ConfigCollection();
 		String path = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
 
