@@ -630,9 +630,9 @@ public class Main {
 			for (int i = 0; i < nodeList.length; i++) {
 				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class) {
 					if (totalCurrentProduction + ((Storage) nodeList[i]).getMaximumCharge() > sumLoads) {
-						totalCurrentProduction += ((Storage) nodeList[i]).discharge();
+						totalCurrentProduction += ((Storage) nodeList[i]).discharge(((Storage) nodeList[i]).getMaximumCharge());
 					} else
-						totalCurrentProduction += ((Storage) nodeList[i]).discharge();
+						totalCurrentProduction += ((Storage) nodeList[i]).discharge(sumLoads - totalCurrentProduction);
 				}
 			}
 		} else {

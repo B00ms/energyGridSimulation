@@ -5,29 +5,28 @@ import java.io.File;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+
 public class Storage extends Node {
 	private double currentCharge;
 	private double maximumCharge;
 	private double minimumCharge;
-	private Config conf;
 	private double chargeEfficiency;
 	private double dischargeEfficiency;
-	private double flowFromStorage = 0;
+	private double flowStorage = 0;
+	private double flowLimit = 0;
+	private ConfigCollection config = new ConfigCollection();
+
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId) {
 		super(nodeId);
 		this.currentCharge = currentCharge;
 		this.maximumCharge = maximumCharge;
 		this.minimumCharge = minimumCharge;
+		flowLimit = (maximumCharge - currentCharge) / config.getConfigDoubleValue(CONFIGURATION_TYPE.GENERAL, "durationOfEachStep");
 
-		if(System.getProperty("os.name").startsWith("Windows") || System.getProperty("os.name").startsWith("Linux")){
-			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
-		}else{
-			conf = ConfigFactory.parseFile(new File("config/application.conf"));
-		}
-
-		chargeEfficiency = conf.getConfig("Storage").getDouble("chargeEfficiencyOfStorage");
-		dischargeEfficiency = conf.getConfig("Storage").getDouble("dischargEfficiencyOfStorage");
+		chargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
+		dischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
 	}
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge) {
@@ -36,8 +35,16 @@ public class Storage extends Node {
 		setMinimumCharge(minimumCharge);
 	}
 
+	public double getFlowLimit() {
+		return flowLimit;
+	}
+
+	public void setFlowLimit(double flowLimit) {
+		this.flowLimit = flowLimit;
+	}
+
 	public double getFlowFromStorage(){
-		return flowFromStorage;
+		return flowStorage;
 	}
 
 	public double getCurrentCharge() {
@@ -46,28 +53,53 @@ public class Storage extends Node {
 
 	/**
 	 * Charge the storage using the given charge
-	 * @param charge
+	 * @param charge The amount of energy the grid wants to get rid of.
 	 * @return
 	 */
 	public double charge(double charge) {
-		double tempCurrentCharge;
-		if (charge >= maximumCharge)
-			tempCurrentCharge = maximumCharge * chargeEfficiency;
-		else
-			tempCurrentCharge = charge * chargeEfficiency;
+		double newSoC = currentCharge + (charge * chargeEfficiency);
+		double flowComingIn = charge;
+		double tempCurrentcharge;
 
-		flowFromStorage = charge*-1;
-		//flowFromStorage = 0;
-		currentCharge = tempCurrentCharge;
-		return currentCharge;
+		if (newSoC > maximumCharge){
+			newSoC = maximumCharge;
+			flowComingIn = maximumCharge * chargeEfficiency;
+			currentCharge = newSoC;
+		}
+
+		if(flowComingIn > flowLimit){
+			newSoC = currentCharge + (flowLimit * chargeEfficiency);
+			currentCharge = newSoC;
+		}
+
+		return flowComingIn;
 	}
 
-	public double discharge(){
-		double tempCurrentCharge = currentCharge * dischargeEfficiency;
-		flowFromStorage = currentCharge - tempCurrentCharge;
-		//flowFromStorage = 0;
+	/**
+	 *
+	 * @param charge the amount of energy the grid needs.
+	 * @return
+	 */
+	public double discharge(double charge){
+		double dischargedEnergy = charge/dischargeEfficiency; //Amount of discharge to put 'charge' amount of energy back into the grid
+		double outgoingFlow = dischargedEnergy * dischargeEfficiency; //Actual flow we put into the network, should equal charge
+		double newSoC = currentCharge - dischargedEnergy;
+		double tempCurrentCharge = newSoC;
+
+		if(newSoC < minimumCharge){
+			double minSoC = minimumCharge;
+			outgoingFlow = minSoC * dischargeEfficiency;
+			tempCurrentCharge  = minSoC;
+		}
+
+		if(outgoingFlow > flowLimit){
+			double minSoC = currentCharge - flowLimit;
+			outgoingFlow = flowLimit;
+			tempCurrentCharge = minSoC;
+		}
+
 		currentCharge = tempCurrentCharge;
-		return currentCharge;
+		return outgoingFlow;
 	}
 
 	public double getMaximumCharge() {
