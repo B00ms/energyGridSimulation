@@ -240,28 +240,12 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	@Override
 	public int compareTo(ConventionalGenerator o) {
 
-		if(this.getType().equals(((ConventionalGenerator)o).getType())){
-			return 0; //Generator type are equal so we return 0.
-		}
-
-		/*
-		 * Nuclear followed by Oil followed by Coal, Hydro is dead last.
-		 */
-		switch (this.getType()){
-		case "N":
-			return -1; //Generators are not equal but this is a nuclear one so its always higher.
-		case "H":
-			if(o.getType().equals("C")){
-				return -1;
-			}
+		if(this.getCoef() < o.getCoef()){
+			return -1;
+		}else if(this.getCoef() > o.getCoef()){
 			return 1;
-		case "O":
-			if(o.getType().equals("C")){
-				return -1;
-			} else
-				return 1;
-			default:
-				return 1;
-			}
+		}else{
+			return 0;
+		}
 	}
 }
