@@ -51,7 +51,6 @@ public class Main {
 		Process proc = null;
 
 		// load simulation limit
-		/*int simLimit = generalConf.getInt("simulation-runs");*/
 		int simLimit = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "simulation-runs");
 		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
 			System.out.println("Simulation: " + numOfSim);
@@ -68,6 +67,8 @@ public class Main {
 				e1.printStackTrace();
 				System.exit(0);
 			}
+
+			//todo use expectedloadprod for current grid
 			Double[] expectedLoadAndProduction = expectedLoadAndProduction(timestepsGraph);
 			timestepsGraph = setRealLoad(timestepsGraph);
 			while (i < timestepsGraph.length) {
@@ -97,23 +98,12 @@ public class Main {
 					timestepsGraph[i] = timestepsGraph[i].setFlowFromOutputFile(timestepsGraph[i], i);
 					timestepsGraph[i].printGraph(i, numOfSim);
 
-					if (new File(dirpath + "/sol" + i + ".txt").exists())
-						Files.move(Paths.get(dirpath + "/sol" + i + ".txt"),
-								Paths.get(solutionPath + "/sol" + i + ".txt"), StandardCopyOption.REPLACE_EXISTING);
-
-					if (new File(dirpath + "/filename.out").exists())
-						Files.move(Paths.get(dirpath + "/filename.out"), Paths.get(solutionPath + "/filename.out"),
-								StandardCopyOption.REPLACE_EXISTING);
-
-					if (new File(dirpath + "/update.txt").exists())
-						Files.copy(Paths.get(dirpath + "/update.txt"), Paths.get(solutionPath + "/update" + i + ".txt"),
-								StandardCopyOption.REPLACE_EXISTING);
-
+					// write output to solution file
+					writeOutputFiles(dirpath, solutionPath, i);
 
 					if (graph.getNstorage() > 0) {
 						timestepsGraph[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
-								timestepsGraph[i]); // Keeps track of the new
-													// state for storages.
+								timestepsGraph[i]); // Keeps track of the new state for storages.
 						if (i < 23)
 							timestepsGraph[i + 1] = simulationState.updateStorages(timestepsGraph[i],
 									timestepsGraph[i + 1]); // Apply the new state of the storage for the next time step.
@@ -142,6 +132,31 @@ public class Main {
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
+	}
+
+	/**
+	 * Move glpsol output to structured folders
+	 * @param dirpath current location of files
+	 * @param solutionPath new location for files
+	 * @param timeStep current timestep
+	 */
+	public static void writeOutputFiles(String dirpath, String solutionPath, int timeStep){
+		try {
+			if (new File(dirpath + "/sol" + timeStep + ".txt").exists())
+				Files.move(Paths.get(dirpath + "/sol" + timeStep + ".txt"),
+						Paths.get(solutionPath + "/sol" + timeStep + ".txt"), StandardCopyOption.REPLACE_EXISTING);
+
+			if (new File(dirpath + "/filename.out").exists())
+				Files.move(Paths.get(dirpath + "/filename.out"), Paths.get(solutionPath + "/filename.out"),
+						StandardCopyOption.REPLACE_EXISTING);
+
+			if (new File(dirpath + "/update.txt").exists())
+				Files.copy(Paths.get(dirpath + "/update.txt"), Paths.get(solutionPath + "/update" + timeStep + ".txt"),
+						StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
 	}
 
 	/**
@@ -422,7 +437,7 @@ public class Main {
 		double expectedProduction = 0;
 		double dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
 		double dayAheadLimitMin = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
-		double maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease" );
+		double maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease");
 
 		if (expectedLoad > 0) {
 			for ( int i = nodeList.length-1; i >= 0; i--){
@@ -438,6 +453,7 @@ public class Main {
 						}else{
 							expectedProduction += ((ConventionalGenerator)nodeList[i]).setScheduledProduction(maxP);
 						}
+						// use
 					}
 				}else{
 					break; // remaining load fulfilled
@@ -447,6 +463,7 @@ public class Main {
 		}else{
 			// current expected load is already met.
 		}
+
 
 		return grid;
 	}
@@ -501,10 +518,11 @@ public class Main {
 			dischargeAllowed = false;
 		}
 
-
-		double demand = (totalCurrentProduction - sumLoads);
+		//deltaP
+		double deltaP = (totalCurrentProduction - sumLoads);
 		// Check if we need to increase current production
-		if ((totalCurrentProduction - sumLoads) < 0) {
+		//deltaP
+		if (deltaP < 0) {
 			System.out.print("Increasing production ");
 
 			List<Offer> offers = new ArrayList<>();
@@ -524,22 +542,22 @@ public class Main {
 			for (int i = 0; i < offers.size(); i++) {
 				Offer offer = offers.get(i);
 				double offeredProduction = offer.getProduction();
-				if (demand < 0 && offer.getAvailable()) {
+				if (deltaP < 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
 					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()
 							+ offer.getProduction();
 
-					if (Math.abs(demand) <= newProduction) {
+					if (Math.abs(deltaP) <= newProduction) {
 						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(demand));
 					} else {
 						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
 					}
 					offers.remove(i); // remove offer from list
-					demand = (totalCurrentProduction - sumLoads); // update demand
+					deltaP = (totalCurrentProduction - sumLoads); // update demand
 				}
 			}
 
-		} else if ((totalCurrentProduction - sumLoads) > 0) {
+		} else if (deltaP > 0) {
 			// we need to decrease energy production
 			System.out.print("Decreasing production ");
 
@@ -561,28 +579,54 @@ public class Main {
 			for (int i = 0; i < offers.size(); i++) {
 				Offer offer = offers.get(i);
 				double offeredProduction = offer.getProduction();
-				if (demand > 0 && offer.getAvailable()) {
-					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
+				if (deltaP > 0 && offer.getAvailable()) {
 					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()- offer.getProduction();
 
-					if (demand <= newProduction) {
+
+
+					// newTotalProduction - Load should be 0;
+					// if still to high
+						// turn off cheapest generators off first
+						// turn off generators; small oil < 60 this.maxP
+
+					//
+					// use battery
+
+
+					/*if (demand <= newProduction) {
 						// only decrease production until demand is met
 						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(demand);
 					} else {
 						totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
-					}
+					}*/
 
+					// take offer from generator
+					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
 					offers.remove(i); // remove offer from list
-					demand = (totalCurrentProduction - sumLoads); // update demand
+					deltaP = (totalCurrentProduction - sumLoads); // update demand
 				}
 			}
+
+			// todo turn off generator
+
+			// todo cut renewable
+
 		} else {
 			System.out.print("Grid is balanced ");
-			return null;// production and demand are balanced.
+			return grid;
 		}
+
 
 		if(dischargeAllowed)
 			grid = chargeOrDischargeStorage(grid);
+
+
+		// todo curtailment decrease production
+		// curtail the renewable
+
+
+		// todo shedd load increase prod
+
 
 		System.out.print("Total production: " + totalCurrentProduction + " ");
 		System.out.println("total load: " + sumLoads);
