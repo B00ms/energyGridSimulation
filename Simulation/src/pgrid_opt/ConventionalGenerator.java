@@ -224,15 +224,10 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	public void takeIncreaseOffer(int i){
 		this.offerIncreaseProduction.get(i).setAvailable(false);
 	}
-
-	public void takeDecreaseOffer(int i){
-		this.offerDecreaseProduction.get(i).setAvailable(false);
-	}
-
+	public void takeDecreaseOffer(int i) { this.offerDecreaseProduction.get(i).setAvailable(false); }
 	public double getDayAheadMaxP(){
 		return this.maxp*dayAheadLimitMax;
 	}
-
 	public double getDayAheadMinP(){
 		return this.minp*dayAheadLimitMin;
 	}
