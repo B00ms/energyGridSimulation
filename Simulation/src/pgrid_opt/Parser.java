@@ -46,7 +46,9 @@ public class Parser {
 			scanner = new Scanner(Paths.get(path));
 			scanner.useDelimiter(",|\\n");
 		}catch (IOException e){
+			e.printStackTrace();
 			System.out.println("Error: Wrong path to input file");
+			System.exit(0);
 			return null;
 		}
 
