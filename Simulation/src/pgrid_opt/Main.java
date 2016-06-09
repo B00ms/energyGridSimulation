@@ -521,7 +521,7 @@ public class Main {
 		double deltaP = (realProduction - realLoad);
 		// Check if we need to increase current production
 		if (deltaP < 0) {
-			System.out.print("Increasing production ");
+			System.out.println("Increasing production ");
 
 			List<Offer> offers = new ArrayList<>();
 
@@ -584,9 +584,10 @@ public class Main {
 
 		} else if (deltaP > 0) {
 			// we need to decrease energy production
-			System.out.print("Decreasing production ");
+			System.out.println("Decreasing production ");
 
 			// todo take offers from cheapest nodes to decrease production.
+			// todo generate real offers not from input file
 			List<Offer> offers = new ArrayList<>();
 
 			// find cheapest offers
@@ -620,7 +621,6 @@ public class Main {
 
 					// disable offer from generator
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
-//					offers.remove(i); // remove offer from list
 					deltaP = (realProduction - realLoad); // update deltaP
 				}else{
 					break; // load is satisfied
@@ -660,8 +660,8 @@ public class Main {
 		// todo shedd load increase prod
 
 
-		System.out.print("Total production: " + totalCurrentProduction + " ");
-		System.out.println("total load: " + sumLoads);
+		System.out.println("Total production: " + realProduction + " ");
+		System.out.println("Total load: " + realLoad);
 		return grid;
 	}
 
