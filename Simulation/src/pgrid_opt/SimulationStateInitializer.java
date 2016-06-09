@@ -1,18 +1,10 @@
 package pgrid_opt;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
 public class SimulationStateInitializer {
 	private Graph g;
 	private Graph[] gDay;
-	//private float[] solar;
-	//private float[] wind;
 
 	private Float[] loads;
-	private List<double[]> production;
 	Parser parser = new Parser();
 
 	/**
@@ -24,8 +16,6 @@ public class SimulationStateInitializer {
 	public Graph[] creategraphs(Graph g, Graph[] gDay) {
 		this.g = g;
 		this.gDay = gDay;
-		//this.solar = solar;
-		//this.wind = wind;
 
 		// parse expected hourly load from input file
 		this.loads = parser.parseExpectedHourlyLoad();
@@ -33,7 +23,7 @@ public class SimulationStateInitializer {
 		for (int i = 0; i < this.gDay.length; i++) {
 			this.gDay[i] = g.clone();
 		}
-//		initializeExpectedProduction();
+
 		calculateLoads();
 		calculateRewProd();
 		checkGen();
@@ -69,6 +59,7 @@ public class SimulationStateInitializer {
 	/**
 	 * For each of the timestep checks if the current load is higher than 70% of the maximum load
 	 * 70% of maximum load > load demand = disable hydro plant;
+	 * TODO this is old and this check should possibly be done later on
 	 */
 	private void checkGen() {
 		/*for (int i = 0; i < this.gDay.length - 1; i++) {
@@ -88,14 +79,14 @@ public class SimulationStateInitializer {
 
 		}*/
 		for (int i = 0; i < this.gDay.length; i++) {
-
+			// todo check if loadmax is ever updated should probably be after first day ahead simulation
 			if (this.g.getLoadmax() / 100 * 70 > ((ConventionalGenerator)g.getNodeList()[i]).getProduction()) {
 
 				for (int j = 0; j < this.g.getNGenerators(); j++) {
 					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
 						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
-							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
-							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
+//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
+//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
 						}
 					}
 				}
@@ -133,43 +124,5 @@ public class SimulationStateInitializer {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Initialize production using input from expected production files
-	 */
-	private void initializeExpectedProduction(){
-		this.production = parser.parseExpectedProduction();
-
-		for (int i = 0; i < gDay.length; i++) {
-			for (int j = 0; j < g.getNodeList().length; j++){
-				if(gDay[i].getNodeList()[j].getClass() == ConventionalGenerator.class){
-					double expectedProduction = production.get(j)[i];
-					((ConventionalGenerator) gDay[i].getNodeList()[j]).initializeProduction(expectedProduction);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Increases or decreases the high of the seasonal curve according to some random double.
-	 *@param seasonalLoadCurve
-	 * @return the seasonal curve adjust up or down.
-	 */
-	private static HashMap<String, Double[]> setSeasonalVariety(HashMap<String, Double[]> seasonalLoadCurve) {
-
-		Iterator<String> it = seasonalLoadCurve.keySet().iterator();
-
-		while(it.hasNext()){
-			String key = it.next();
-			Double[] seasoncurve  = seasonalLoadCurve.get(key);
-
-			double multiplicationFactor = ThreadLocalRandom.current().nextDouble(3);
-			for(int i = 0; i < seasoncurve.length; i++){
-				seasoncurve[i] = seasoncurve[i] * (multiplicationFactor);
-			}
-			seasonalLoadCurve.put(key, seasoncurve);
-		}
-		return seasonalLoadCurve;
 	}
 }

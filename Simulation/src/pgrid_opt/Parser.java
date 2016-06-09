@@ -46,7 +46,9 @@ public class Parser {
 			scanner = new Scanner(Paths.get(path));
 			scanner.useDelimiter(",|\\n");
 		}catch (IOException e){
+			e.printStackTrace();
 			System.out.println("Error: Wrong path to input file");
+			System.exit(0);
 			return null;
 		}
 
@@ -428,92 +430,4 @@ public class Parser {
 
 		return out;
 	}
-
-	/**
-	 * Reads
-	 * @param fileLocation
-	 * @return
-	 */
-	public Double[] parseLoadCSV(String fileLocation){
-
-		try {
-			Scanner scanner = new Scanner(Paths.get(fileLocation));
-			scanner.useDelimiter(",|\\s");
-			List<Double> loadCurve = new ArrayList<>();
-
-			while(scanner.hasNext()){
-				String curveValue = scanner.next();
-				if(!curveValue.isEmpty())
-					loadCurve.add(Double.parseDouble(curveValue));
-			}
-			scanner.close();
-
-			return loadCurve.toArray(new Double[loadCurve.size()]);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-//	public Graph parseProductionCSV(String fileLocation, Graph graph){
-//
-//		try {
-//			Scanner scanner = new Scanner(Paths.get(fileLocation));
-////			scanner.useDelimiter(",|\\s");
-//			scanner.useDelimiter("\r\n");
-////			List<Double>< loadCurve = new ArrayList<>();
-//			int i = 0;
-//			while(scanner.hasNext()){
-//
-//				String lineValue = scanner.next();
-//				if(!lineValue.isEmpty()){
-//					scanner.useDelimiter(",");
-////					loadCurve.add(Double.parseDouble(curveValue));
-//				}
-//				i++;
-//			}
-//			scanner.close();
-//
-////			return loadCurve.toArray(new Double[loadCurve.size()]);
-//			return graph;
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
-
-	public Double[][] parseCSV2D(String fileLocation){
-
-		try {
-			Scanner scanner = new Scanner(Paths.get(fileLocation));
-			scanner.useDelimiter(",|\\s");
-			List<ArrayList<Double>> data = new ArrayList<ArrayList<Double>>();
-			List<Double> tempList = new ArrayList<>();
-
-			int i = 0;
-			int j = 0;
-			while(scanner.hasNext()){
-
-				String curveValue = scanner.next();
-				if(!curveValue.isEmpty()){
-					tempList.add(Double.parseDouble(curveValue));
-					j++;
-				}
-				if(j >= 24){
-					data.add(i, (ArrayList<Double>) tempList);
-					tempList = new ArrayList<Double>();
-					j = 0;
-					i++;
-				}
-			}
-
-			scanner.close();
-
-			return data.toArray(new Double[data.size()][24]);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 }

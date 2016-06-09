@@ -366,7 +366,6 @@ public class Graph implements Cloneable {
 	 * @return
 	 */
 	public Graph setFlowFromOutputFile(Graph graph, int timestep){
-		/*String path = conf.getConfig("general").getString("output-folder");*/
 		ConfigCollection config = new ConfigCollection();
 		String path = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
 
