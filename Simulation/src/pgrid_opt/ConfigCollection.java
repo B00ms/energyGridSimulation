@@ -56,15 +56,16 @@ public class ConfigCollection {
 		String confValue = null;
 		switch (configType){
 		case GENERAL:
-			if(doubleDot == false && (configurationKeyWord.equalsIgnoreCase("model-file") ||
+			if(doubleDot == false && (
+					configurationKeyWord.equalsIgnoreCase("model-file") ||
 					configurationKeyWord.equalsIgnoreCase("input-file") ||
-					configurationKeyWord.equalsIgnoreCase("output-folder")||
+//					configurationKeyWord.equalsIgnoreCase("output-folder")||
 					configurationKeyWord.equalsIgnoreCase("graphstate-folder"))){
 				confValue = generalConfig.getString(configurationKeyWord);
-				confValue.substring(1, confValue.length());
+				confValue = confValue.substring(1, confValue.length());
+			}else{
+				confValue = generalConfig.getString(configurationKeyWord);
 			}
-
-			confValue = generalConfig.getString(configurationKeyWord);
 			break;
 		case MONTE_CARLO:
 			confValue = monteCarlo.getString(configurationKeyWord);
