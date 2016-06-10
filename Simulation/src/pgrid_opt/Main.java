@@ -640,11 +640,16 @@ public class Main {
 		grid.setNodeList(nodeList);
 
 
-		if(dischargeAllowed)
+		if(dischargeAllowed){
 			grid = chargeOrDischargeStorage(grid);
+			realProduction = calculateProduction(grid);
+		}
 
 
 		//TODO: curtailment decrease production
+		if(realProduction - realLoad > 0){
+			grid = curtailRenewables(grid, realProduction, realLoad);
+		}
 		// curtail the renewable
 
 
@@ -653,6 +658,38 @@ public class Main {
 		System.out.print("After balancing - ");
 		System.out.println("Real production: " + realProduction + " Total load: " + realLoad);
 		return grid;
+	}
+	
+	private static Graph curtailRenewables(Graph grid, double realProduction, double realLoad) {
+		
+		for( int i = 0; i < grid.getNodeList().length; i++){
+			if(grid.getNodeList()[i].getClass() == RewGenerator.class){
+				
+				double productionTarget = realProduction - realLoad;
+				
+				if(productionTarget - ((RewGenerator)grid.getNodeList()[i]).getProduction() > 0){
+					productionTarget -= ((RewGenerator)grid.getNodeList()[i]).getProduction();
+					((RewGenerator)grid.getNodeList()[i]).setProduction(0);
+				}else {
+					((RewGenerator)grid.getNodeList()[i]).setProduction(productionTarget);
+					productionTarget -= realProduction;
+				}
+			}
+		}
+		return grid;
+	}
+
+	private static double calculateProduction(Graph graph){
+		
+		double sumProduction = 0;
+		for(int i = 0; i < graph.getNodeList().length; i++){
+			if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
+			if(!((ConventionalGenerator)graph.getNodeList()[i]).getGeneratorFailure()){
+				sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
+			} else if(graph.getNodeList()[i].getClass() == RewGenerator.class)
+				sumProduction += ((RewGenerator)graph.getNodeList()[i]).getProduction();
+		}
+		return sumProduction;
 	}
 
 
