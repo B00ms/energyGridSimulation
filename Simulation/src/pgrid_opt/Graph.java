@@ -344,6 +344,7 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"minCharge\":" + "\"" + storageNode.getMinimumCharge() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"chargeEfficiency\":" + "\"" + storageNode.getChargeEfficiency() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"dischargeEfficiency\":" + "\"" + storageNode.getDischargeEfficiency() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"status\":" + "\"" + storageNode.getStatus() + "\""); bufferedWriter.newLine();
 				}
 			}
 
