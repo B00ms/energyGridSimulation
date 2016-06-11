@@ -16,6 +16,8 @@ public class Storage extends Node {
 	private double flowStorage = 0;
 	private double flowLimit = 0;
 	private ConfigCollection config = new ConfigCollection();
+	public enum StorageStatus {CHARGING, DISCHARGING, NEUTRAL};
+	private StorageStatus status;
 
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId) {
@@ -24,6 +26,7 @@ public class Storage extends Node {
 		this.maximumCharge = maximumCharge;
 		this.minimumCharge = minimumCharge;
 		flowLimit = (maximumCharge - currentCharge) / config.getConfigDoubleValue(CONFIGURATION_TYPE.GENERAL, "durationOfEachStep");
+		status = StorageStatus.NEUTRAL;
 
 		chargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
 		dischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
@@ -35,6 +38,10 @@ public class Storage extends Node {
 		setMinimumCharge(minimumCharge);
 	}
 
+	public StorageStatus getStatus(){
+		return status;
+	}
+
 	public double getFlowLimit() {
 		return flowLimit;
 	}
@@ -43,7 +50,7 @@ public class Storage extends Node {
 		this.flowLimit = flowLimit;
 	}
 
-	public double getFlowFromStorage(){
+	public double getFlow(){
 		return flowStorage;
 	}
 
@@ -57,6 +64,7 @@ public class Storage extends Node {
 	 * @return
 	 */
 	public double charge(double charge) {
+		status = StorageStatus.CHARGING;
 		double newSoC = currentCharge + (charge * chargeEfficiency);
 		double flowComingIn = charge;
 		double tempCurrentcharge;
@@ -81,6 +89,7 @@ public class Storage extends Node {
 	 * @return
 	 */
 	public double discharge(double charge){
+		status = StorageStatus.DISCHARGING;
 		double dischargedEnergy = charge/dischargeEfficiency; //Amount of discharge to put 'charge' amount of energy back into the grid
 		double outgoingFlow = dischargedEnergy * dischargeEfficiency; //Actual flow we put into the network, should equal charge
 		double newSoC = currentCharge - dischargedEnergy;

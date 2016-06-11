@@ -212,9 +212,9 @@ public class DataModelPrint {
 					counter++;
 					//System.out.println(((Storage) g.getNodeList()[i]).getFlowFromStorage());
 					if (counter != g.getNstorage()) {
-						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowFromStorage());
+						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow());
 					} else {
-						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowFromStorage() + ";");
+						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow() + ";");
 					}
 				}
 			}
