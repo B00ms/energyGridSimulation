@@ -188,7 +188,7 @@ public class Main {
 			}
 
 			// calculate expected conventional generator production
-			plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction[hour], hour, expectedLoad);
+			plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour, expectedLoad);
 
 			// get expected production
 			for (int i = 0; i < plannedProduction[hour].getNodeList().length; i ++){
@@ -405,8 +405,11 @@ public class Main {
 	}
 
 
-	private static Graph planExpectedProductionConvGen(Graph grid, int timestep, double expectedLoad) {
-		Node[] nodeList = grid.getNodeList();
+
+
+	private static Graph planExpectedProductionConvGen(Graph[] grid, int timestep, double expectedLoad) {
+		Node[] nodeList = grid[timestep].getNodeList();
+
 		double totalMaxProductionAvailableConv = 0;
 		double totalMaxProductionAvailableRenew = 0;
 		double sumLoads = 0;
@@ -424,9 +427,6 @@ public class Main {
 		}
 
 		double expectedProduction = 0;
-		double dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
-		double dayAheadLimitMin = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
-		double maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease");
 
 		if (expectedLoad > 0) {
 			for ( int i = nodeList.length-1; i >= 0; i--){
@@ -436,13 +436,19 @@ public class Main {
 					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
 						double minP = ((ConventionalGenerator) nodeList[i]).getDayAheadMinP();
 						double maxP = ((ConventionalGenerator) nodeList[i]).getDayAheadMaxP();
+						double previousProduction = 0;
+						// check production of hour-1 for maximum production increase of 50% of max production
+						// TODO still check edge case where generator gets disabled and production probably would be 0;
+						if(timestep >0){
+							previousProduction = ((ConventionalGenerator)grid[timestep - 1].getNodeList()[i]).getProduction();
+						}
 
 						if(remainingLoad<maxP && remainingLoad > minP) {
-							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(remainingLoad);
+							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(remainingLoad, previousProduction);
 						} else if(remainingLoad < minP){
-							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(minP);
+							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(minP, previousProduction);
 						}else{
-							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(maxP);
+							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(maxP, previousProduction);
 						}
 					}
 				}else{
@@ -454,8 +460,11 @@ public class Main {
 			// current expected load is already met.
 		}
 
+		// override current timestep grid state with planned grid state
+		grid[timestep].setNodeList(nodeList);
 
-		return grid;
+
+		return grid[timestep];
 	}
 
 	/**
