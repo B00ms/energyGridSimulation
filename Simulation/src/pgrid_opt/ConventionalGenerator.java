@@ -232,6 +232,10 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		return bestOffer;
 	}
 
+	public void disableProduction(){
+		this.production = 0;
+	}
+
 	public void takeIncreaseOffer(int i){
 		this.offerIncreaseProduction.get(i).setAvailable(false);
 	}

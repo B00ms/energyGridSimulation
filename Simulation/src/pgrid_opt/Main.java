@@ -599,16 +599,21 @@ public class Main {
 				}
 			}
 
-
-
 			//TODO: turn off generator
 			if(overProduction >0){
 				// turn off generators when Production is still to high.
 
 				// loop over generators and when this.maxP < 60 disable generator
-
+				for (int i = 0; i < nodeList.length - 1; i++) {
+					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
+						double maxP = ((ConventionalGenerator) nodeList[i]).getMaxP();
+						if(maxP < 60 && overProduction >0){
+							((ConventionalGenerator) nodeList[i]).disableProduction();
+							overProduction = (realProduction - realLoad); // update deltaP
+						}
+					}
+				}
 			}
-
 
 			//TODO: last resort cut renewable
 
