@@ -598,8 +598,7 @@ public class Main {
 					break; // load is satisfied
 				}
 			}
-
-			//TODO: turn off generator
+			
 			if(overProduction >0){
 				// turn off generators when Production is still to high.
 
@@ -614,9 +613,6 @@ public class Main {
 					}
 				}
 			}
-
-			//TODO: last resort cut renewable
-
 		} else {
 			System.out.print("Grid is balanced ");
 			return grid;
