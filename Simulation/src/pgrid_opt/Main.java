@@ -540,9 +540,6 @@ public class Main {
 						double remainingProduction = offeredProduction-(offeredProduction+overProduction);
 						double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(remainingProduction);
 						realProduction += newProduction;
-					}else{
-						double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offer.getProduction());
-						realProduction += newProduction;
 					}
 
 					// disable offer from generator
