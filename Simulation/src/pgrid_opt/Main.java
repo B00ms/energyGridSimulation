@@ -585,9 +585,6 @@ public class Main {
 					}else if((overProduction-offeredProduction)<0){ // only take difference between deltaP and offeredProduction
 						double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction((offeredProduction-overProduction));
 						realProduction -= newProduction;
-					}else{
-						double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offer.getProduction());
-						realProduction -= newProduction;
 					}
 
 					// disable offer from generator
@@ -598,7 +595,7 @@ public class Main {
 					break; // load is satisfied
 				}
 			}
-			
+
 			if(overProduction >0){
 				// turn off generators when Production is still to high.
 
@@ -621,7 +618,6 @@ public class Main {
 		// update nodeList
 		grid.setNodeList(nodeList);
 
-
 		if(dischargeAllowed){
 			grid = chargeOrDischargeStorage(grid);
 			realProduction = calculateProduction(grid);
@@ -632,9 +628,6 @@ public class Main {
 		if(realProduction - realLoad > 0){
 			grid = curtailRenewables(grid, realProduction, realLoad);
 		}
-		// curtail the renewable
-
-
 		//TODO: shedd load increase prod
 
 		System.out.print("After balancing - ");
