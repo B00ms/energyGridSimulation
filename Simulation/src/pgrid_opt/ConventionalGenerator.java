@@ -265,7 +265,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 				System.err.println("GeneratorId: "  + getNodeId());
 				System.err.println("Minimum production: "  + getMinP());
 				System.err.println("Current production: "  + getProduction() );
-				System.err.println("Offer increase: "  + offerIncrease.getProduction());
+				System.err.println("Offer decrease: "  + offerDecrease.getProduction());
 				System.exit(-1);
 			}
 		}
