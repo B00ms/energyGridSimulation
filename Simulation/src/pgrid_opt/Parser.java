@@ -19,18 +19,9 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 public class Parser {
-	/*private static String OS = System.getProperty("os.name");
-	private Config conf;
-	private Config productionConf;*/
 	private ConfigCollection config = new ConfigCollection();
 
 	public Parser(){
-		/*if(OS.startsWith("Windows") || OS.startsWith("Linux")) {
-			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
-		}else{
-			conf = ConfigFactory.parseFile(new File("config/application.conf"));
-		}
-		productionConf = conf.getConfig("conventionalGenerator").getConfig("offers");*/
 	}
 
 	/**
@@ -62,17 +53,10 @@ public class Parser {
 		int numberOfConsumers = 0;
 		int numberOfStorage = 0;
 
-		/*Config generalConf = conf.getConfig("general");*/
-		/*int dailyMaxLoadDemand  = generalConf.getInt("dailyMaxLoadDemand");
-		double timeStepDuration  = generalConf.getDouble("durationOfEachStep");
-		double storageChargeEfficiency  = conf.getConfig("Storage").getDouble("chargeEfficiencyOfStorage");
-		double storageDischargeEfficiency = conf.getConfig("Storage").getDouble("dischargEfficiencyOfStorage");
-		//storageChargeEfficiency = generalConf.getDouble("chargeEfficiencyOfStorage"); */
 		int dailyMaxLoadDemand  = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "dailyMaxLoadDemand");
 		double timeStepDuration  = config.getConfigDoubleValue(CONFIGURATION_TYPE.GENERAL, "durationOfEachStep");
 		double storageChargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
 		double storageDischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
-		//storageChargeEfficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "chargeEfficiencyOfStorage");
 
 
 		while(scanner.hasNext()){
@@ -161,6 +145,7 @@ public class Parser {
 		for(int i=0; i< generatorList.size(); i++){
 			ConventionalGenerator cgen = generatorList.get(i);
 			// store offers to generators
+
 			cgen.setOfferIncreaseProduction(offerIncrease.get(i));
 			cgen.setOfferDecreaseProduction(offerDecrease.get(i));
 			generatorList.set(i, cgen);
@@ -340,7 +325,7 @@ public class Parser {
 				generatorOffers.add(offerList);
 				i++;
 			}
-
+			reader.close();
 			return generatorOffers;
 		} catch (FileNotFoundException e){
 			e.printStackTrace();

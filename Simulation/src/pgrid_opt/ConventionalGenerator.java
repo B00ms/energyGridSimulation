@@ -14,8 +14,6 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	private int mttf;//mean time to failure
 	private int mttr;//mean time to repair
 	private boolean generatorFailure = false; //Indicates if the generator is working normally or if it has failed
-	/*private static Config conf;
-	private Config convGeneratorConf;*/
 	private ConfigCollection config = new ConfigCollection();
 	private static String OS = System.getProperty("os.name");
 
@@ -23,8 +21,8 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	private double dayAheadLimitMax;
 	private double dayAheadLimitMin;
 
-	private List<Offer> offerIncreaseProduction;
-	private List<Offer> offerDecreaseProduction;
+	private List<Offer> listOfferIncreaseProduction;
+	private List<Offer> listOfferDecreaseProduction;
 
 	public ConventionalGenerator(double minProduction, double maxProduction, double coef, String type, double production, int nodeId) {
 		super(minProduction, maxProduction, coef, type, production, nodeId);
@@ -33,17 +31,6 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
 		this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttr");
 
-		/*if(OS.startsWith("Windows") || OS.startsWith("Linux")){
-			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
-		}else{
-			conf = ConfigFactory.parseFile(new File("config/application.conf"));
-		}*/
-
-		/*convGeneratorConf = conf.getConfig("conventionalGenerator");
-		maxProductionIncrease = convGeneratorConf.getDouble("maxProductionIncrease");
-		dayAheadLimitMax = convGeneratorConf.getDouble("dayAheadLimitMax");
-		dayAheadLimitMin = convGeneratorConf.getDouble("dayAheadLimitMin");*/
-		
 		maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease");
 		dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
 		dayAheadLimitMin =  config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
@@ -80,7 +67,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public double setProduction(double production) {
-
+		checkGeneratorOffer();
 		//For the edge case where we dont want to change production:
 		double productionIncrease = 0;
 		if (production-production != production)
@@ -187,30 +174,30 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public void setOfferIncreaseProduction(List<Offer> offerIncreaseProduction){
-		this.offerIncreaseProduction = offerIncreaseProduction;
+		this.listOfferIncreaseProduction = offerIncreaseProduction;
 	}
 
 	public void setOfferDecreaseProduction(List<Offer> offerDecreaseProduction){
-		this.offerDecreaseProduction = offerDecreaseProduction;
+		this.listOfferDecreaseProduction = offerDecreaseProduction;
 	}
 
 	public List<Offer> getIncreaseProductionOffers(){
-		return this.offerIncreaseProduction;
+		return this.listOfferIncreaseProduction;
 	}
 
 	public List<Offer> getDecreaseProductionOffers(){
-		return this.offerDecreaseProduction;
+		return this.listOfferDecreaseProduction;
 	}
 
 	public Offer getBestIncreaseOffer(){
 		Offer bestOffer = null;
-		bestOffer = this.getBestOffer(this.offerIncreaseProduction);
+		bestOffer = this.getBestOffer(this.listOfferIncreaseProduction);
 		return bestOffer;
 	}
 
 	public Offer getBestDecreaseOffer(){
 		Offer bestOffer = null;
-		bestOffer = this.getBestOffer(this.offerDecreaseProduction);
+		bestOffer = this.getBestOffer(this.listOfferDecreaseProduction);
 		return bestOffer;
 	}
 
@@ -237,9 +224,9 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public void takeIncreaseOffer(int i){
-		this.offerIncreaseProduction.get(i).setAvailable(false);
+		this.listOfferIncreaseProduction.get(i).setAvailable(false);
 	}
-	public void takeDecreaseOffer(int i) { this.offerDecreaseProduction.get(i).setAvailable(false); }
+	public void takeDecreaseOffer(int i) { this.listOfferDecreaseProduction.get(i).setAvailable(false); }
 	public double getDayAheadMaxP(){
 		return this.maxp*dayAheadLimitMax;
 	}
@@ -256,6 +243,31 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 			return 1;
 		}else{
 			return 0;
+		}
+	}
+
+	private void checkGeneratorOffer(){
+		for(int i=0; i < listOfferIncreaseProduction.size(); i++){
+			Offer offerIncrease = listOfferIncreaseProduction.get(i);
+			Offer offerDecrease = listOfferDecreaseProduction.get(i);
+
+			if (production +  offerIncrease.getProduction() > getMaxP()){
+				System.err.println("Current production + 'increased production offer' will violate maximum production");
+				System.err.println("GeneratorId: "  + getNodeId());
+				System.err.println("Maximum production: "  + getMaxP());
+				System.err.println("Current production: "  + getProduction() );
+				System.err.println("Offer increase: "  + offerIncrease.getProduction());
+				System.exit(-1);
+			}
+
+			if (production -  offerDecrease .getProduction() < getMinP()){
+				System.err.println("Current production + 'decrease production offer' will violate minimum production");
+				System.err.println("GeneratorId: "  + getNodeId());
+				System.err.println("Minimum production: "  + getMinP());
+				System.err.println("Current production: "  + getProduction() );
+				System.err.println("Offer increase: "  + offerIncrease.getProduction());
+				System.exit(-1);
+			}
 		}
 	}
 }

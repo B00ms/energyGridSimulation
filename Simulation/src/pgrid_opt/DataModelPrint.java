@@ -262,8 +262,7 @@ public class DataModelPrint {
 						double cap = 0;
 						float eps = 0.001F;
 
-						if (((Storage) g.getNodeList()[i]).getMaximumCharge() < ((Storage) g.getNodeList()[i])
-								.getCurrentCharge()) {
+						if (((Storage) g.getNodeList()[i]).getMaximumCharge() < ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
 							((Storage) g.getNodeList()[i]).charge(((Storage) g.getNodeList()[i]).getMaximumCharge());
 						}
 
@@ -286,9 +285,11 @@ public class DataModelPrint {
 								writer.println(i + " -" + cap / etac + ";");
 
 						} else if (counter != g.getNstorage()) {
-							writer.println(i + " -" + val);
+							//writer.println(i + " -" + val);
+							writer.println(i +  val);
 						} else
-							writer.println(i + " -" + val + ";");
+							writer.println(i + val + ";");
+							//writer.println(i + " -" + val + ";");
 					}
 				}
 			}
