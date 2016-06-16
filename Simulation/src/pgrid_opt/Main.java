@@ -450,6 +450,7 @@ public class Main {
 						}else{
 							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(maxP, previousProduction);
 						}
+						// TODO find generator that can handle remaining load
 					}
 				}else{
 					break; // remaining load fulfilled
@@ -480,7 +481,8 @@ public class Main {
 		int endTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
 
 		boolean dischargeAllowed = true;
-		if(timestep <= beginTime && timestep <= endTime){
+		// timestep >= 23 && timestep <= 4
+		if(timestep >= beginTime && timestep <= endTime){
 			grid = chargeStorage(grid);
 			dischargeAllowed = false;
 		}
