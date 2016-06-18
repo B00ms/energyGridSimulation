@@ -254,7 +254,7 @@ public class Main {
 	}
 
 	/**
-	 * Randomize conventional generator data
+	 * Randomize the failure status of conventional generator data
 	 * @param graph
 	 * @return
 	 */
@@ -294,7 +294,7 @@ public class Main {
 	}
 
 	/**
-	 * Does monte carlo draws for wind and solor generators and sets their production according to these draws.
+	 * Does monte carlo draws for wind and solar generators and sets their production according to these draws.
 	 * @param graph
 	 * @param currentTimeStep used for solar data generation
 	 * @return The graph in which renewable production has been set.
@@ -435,23 +435,28 @@ public class Main {
 				double remainingLoad =(expectedLoad - expectedProduction);
 				if( remainingLoad > 0 ){
 					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class){
-						double minP = ((ConventionalGenerator) nodeList[i]).getDayAheadMinP();
-						double maxP = ((ConventionalGenerator) nodeList[i]).getDayAheadMaxP();
+						double minProdBuffer = ((ConventionalGenerator) nodeList[i]).getDayAheadMinP();
+						double maxProdBuffer = ((ConventionalGenerator) nodeList[i]).getDayAheadMaxP();
 						double previousProduction = 0;
 						// check production of hour-1 for maximum production increase of 50% of max production
-						// TODO still check edge case where generator gets disabled and production probably would be 0;
 						if(timestep >0){
 							previousProduction = ((ConventionalGenerator)grid[timestep - 1].getNodeList()[i]).getProduction();
 						}
 
-						if(remainingLoad<maxP && remainingLoad > minP) {
+						if(remainingLoad>maxProdBuffer && remainingLoad > minProdBuffer) {
 							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(remainingLoad, previousProduction);
-						} else if(remainingLoad < minP){
-							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(minP, previousProduction);
+						} else if(remainingLoad < minProdBuffer){
+							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(minProdBuffer, previousProduction);
 						}else{
-							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(maxP, previousProduction);
+							expectedProduction += ((ConventionalGenerator) nodeList[i]).setScheduledProduction(maxProdBuffer, previousProduction);
 						}
 						// TODO find generator that can handle remaining load
+
+						//Turn offers that decrease production off if the generator is not producing anything
+						if(((ConventionalGenerator) nodeList[i]).getProduction() == 0){
+							((ConventionalGenerator) nodeList[i]).getDecreaseProductionOffers()[0].setAvailable(false);
+							((ConventionalGenerator) nodeList[i]).getDecreaseProductionOffers()[0].setAvailable(false);
+						}
 					}
 				}else{
 					break; // remaining load fulfilled
@@ -580,18 +585,20 @@ public class Main {
 				Offer offer = offers.get(i);
 				double offeredProduction = offer.getProduction();
 
+				ConventionalGenerator convGenerator = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]);
 				// check if deltaP isn't satisfied, and if offer is available
 				if (overProduction > 0 && offer.getAvailable()) {
 					if((overProduction-offeredProduction) >= 0){ // take offer
-						double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offer.getProduction());
-						realProduction -= newProduction;
-					}else if((overProduction-offeredProduction)<0){ // only take difference between deltaP and offeredProduction
-						double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction((offeredProduction-overProduction));
-						realProduction -= newProduction;
+						double newProduction = convGenerator.setProduction(convGenerator.getProduction() - offer.getProduction());
+						realProduction -= offer.getProduction();
+					}else { // only take difference between deltaP and offeredProduction
+						double newProduction = convGenerator.setProduction( convGenerator.getProduction() - (offeredProduction-overProduction));
+						realProduction -= (offeredProduction-overProduction);
 					}
 
 					// disable offer from generator
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
+					nodeList[offer.getNodeIndex()] = convGenerator;
 					System.out.println(realProduction);
 					overProduction = (realProduction - realLoad); // update deltaP
 				}else{

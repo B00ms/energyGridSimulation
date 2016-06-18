@@ -226,10 +226,10 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	public void takeIncreaseOffer(int i){
 		this.listOfferIncreaseProduction[i].setAvailable(false);
 	}
-	public void takeDecreaseOffer(int i) { 
+	public void takeDecreaseOffer(int i) {
 		this.listOfferDecreaseProduction[i].setAvailable(false);
 	}
-	
+
 	public double getDayAheadMaxP(){
 		return this.maxp*dayAheadLimitMax;
 	}
@@ -264,7 +264,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 			}
 
 			if (production -  offerDecrease .getProduction() < getMinP()){
-				System.err.println("Current production + 'decrease production offer' will violate minimum production");
+				System.err.println("Current production - 'decrease production offer' will violate minimum production");
 				System.err.println("GeneratorId: "  + getNodeId());
 				System.err.println("Minimum production: "  + getMinP());
 				System.err.println("Current production: "  + getProduction() );

@@ -310,7 +310,6 @@ public class Parser {
 
 		GENERATOR_TYPE generatorType = generator.getType();
 
-		double production = 0;
 		double percentFirstIncr = 0;
 		double percentFirstDecrease = 0;
 
@@ -320,7 +319,7 @@ public class Parser {
 		double priceDecreaseStepOne = 0;
 		double priceDecreaseStepTwo = 0;
 
-		int nodeIndex = 0;
+		int nodeIndex = generator.getNodeId();
 		int offerId = 0;
 
 		switch (generatorType){
@@ -373,19 +372,19 @@ public class Parser {
 		 * Calculate production values for offers to increase production
 		 */
 		double changeValue = (generator.getMaxP() * 0.075) * percentFirstIncr;
-		Offer increaseOneOffer = new Offer(changeValue, priceIncreaseStepOne);
+		Offer increaseOneOffer = new Offer(changeValue, priceIncreaseStepOne, nodeIndex);
 
 		changeValue= (generator.getMaxP() * 0.075) * 1-percentFirstIncr;
-		Offer increaseTwoOffer = new Offer(changeValue, priceIncreaseStepTwo);
+		Offer increaseTwoOffer = new Offer(changeValue, priceIncreaseStepTwo, nodeIndex);
 
 		/*
 		 * Calculate production values for offers to decrease production
 		 */
 		changeValue = (generator.getMaxP() * 0.075) * percentFirstDecrease;
-		Offer decreaseOneOffer = new Offer(production, priceDecreaseStepOne);
+		Offer decreaseOneOffer = new Offer(changeValue, priceDecreaseStepOne, nodeIndex);
 
 		changeValue= (generator.getMaxP() * 0.075) * 1-percentFirstDecrease;
-		Offer decreaseTwoOffer = new Offer(production, priceDecreaseStepTwo);
+		Offer decreaseTwoOffer = new Offer(changeValue, priceDecreaseStepTwo, nodeIndex);
 
 		Offer[] increaseOffers = new Offer[2];
 		increaseOffers[0] = increaseOneOffer;

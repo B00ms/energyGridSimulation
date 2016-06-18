@@ -9,11 +9,11 @@ public class Offer implements Comparable<Offer>{
     private int nodeIndex; // id of current generator in nodeList
     private int offerId; // id in offer list
 
-    public Offer(double production, double price){
+    public Offer(double production, double price, int nodeIndex){
         this.production = production;
         this.price = price;
         this.available = true;
-        //this.nodeIndex = nodeIndex;
+        this.nodeIndex = nodeIndex;
         //this.offerId = offerId;
     }
 
