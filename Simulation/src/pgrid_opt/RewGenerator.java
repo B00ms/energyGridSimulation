@@ -5,11 +5,11 @@ package pgrid_opt;
  */
 public class RewGenerator extends Generator {
 	
-	public RewGenerator(double max, double min, double cost, String type, int nodeId) {
+	public RewGenerator(double max, double min, double cost, GENERATOR_TYPE type, int nodeId) {
 		super(min, max, cost, type, (max / 2.0F), nodeId);
 	}
 
-	public RewGenerator(double max, double min, double cost, String type) {
+	public RewGenerator(double max, double min, double cost, GENERATOR_TYPE type) {
 		super(min, max, cost, type, (max / 2.0F));
 	}
 

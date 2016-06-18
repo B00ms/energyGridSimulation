@@ -13,18 +13,22 @@ public class ConfigCollection {
 	private Config monteCarlo;
 	private Config conventionalGenerator;
 	private Config loadCurves;
-	private Config offers;
 	private Config production;
 	private Config windGenerator;
 	private Config solarGenerator;
 	private Config storage;
 	private Config glpsol;
 
+	private Config oilOffer;
+	private Config coalOffer;
+	private Config nuclearOffer;
+	private Config hydroOilOffer;
+
 	//Do we want ../directory or ./directory?
 	private boolean doubleDot;
 
 	public enum CONFIGURATION_TYPE { GENERAL, MONTE_CARLO, CONVENTIONAL_GENERATOR,
-			LOAD_CURVES, OFFERS, PRODUCTION, WIND_GENERATOR, SOLAR_GENERATOR, STORAGE, GLPSOL};
+			LOAD_CURVES, OIL_OFFER, COAL_OFFER, NUCLEAR_OFFER, HYRDO_OFFER, PRODUCTION, WIND_GENERATOR, SOLAR_GENERATOR, STORAGE, GLPSOL};
 
 
 	public ConfigCollection(){
@@ -40,12 +44,18 @@ public class ConfigCollection {
 		monteCarlo 				= conf.getConfig("monte-carlo");
 		conventionalGenerator 	= conf.getConfig("conventionalGenerator");
 		loadCurves 				= conf.getConfig("conventionalGenerator").getConfig("load-curves");
-		offers 					= conf.getConfig("conventionalGenerator").getConfig("offers");
+		
+		oilOffer 				= conf.getConfig("conventionalGenerator").getConfig("oilOffer");
+		coalOffer   			= conf.getConfig("conventionalGenerator").getConfig("coalOffer");
+		nuclearOffer			= conf.getConfig("conventionalGenerator").getConfig("nuclearOffer");
+		hydroOilOffer			= conf.getConfig("conventionalGenerator").getConfig("hydroOffer");
+
 		production				= conf.getConfig("conventionalGenerator").getConfig("production");
 		windGenerator 			= conf.getConfig("windGenerator");
 		solarGenerator 			= conf.getConfig("solarGenerator");
 		storage 				= conf.getConfig("Storage");
 		glpsol 					= conf.getConfig("glpsol-config");
+		
 	}
 
 	public String getOS(){
@@ -76,9 +86,18 @@ public class ConfigCollection {
 		case LOAD_CURVES:
 			confValue = loadCurves.getString(configurationKeyWord);
 			break;
-		case OFFERS:
-			confValue = offers.getString(configurationKeyWord);
+		case OIL_OFFER:
+			confValue = oilOffer.getString(configurationKeyWord);
 			break;
+		case COAL_OFFER:
+			confValue = coalOffer.getString(configurationKeyWord);
+			break;
+		case NUCLEAR_OFFER:
+			confValue = nuclearOffer.getString(configurationKeyWord);
+			break;
+		case HYRDO_OFFER:
+			confValue = hydroOilOffer.getString(configurationKeyWord);
+			break;						
 		case PRODUCTION:
 			confValue = production.getString(configurationKeyWord);
 			break;
@@ -115,9 +134,18 @@ public class ConfigCollection {
 		case LOAD_CURVES:
 			confValue = loadCurves.getInt(configurationKeyWord);
 			break;
-		case OFFERS:
-			confValue = offers.getInt(configurationKeyWord);
+		case OIL_OFFER:
+			confValue = oilOffer.getInt(configurationKeyWord);
 			break;
+		case COAL_OFFER:
+			confValue = coalOffer.getInt(configurationKeyWord);
+			break;
+		case NUCLEAR_OFFER:
+			confValue = nuclearOffer.getInt(configurationKeyWord);
+			break;
+		case HYRDO_OFFER:
+			confValue = hydroOilOffer.getInt(configurationKeyWord);
+			break;		
 		case PRODUCTION:
 			confValue = production.getInt(configurationKeyWord);
 			break;
@@ -154,9 +182,18 @@ public class ConfigCollection {
 		case LOAD_CURVES:
 			confValue = loadCurves.getDouble(configurationKeyWord);
 			break;
-		case OFFERS:
-			confValue = offers.getDouble(configurationKeyWord);
+		case OIL_OFFER:
+			confValue = oilOffer.getDouble(configurationKeyWord);
 			break;
+		case COAL_OFFER:
+			confValue = coalOffer.getDouble(configurationKeyWord);
+			break;
+		case NUCLEAR_OFFER:
+			confValue = nuclearOffer.getDouble(configurationKeyWord);
+			break;
+		case HYRDO_OFFER:
+			confValue = hydroOilOffer.getDouble(configurationKeyWord);
+			break;	
 		case PRODUCTION:
 			confValue = production.getDouble(configurationKeyWord);
 			break;

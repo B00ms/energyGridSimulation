@@ -8,9 +8,11 @@ public class Generator extends Node {
 	private double coef; //multiplication coefficient, used to get real production
 	private int reactivateAtTimeStep;
 	protected double production;
-	private String type; // Oil, coal or nuclear, wind, solar
+	private GENERATOR_TYPE type; // Oil, coal or nuclear, wind, solar
+	
+	public enum GENERATOR_TYPE {OIL, COAL, NUCLEAR, HYDRO, WIND, SOLAR};
 
-	public Generator(double minProduction, double maxProduction, double coef2, String type, double production, int nodeId) {
+	public Generator(double minProduction, double maxProduction, double coef2, GENERATOR_TYPE type, double production, int nodeId) {
 		super(nodeId);
 		this.maxp = maxProduction;
 		this.minp = minProduction;
@@ -19,7 +21,7 @@ public class Generator extends Node {
 		this.production = production;
 	}
 
-	public Generator(double minProduction, double maxProduction, double coef2, String type, double production) {
+	public Generator(double minProduction, double maxProduction, double coef2, GENERATOR_TYPE type, double production) {
 		this.maxp = maxProduction;
 		this.minp = minProduction;
 		this.coef = coef2;
@@ -119,7 +121,7 @@ public class Generator extends Node {
 	 *
 	 * @return The type of the generator (O = oil, C = Coal, N = Nuclear, H = Hydroeletric, W = Wind, S = Solar)
 	 */
-	public String getType() {
+	public GENERATOR_TYPE getType() {
 		return this.type;
 	}
 
@@ -127,7 +129,7 @@ public class Generator extends Node {
 	 * Set the type of this generator.
 	 * @param type
 	 */
-	public void setType(String type) {
+	public void setType(GENERATOR_TYPE type) {
 		this.type = type;
 	}
 

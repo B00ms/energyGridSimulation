@@ -14,9 +14,11 @@ import java.util.Scanner;
 
 import au.com.bytecode.opencsv.CSVReader;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import pgrid_opt.Generator.GENERATOR_TYPE;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValueType;
 
 public class Parser {
 	private ConfigCollection config = new ConfigCollection();
@@ -71,16 +73,31 @@ public class Parser {
 			if(data.contains("#"))
 				scanner.nextLine();
 
+			GENERATOR_TYPE realType = null;
 			switch (data){
 			case "CG":
 				type = scanner.next();
+				switch (type){
+				case "O":
+					realType = GENERATOR_TYPE.OIL;
+					break;
+				case "C":
+					realType = GENERATOR_TYPE.COAL;
+					break;
+				case "N":
+					realType = GENERATOR_TYPE.NUCLEAR;
+					break;
+				case "H":
+					realType = GENERATOR_TYPE.HYDRO;
+					break;
+				}
 				nodeId = scanner.nextInt();
 				minProduction = scanner.nextDouble();
 				maxProduction = scanner.nextDouble();
 				double coef = scanner.nextDouble();
 				production = minProduction;
 
-				ConventionalGenerator convGenerator = new ConventionalGenerator(minProduction, maxProduction, coef, type, production, nodeId);
+				ConventionalGenerator convGenerator = new ConventionalGenerator(minProduction, maxProduction, coef, realType, production, nodeId);
 				generatorList.add(convGenerator); //Using a different array for conventional generators because we want to sort it.
 				numberOfConventionalGenerators++;
 				break;
@@ -104,8 +121,18 @@ public class Parser {
 				nodeId = scanner.nextInt();
 				maxProduction = scanner.nextDouble();
 				double cost = scanner.nextDouble();
+				
+				realType = null;
+				switch (type){			
+					case "W":
+						realType = GENERATOR_TYPE.WIND;
+						break;
+					case "S":
+						realType = GENERATOR_TYPE.SOLAR;
+						break;
+				}
 
-				RewGenerator renewableGenerator = new RewGenerator(maxProduction, 0, cost, type, nodeId);
+				RewGenerator renewableGenerator = new RewGenerator(maxProduction, 0, cost, realType, nodeId);
 				nodeList.add(renewableGenerator);
 				numberOfRenewableGenerators++;
 				break;
@@ -139,15 +166,14 @@ public class Parser {
 		Collections.sort(generatorList);
 
 		// add offers to generatorList for conventional generators
-		List<List<Offer>> offerIncrease = this.parseOfferIncreaseProduction();
-		List<List<Offer>> offerDecrease = this.parseOfferDecreaseProduction();
+		//List<List<Offer>> offerIncrease = this.parseOfferIncreaseProduction();
+		//List<List<Offer>> offerDecrease = this.parseOfferDecreaseProduction();
 
 		for(int i=0; i< generatorList.size(); i++){
 			ConventionalGenerator cgen = generatorList.get(i);
 			// store offers to generators
 
-			cgen.setOfferIncreaseProduction(offerIncrease.get(i));
-			cgen.setOfferDecreaseProduction(offerDecrease.get(i));
+			cgen = setOffers(cgen);
 			generatorList.set(i, cgen);
 		}
 
@@ -275,65 +301,103 @@ public class Parser {
 	}
 
 	/**
-	 * Parse and return the offers for increasing production for each conventional generator
-	 * @return
-	 */
-	public List<List<Offer>> parseOfferIncreaseProduction(){
-		/*String path = productionConf.getString("increaseProduction");*/
-		String path = config.getConfigStringValue(CONFIGURATION_TYPE.OFFERS, "increaseProduction");
-		List<List<Offer>> offerUp = parseOffer(path);
-		return offerUp;
-	}
-
-	/**
-	 * Parse and return the offers for decreasing production for each conventional generator
-	 * @return
-	 */
-	public List<List<Offer>> parseOfferDecreaseProduction(){
-		/*String path = productionConf.getString("decreaseProduction");*/
-		String path = config.getConfigStringValue(CONFIGURATION_TYPE.OFFERS, "decreaseProduction");
-		List<List<Offer>> offerDown = parseOffer(path);
-		return offerDown;
-	}
-
-	/**
 	 * Parse offers from input csv files
 	 % D1 and D2 are MWh; PD1 and PD2 are euro/MWh
 	 * @param path
 	 * @return
 	 */
-	public List<List<Offer>> parseOffer(String path){
+	public ConventionalGenerator setOffers(ConventionalGenerator generator){
 
-		List<List<Offer>> generatorOffers = new ArrayList<>();
-		try{
-			CSVReader reader;
-			if(config.getOS().startsWith("Windows") || config.getOS().startsWith("Linux")) {
-				reader = new CSVReader(new FileReader("../"+path));
-			}else{
-				reader = new CSVReader(new FileReader(path));
-			}
-
-			String [] nextLine;
-			int i = 0;
-			while ((nextLine = reader.readNext()) != null) {
-				List<Offer> offerList = new ArrayList<Offer>();
-
-				// U1 MWh, PU1 euro/MWh
-				offerList.add(new Offer(Integer.parseInt(nextLine[0]), Integer.parseInt(nextLine[1]), i, 0));
-				// U2 MWh, PU2 euro/MWh
-				offerList.add(new Offer(Integer.parseInt(nextLine[2]), Integer.parseInt(nextLine[3]), i, 1));
-				generatorOffers.add(offerList);
-				i++;
-			}
-			reader.close();
-			return generatorOffers;
-		} catch (FileNotFoundException e){
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		GENERATOR_TYPE generatorType = generator.getType();
+		
+		double production = 0;
+		double percentFirstIncr = 0;
+		double percentFirstDecrease = 0;
+		
+		double priceIncreaseStepOne = 0;
+		double priceIncreaseStepTwo = 0;
+		
+		double priceDecreaseStepOne = 0;
+		double priceDecreaseStepTwo = 0;
+		
+		int nodeIndex = 0;
+		int offerId = 0;
+		
+		switch (generatorType){
+		case OIL:
+			percentFirstIncr = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "percentageFirstIncrease");
+			percentFirstDecrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "percentageFirstDecrease");
+			
+			priceIncreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "priceIncreaseOne");
+			priceIncreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "priceIncreaseTwo");
+			
+			priceDecreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "priceDecreaseOne");
+			priceDecreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "priceDecreaseTwo");
+			break;
+		case COAL: 
+			percentFirstIncr = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "percentageFirstIncrease");
+			percentFirstDecrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "percentageFirstDecrease");
+			
+			priceIncreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "priceIncreaseOne");
+			priceIncreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "priceIncreaseTwo");
+			
+			priceDecreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "priceDecreaseOne");
+			priceDecreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "priceDecreaseTwo");
+			break;
+		case NUCLEAR: 
+			percentFirstIncr = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "percentageFirstIncrease");
+			percentFirstDecrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "percentageFirstDecrease");
+			
+			priceIncreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "priceIncreaseOne");
+			priceIncreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "priceIncreaseTwo");
+			
+			priceDecreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "priceDecreaseOne");
+			priceDecreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "priceDecreaseTwo");
+			break;
+		case HYDRO:
+			percentFirstIncr = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "percentageFirstIncrease");
+			percentFirstDecrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "percentageFirstDecrease");
+			
+			priceIncreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "priceIncreaseOne");
+			priceIncreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "priceIncreaseTwo");
+			
+			priceDecreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "priceDecreaseOne");
+			priceDecreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "priceDecreaseTwo");
+			break;
+		default:
+			//Ignore wind and solar because they dont do offers.
+			break;
 		}
-
-		return null;
+		
+		/*
+		 * Calculate production values for offers to increase production
+		 */
+		double changeValue = (generator.getMaxP() * 0.075) * percentFirstIncr;
+		Offer increaseOneOffer = new Offer(changeValue, priceIncreaseStepOne);
+		
+		changeValue= (generator.getMaxP() * 0.075) * 1-percentFirstIncr;
+		Offer increaseTwoOffer = new Offer(changeValue, priceIncreaseStepTwo);
+		
+		/*
+		 * Calculate production values for offers to decrease production
+		 */
+		changeValue = (generator.getMaxP() * 0.075) * percentFirstDecrease;
+		Offer decreaseOneOffer = new Offer(production, priceDecreaseStepOne);
+		
+		changeValue= (generator.getMaxP() * 0.075) * 1-percentFirstDecrease;
+		Offer decreaseTwoOffer = new Offer(production, priceDecreaseStepTwo);
+		
+		Offer[] increaseOffers = new Offer[1];
+		increaseOffers[0] = increaseOneOffer;
+		increaseOffers[1] = increaseTwoOffer;
+		
+		Offer[] decreaseOffer = new Offer[1];
+		decreaseOffer[0] = decreaseOneOffer;
+		decreaseOffer[1] = decreaseTwoOffer;
+		
+		generator.setOfferIncreaseProduction(increaseOffers);
+		generator.setOfferDecreaseProduction(decreaseOffer);
+		return generator;
 	}
 
 	/**

@@ -4,18 +4,17 @@ public class Offer implements Comparable<Offer>{
 
     private double production; //MWh
     private double price; //euro/MWh
-    private double value; // production to price value
     private boolean available;
 
     private int nodeIndex; // id of current generator in nodeList
     private int offerId; // id in offer list
 
-    public Offer(double production, double price, int nodeIndex, int offerId){
+    public Offer(double production, double price){
         this.production = production;
         this.price = price;
         this.available = true;
-        this.nodeIndex = nodeIndex;
-        this.offerId = offerId;
+        //this.nodeIndex = nodeIndex;
+        //this.offerId = offerId;
     }
 
     public void setProduction(int production){

@@ -16,6 +16,7 @@ import net.e175.klaus.solarpositioning.DeltaT;
 import net.e175.klaus.solarpositioning.Grena3;
 import net.e175.klaus.solarpositioning.SPA;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import pgrid_opt.Generator.GENERATOR_TYPE;
 import pgrid_opt.Storage.StorageStatus;
 
 public class Main {
@@ -264,24 +265,24 @@ public class Main {
 			// Check the class of the current node and deal with it accordingly.
 			if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class
 					|| graph.getNodeList()[j].getClass() == RewGenerator.class)) {
-				String generatorType = ((Generator) graph.getNodeList()[j]).getType();
+				GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
 				double mcDraw = 0; // This will hold our Monte Carlo draw
 				// (hahaha mac draw)
 				switch (generatorType) {
-					case "H": // Hydro-eletric generator
+					case HYDRO: // Hydro-eletric generator
 						// TODO Ignore this for now, might be added at a later stage
 						break;
-					case "O": // Oil Thermal generator
+					case OIL: // Oil Thermal generator
 						mcDraw = monteCarloHelper.getRandomUniformDist();
 						// System.out.println(mcDraw);
 						graph = checkConventionalGeneratorFailure(graph, j, mcDraw);
 						break;
-					case "N": // Nuclear Thermal generator
+					case NUCLEAR: // Nuclear Thermal generator
 						mcDraw = monteCarloHelper.getRandomUniformDist();
 						// System.out.println(mcDraw);
 						graph = checkConventionalGeneratorFailure(graph, j, mcDraw);
 						break;
-					case "C": // Coal Thermal generator
+					case COAL: // Coal Thermal generator
 						mcDraw = monteCarloHelper.getRandomUniformDist();
 						// System.out.println(mcDraw);
 						graph = checkConventionalGeneratorFailure(graph, j, mcDraw);
@@ -305,10 +306,10 @@ public class Main {
 			// Check the class of the current node and deal with it accordingly.
 			if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class
 					|| graph.getNodeList()[j].getClass() == RewGenerator.class)) {
-				String generatorType = ((Generator) graph.getNodeList()[j]).getType();
+				GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
 				double mcDraw = 0; // This will hold our Monte Carlo draw
 				switch (generatorType) {
-				case "W": // Wind park generator
+				case WIND: // Wind park generator
 					mcDraw = monteCarloHelper.getRandomWeibull();
 					double vCutIn = config.getConfigDoubleValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vCutIn");
 					double vCutOff = config.getConfigDoubleValue(CONFIGURATION_TYPE.WIND_GENERATOR, "vCutOff");
@@ -327,7 +328,7 @@ public class Main {
 						((RewGenerator) graph.getNodeList()[j]).setProduction(pRated);
 					}
 					break;
-				case "S": // Solar generator
+				case SOLAR: // Solar generator
 					mcDraw = monteCarloHelper.getRandomGamma();
 
 					double irradianceConstant = config.getConfigDoubleValue(CONFIGURATION_TYPE.SOLAR_GENERATOR, "irradianceConstant");
@@ -491,19 +492,21 @@ public class Main {
 		// overProduction = 0 needs to be satisfied
 		realProduction = calculateProduction(grid);
 		double overProduction = (realProduction - realLoad);
-		// Check if we need to increase current production
 		System.out.println("RealProduction: " + realProduction + " " + "realLoad: "+ realLoad);
+
+		// Check if we need to increase current production
 		if (overProduction < 0) {
 			System.out.println("Increasing production ");
 
-			List<Offer> offers = new ArrayList<>();
+			List<Offer> offers = new ArrayList<Offer>();
 
 			// find cheapest offers
-			for (int i = 0; i < nodeList.length - 1; i++) {
+			for (int i = 0; i < nodeList.length; i++) {
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
 
-					List<Offer> offerList = ((ConventionalGenerator) nodeList[i]).getIncreaseProductionOffers();
-					offers.addAll(offerList);
+					Offer[] offerList = ((ConventionalGenerator) nodeList[i]).getIncreaseProductionOffers();
+					offers.add(offerList[0]);
+					offers.add(offerList[1]);
 				}
 			}
 
@@ -563,8 +566,9 @@ public class Main {
 			// find cheapest offers
 			for (int i = 0; i < nodeList.length - 1; i++) {
 				if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class) {
-					List<Offer> offerList = ((ConventionalGenerator) nodeList[i]).getDecreaseProductionOffers();
-					offers.addAll(offerList);
+					Offer[] offerList = ((ConventionalGenerator) nodeList[i]).getDecreaseProductionOffers();
+					offers.add(offerList[0]);
+					offers.add(offerList[1]);
 				}
 			}
 
