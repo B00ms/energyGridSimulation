@@ -131,13 +131,13 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		} else if(productionIncrease < 0)
 			production = this.production + maxp*maxProductionIncrease;
 
-		if (this.getDayAheadMaxP() < production){
+		if (this.getDayAheadMaxProduction() < production){
 			//New production is higher than maximum allowed production.
-			this.production = this.getDayAheadMaxP();
+			this.production = this.getDayAheadMaxProduction();
 			return this.production;
-		} else if(this.getDayAheadMinP() > production){
+		} else if(this.getDayAheadMinProduction() > production){
 			//New production is lower than minimum allowed production.
-			this.production = this.getDayAheadMinP();
+			this.production = this.getDayAheadMinProduction();
 			return this.production;
 		} else {
 			//New production falls within the margins.
@@ -230,10 +230,19 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		this.listOfferDecreaseProduction[i].setAvailable(false);
 	}
 
-	public double getDayAheadMaxP(){
+	/**
+	 * Use this to get the max production when planning the production.
+	 * @return Returns the highest production value for this generator while respecting the dayAheadLimitMax buffer
+	 */
+	public double getDayAheadMaxProduction(){
 		return this.maxp*dayAheadLimitMax;
 	}
-	public double getDayAheadMinP(){
+	
+	/**
+	 * Use this to get the min production when planning the production.
+	 * @return Returns the highest production value for this generator while respecting the dayAheadLimitMax buffer
+	 */
+	public double getDayAheadMinProduction(){
 		return this.minp*dayAheadLimitMin;
 	}
 
