@@ -121,9 +121,9 @@ public class Parser {
 				nodeId = scanner.nextInt();
 				maxProduction = scanner.nextDouble();
 				double cost = scanner.nextDouble();
-				
+
 				realType = null;
-				switch (type){			
+				switch (type){
 					case "W":
 						realType = GENERATOR_TYPE.WIND;
 						break;
@@ -309,58 +309,58 @@ public class Parser {
 	public ConventionalGenerator setOffers(ConventionalGenerator generator){
 
 		GENERATOR_TYPE generatorType = generator.getType();
-		
+
 		double production = 0;
 		double percentFirstIncr = 0;
 		double percentFirstDecrease = 0;
-		
+
 		double priceIncreaseStepOne = 0;
 		double priceIncreaseStepTwo = 0;
-		
+
 		double priceDecreaseStepOne = 0;
 		double priceDecreaseStepTwo = 0;
-		
+
 		int nodeIndex = 0;
 		int offerId = 0;
-		
+
 		switch (generatorType){
 		case OIL:
 			percentFirstIncr = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "percentageFirstIncrease");
 			percentFirstDecrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "percentageFirstDecrease");
-			
+
 			priceIncreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "priceIncreaseOne");
 			priceIncreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "priceIncreaseTwo");
-			
+
 			priceDecreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "priceDecreaseOne");
 			priceDecreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.OIL_OFFER, "priceDecreaseTwo");
 			break;
-		case COAL: 
+		case COAL:
 			percentFirstIncr = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "percentageFirstIncrease");
 			percentFirstDecrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "percentageFirstDecrease");
-			
+
 			priceIncreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "priceIncreaseOne");
 			priceIncreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "priceIncreaseTwo");
-			
+
 			priceDecreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "priceDecreaseOne");
 			priceDecreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.COAL_OFFER, "priceDecreaseTwo");
 			break;
-		case NUCLEAR: 
+		case NUCLEAR:
 			percentFirstIncr = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "percentageFirstIncrease");
 			percentFirstDecrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "percentageFirstDecrease");
-			
+
 			priceIncreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "priceIncreaseOne");
 			priceIncreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "priceIncreaseTwo");
-			
+
 			priceDecreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "priceDecreaseOne");
 			priceDecreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.NUCLEAR_OFFER, "priceDecreaseTwo");
 			break;
 		case HYDRO:
 			percentFirstIncr = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "percentageFirstIncrease");
 			percentFirstDecrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "percentageFirstDecrease");
-			
+
 			priceIncreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "priceIncreaseOne");
 			priceIncreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "priceIncreaseTwo");
-			
+
 			priceDecreaseStepOne = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "priceDecreaseOne");
 			priceDecreaseStepTwo = config.getConfigDoubleValue(CONFIGURATION_TYPE.HYRDO_OFFER, "priceDecreaseTwo");
 			break;
@@ -368,33 +368,33 @@ public class Parser {
 			//Ignore wind and solar because they dont do offers.
 			break;
 		}
-		
+
 		/*
 		 * Calculate production values for offers to increase production
 		 */
 		double changeValue = (generator.getMaxP() * 0.075) * percentFirstIncr;
 		Offer increaseOneOffer = new Offer(changeValue, priceIncreaseStepOne);
-		
+
 		changeValue= (generator.getMaxP() * 0.075) * 1-percentFirstIncr;
 		Offer increaseTwoOffer = new Offer(changeValue, priceIncreaseStepTwo);
-		
+
 		/*
 		 * Calculate production values for offers to decrease production
 		 */
 		changeValue = (generator.getMaxP() * 0.075) * percentFirstDecrease;
 		Offer decreaseOneOffer = new Offer(production, priceDecreaseStepOne);
-		
+
 		changeValue= (generator.getMaxP() * 0.075) * 1-percentFirstDecrease;
 		Offer decreaseTwoOffer = new Offer(production, priceDecreaseStepTwo);
-		
-		Offer[] increaseOffers = new Offer[1];
+
+		Offer[] increaseOffers = new Offer[2];
 		increaseOffers[0] = increaseOneOffer;
 		increaseOffers[1] = increaseTwoOffer;
-		
-		Offer[] decreaseOffer = new Offer[1];
+
+		Offer[] decreaseOffer = new Offer[2];
 		decreaseOffer[0] = decreaseOneOffer;
 		decreaseOffer[1] = decreaseTwoOffer;
-		
+
 		generator.setOfferIncreaseProduction(increaseOffers);
 		generator.setOfferDecreaseProduction(decreaseOffer);
 		return generator;
