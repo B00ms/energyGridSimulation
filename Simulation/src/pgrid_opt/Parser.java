@@ -374,16 +374,16 @@ public class Parser {
 		double changeValue = (generator.getMaxP() * 0.075) * percentFirstIncr;
 		Offer increaseOneOffer = new Offer(changeValue, priceIncreaseStepOne, nodeIndex);
 
-		changeValue= (generator.getMaxP() * 0.075) * 1-percentFirstIncr;
+		changeValue= (generator.getMaxP() * 0.075) * (1-percentFirstIncr);
 		Offer increaseTwoOffer = new Offer(changeValue, priceIncreaseStepTwo, nodeIndex);
 
 		/*
 		 * Calculate production values for offers to decrease production
 		 */
-		changeValue = (generator.getMaxP() * 0.075) * percentFirstDecrease;
+		changeValue = (generator.getMinP() * 0.075) * percentFirstDecrease;
 		Offer decreaseOneOffer = new Offer(changeValue, priceDecreaseStepOne, nodeIndex);
 
-		changeValue= (generator.getMaxP() * 0.075) * 1-percentFirstDecrease;
+		changeValue= (generator.getMinP() * 0.075) * (1-percentFirstDecrease);
 		Offer decreaseTwoOffer = new Offer(changeValue, priceDecreaseStepTwo, nodeIndex);
 
 		Offer[] increaseOffers = new Offer[2];
@@ -394,8 +394,13 @@ public class Parser {
 		decreaseOffer[0] = decreaseOneOffer;
 		decreaseOffer[1] = decreaseTwoOffer;
 
+		if(!(generator.getProduction() > 0)){
+			decreaseOffer[0].setAvailable(false);
+			decreaseOffer[1].setAvailable(false);
+		}
 		generator.setOfferIncreaseProduction(increaseOffers);
 		generator.setOfferDecreaseProduction(decreaseOffer);
+
 		return generator;
 	}
 

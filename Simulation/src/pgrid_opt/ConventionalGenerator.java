@@ -1,11 +1,5 @@
 package pgrid_opt;
 
-import java.io.File;
-import java.util.List;
-
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 
 public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>{
@@ -67,7 +61,6 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public double setProduction(double production) {
-		checkGeneratorOffer();
 		//For the edge case where we dont want to change production:
 		double productionIncrease = 0;
 		if (production-production != production)
@@ -95,6 +88,8 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		} else {
 			//New production falls within the margins.
 			this.production = production;
+
+			//checkGeneratorOffer();
 			return this.production;
 		}
 	}
@@ -235,15 +230,15 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	 * @return Returns the highest production value for this generator while respecting the dayAheadLimitMax buffer
 	 */
 	public double getDayAheadMaxProduction(){
-		return this.maxp*dayAheadLimitMax;
+		return maxp - (maxp*dayAheadLimitMax);
 	}
-	
+
 	/**
 	 * Use this to get the min production when planning the production.
 	 * @return Returns the highest production value for this generator while respecting the dayAheadLimitMax buffer
 	 */
 	public double getDayAheadMinProduction(){
-		return this.minp*dayAheadLimitMin;
+		return minp + (minp*dayAheadLimitMin);
 	}
 
 	@Override
@@ -272,7 +267,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 				System.exit(-1);
 			}
 
-			if (production -  offerDecrease .getProduction() < getMinP()){
+			if (production -  offerDecrease .getProduction() < getMinP() && getMinP() > 0){
 				System.err.println("Current production - 'decrease production offer' will violate minimum production");
 				System.err.println("GeneratorId: "  + getNodeId());
 				System.err.println("Minimum production: "  + getMinP());

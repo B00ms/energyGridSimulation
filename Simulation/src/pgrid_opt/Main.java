@@ -405,7 +405,7 @@ public class Main {
 		Node[] nodeList = grid[timestep].getNodeList();
 
 		double sumExpectedProduction = 0;
-		
+
 		for ( int i = 0; i < nodeList.length; i++){
 			if(nodeList[i].getClass() == ConventionalGenerator.class){
 				ConventionalGenerator generator =  ((ConventionalGenerator) nodeList[i]);
@@ -413,16 +413,16 @@ public class Main {
 					double previousProduction =  ((ConventionalGenerator)grid[timestep - 1].getNodeList()[i]).getProduction();
 					double production = previousProduction + generator.getMaxP() * 0.5;
 					if(sumExpectedProduction+production < sumExpectedLoad){
-						sumExpectedProduction += generator.setProduction(production);
+						sumExpectedProduction += generator.setScheduledProduction(production, previousProduction);
 					} else{
 						//We don't need to use maximum production to meet the load, so we set production to remainder.
 						production = sumExpectedLoad - sumExpectedProduction;
-						
+
 						//Check if production isn't to low, if it is set generator to min production.
 						if (production < generator.getDayAheadMinProduction())
-							sumExpectedProduction += generator.setProduction(production);
-						else 
-							sumExpectedProduction += generator.setProduction(generator.getDayAheadMinProduction());
+							sumExpectedProduction += generator.setScheduledProduction(production, previousProduction);
+						else
+							sumExpectedProduction += generator.setScheduledProduction(generator.getDayAheadMinProduction(), previousProduction);
 					}
 				}else{
 					double production = generator.getDayAheadMaxProduction();
@@ -430,25 +430,25 @@ public class Main {
 						sumExpectedProduction += generator.setProduction(production);
 					} else{
 						production = sumExpectedLoad - sumExpectedProduction;
-						
+
 						if (production < generator.getDayAheadMinProduction())
 							sumExpectedProduction += generator.setProduction(production);
-						else 
-							sumExpectedProduction += generator.setProduction(generator.getDayAheadMinProduction());							
+						else
+							sumExpectedProduction += generator.setProduction(generator.getDayAheadMinProduction());
 					}
 				}
-				
-				if(generator.getProduction() == 0){ //Turn off offers for decreasing production if we're not producing anything.				
+
+				if(generator.getProduction() == 0){ //Turn off offers for decreasing production if we're not producing anything.
 					generator.getDecreaseProductionOffers()[0].setAvailable(false);
-					generator.getDecreaseProductionOffers()[1].setAvailable(false);					
+					generator.getDecreaseProductionOffers()[1].setAvailable(false);
 				}
-				
+
 				nodeList[i] = generator;
 			}
 		}
 		return grid[timestep];
-		
-		
+
+
 
 		/*if (sumExpectedLoad > 0) {
 			for ( int i = nodeList.length-1; i >= 0; i--){
@@ -603,25 +603,31 @@ public class Main {
 			for (int i = 0; i < offers.size(); i++) {
 				Offer offer = offers.get(i);
 				double offeredProduction = offer.getProduction();
+				ConventionalGenerator convGenerator = null;
+				for(int j = 0; j < nodeList.length; j++){
+					if(nodeList[j].getClass() == ConventionalGenerator.class)
+						convGenerator = ((ConventionalGenerator) nodeList[j]);
 
-				ConventionalGenerator convGenerator = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]);
-				// check if deltaP isn't satisfied, and if offer is available
-				if (overProduction > 0 && offer.getAvailable()) {
-					if((overProduction-offeredProduction) >= 0){ // take offer
-						double newProduction = convGenerator.setProduction(convGenerator.getProduction() - offer.getProduction());
-						realProduction -= offer.getProduction();
-					}else { // only take difference between deltaP and offeredProduction
-						double newProduction = convGenerator.setProduction( convGenerator.getProduction() - (offeredProduction-overProduction));
-						realProduction -= (offeredProduction-overProduction);
+					if(convGenerator != null && convGenerator.getNodeId() == offer.getNodeIndex()){
+						// check if deltaP isn't satisfied, and if offer is available
+						if (overProduction > 0 && offer.getAvailable()) {
+							if((overProduction-offeredProduction) >= 0){ // take offer
+								double newProduction = convGenerator.setProduction(convGenerator.getProduction() - offer.getProduction());
+								realProduction -= offer.getProduction();
+							}else { // only take difference between deltaP and offeredProduction
+								double newProduction = convGenerator.setProduction( convGenerator.getProduction() - (offeredProduction-overProduction));
+								realProduction -= (offeredProduction-overProduction);
+							}
+
+							// disable offer from generator
+							((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
+							nodeList[offer.getNodeIndex()] = convGenerator;
+							System.out.println(realProduction);
+							overProduction = (realProduction - realLoad); // update deltaP
+						}else{
+							break; // load is satisfied
+						}
 					}
-
-					// disable offer from generator
-					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
-					nodeList[offer.getNodeIndex()] = convGenerator;
-					System.out.println(realProduction);
-					overProduction = (realProduction - realLoad); // update deltaP
-				}else{
-					break; // load is satisfied
 				}
 			}
 
@@ -744,6 +750,7 @@ public class Main {
 	 * @return
 	 */
 	private static Graph chargeOrDischargeStorage(Graph graph){
+		//TODO: totalcurrentproduction is always 0 and sumLoads is always 0, need to fix this or batteries wont charge properly
 		Node[] nodeList = graph.getNodeList();
 		if (totalCurrentProduction > sumLoads) {
 			System.out.print("curtailment ");
