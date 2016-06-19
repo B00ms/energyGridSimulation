@@ -24,8 +24,6 @@ public class Main {
 	// Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
 	//private static Config conf;
-	private static double totalCurrentProduction = 0;
-	private static double sumLoads = 0;
 	private static ConfigCollection config = new ConfigCollection();
 
 	public static void main(String[] args) {
@@ -499,6 +497,8 @@ public class Main {
 	 */
 	private static Graph checkGridEquilibrium(Graph grid, int timestep) {
 		Node[] nodeList = grid.getNodeList();
+		double totalCurrentProduction = 0;
+		double sumLoads = 0;
 		double realLoad = 0;
 		double realProduction = 0;
 
@@ -734,6 +734,10 @@ public class Main {
 	 * @return graph in which the state of storages has been set.
 	 */
 	private static Graph chargeStorage(Graph graph){
+		
+		Double[] sumProdAndLoad = calcSumProductionSumLoad(graph);
+		double sumLoads = sumProdAndLoad[1];
+		
 		for(int i = 0; i < graph.getNodeList().length; i++){
 			if(graph.getNodeList()[i].getClass() == Storage.class){
 				if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentCharge()){
@@ -743,6 +747,30 @@ public class Main {
 		}
 		return graph;
 	}
+	
+	/**
+	 * Calculates the sum of production and the sum of the loads.
+	 * @param graph
+	 * @return array where position [0] contains the sum of production and position [1] contains the sum of the load minus production of renewables.
+	 */
+	private static Double[] calcSumProductionSumLoad(Graph graph){
+		double totalCurrentProduction = 0;
+		double sumLoads = 0;
+		
+		for(int i = 0; i < graph.getNodeList().length; i++){
+			if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class && ((ConventionalGenerator)graph.getNodeList()[i]).getGeneratorFailure() == false){
+				totalCurrentProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
+			} else if(graph.getNodeList()[i].getClass() == Consumer.class){
+				sumLoads += ((Consumer)graph.getNodeList()[i]).getLoad();
+			} else if(graph.getNodeList()[i].getClass() == RewGenerator.class){
+				sumLoads -= ((RewGenerator)graph.getNodeList()[i]).getProduction();
+			}
+		}
+		Double[] result = new Double[2];
+		result[0] = totalCurrentProduction;
+		result[1] = sumLoads;
+		return result;
+	}
 
 	/**
 	 * Charges or discharges storage depending depending on the state of production and load.
@@ -750,7 +778,11 @@ public class Main {
 	 * @return
 	 */
 	private static Graph chargeOrDischargeStorage(Graph graph){
-		//TODO: totalcurrentproduction is always 0 and sumLoads is always 0, need to fix this or batteries wont charge properly
+		
+		Double[] sumProdAndLoad = calcSumProductionSumLoad(graph);
+		double totalCurrentProduction = sumProdAndLoad[0];
+		double sumLoads = sumProdAndLoad[1];
+		
 		Node[] nodeList = graph.getNodeList();
 		if (totalCurrentProduction > sumLoads) {
 			System.out.print("curtailment ");
