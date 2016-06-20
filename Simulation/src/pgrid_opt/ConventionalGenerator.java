@@ -9,7 +9,6 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	private int mttr;//mean time to repair
 	private boolean generatorFailure = false; //Indicates if the generator is working normally or if it has failed
 	private ConfigCollection config = new ConfigCollection();
-	private static String OS = System.getProperty("os.name");
 
 	private double maxProductionIncrease;
 	private double dayAheadLimitMax;

@@ -1,6 +1,5 @@
 package pgrid_opt;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,10 +14,6 @@ import java.util.Scanner;
 import au.com.bytecode.opencsv.CSVReader;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 import pgrid_opt.Generator.GENERATOR_TYPE;
-
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigValueType;
 
 public class Parser {
 	private ConfigCollection config = new ConfigCollection();
