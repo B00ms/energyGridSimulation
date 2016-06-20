@@ -562,15 +562,17 @@ public class Main {
 
 				// check if deltaP isn't satisfied, and if offer is available
 				if (overProduction < 0 && offer.getAvailable()) {
+					ConventionalGenerator generator = (ConventionalGenerator) nodeList[offer.getNodeIndex()];
 					if((overProduction+offeredProduction) <= 0){ // take offer
-						double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(offer.getProduction());
-						realProduction += newProduction;
+						double newProduction = generator.setProduction(generator.getProduction() + offer.getProduction());
+						realProduction += offer.getProduction();
 					}else if((overProduction+offeredProduction)>0){ // only take difference between deltaP and offeredProduction
 						double remainingProduction = offeredProduction-(offeredProduction+overProduction);
-						double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(remainingProduction);
-						realProduction += newProduction;
+						double newProduction = generator.setProduction(generator.getProduction() + remainingProduction);
+						realProduction += remainingProduction;
 					}
 
+					nodeList[offer.getNodeIndex()] = generator;
 					// disable offer from generator
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
 					overProduction = (realProduction - realLoad); // update deltaP
