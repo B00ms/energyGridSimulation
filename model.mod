@@ -7,8 +7,13 @@ param n_tot; # total number of nodes.
 param m_factor; #multiplication factor per-unit MW
 param pi; #pi constant
 param totload; #total demand for consume rnodes
-param c_curt; #renewable cut costs
+param cost_curt; #renewable cut costs
+param cost_sl; # cost shedded load
 param outname;
+
+param current_hour;
+param start_charge_time;
+param end_charge_time;
 
 #initialize variables 
 set nodes := 0..n_tot;
@@ -22,7 +27,7 @@ param weight {nodes,nodes} >=0;
 param capacity {nodes,nodes} >=0;
 param costs {tgen} >=0, default 0;
 param rcost {rgen} >=0, default 0;
-param rprodmax {rgen} >=0;
+param rprodmax {rgen} >=0;  
 param rprodmin {rgen} >=0;
 param storagemin {storage};
 param storagemax {storage};
@@ -37,14 +42,35 @@ param flowfromstorage {storage};
 var theta {nodes} >= -pi/2, <= pi/2;
 
 #The function to minimize daily system cost.
-minimize obj :	(sum{i in tgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*costs[i])) + 
-		(sum{i in rgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*rcost[i])) + 
-		(sum{i in rgen} c_curt*(rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])));
+minimize obj :
+	(sum{i in tgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*costs[i])) +
+	(sum{i in rgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*rcost[i])) +
+	(sum{i in rgen} cost_curt*(rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])));
+
+#minimize obj :
+#	(sum{i in tgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*costs[i])) + 
+#	(sum{i in rgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*rcost[i])) + 
+#	(
+#		sum{i in rgen}
+#			cost_curt*(
+#				rprodmax[i]-(
+#					sum{j in nodes : capacity[i,j] <> 0}
+#					(theta[i]-theta[j])/weight[i,j]*m_factor
+#				))
+#	);
 
 
 #Subject to these constrains
 subject to anglestability :
-	theta[46], = 0; 
+	theta[46], = 0;
+
+
+# if later than 
+#for {{0}: current_hour >= start_charge_time || current_hour =< end_charge_time}{  # IF condition THEN
+	#charge storage
+
+#} for {{0}: not condition} {  	# ELSE
+#}                             	# ENDIF
 
 
 #Maximum flow rate
@@ -89,7 +115,8 @@ subject to genproduction { i in tgen } :
 #Demand of consumer nodes.
 #subject to sgenmax { i in storage } :
 #	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
-	
+
+## evening
 subject to storageFlow { i in storage } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];		
 
@@ -103,7 +130,11 @@ subject to loadMinValue {i in consumers} :
 	
 #Balance supply and demand of energy.
 subject to prodloadeq :
-	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum { i in consumers, j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
+	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0}
+		((theta[i]-theta[j])/weight[i,j])*m_factor, =
+		sum { i in consumers, j in nodes : capacity[j,i] <> 0}
+
+		((theta[j]-theta[i])/weight[j,i])*m_factor;
 	
 
 #go ahead and solve the equation/model

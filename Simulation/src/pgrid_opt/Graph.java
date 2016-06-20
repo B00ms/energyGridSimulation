@@ -6,8 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Scanner;
-
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+
 
 public class Graph implements Cloneable {
 	private int nnode; //Total Number of nodes in the graph
@@ -17,16 +17,20 @@ public class Graph implements Cloneable {
 	private int loadmax; //Daily max load demand
 	private int nstorage; //Number of storage systems in the grid
 	private int efficency; //TODO: determine what this variable represents(capacity of real edges?), it's hardcoded to 75
-	private float ccurt; //Renewable cut costs
+	private float cost_curt; //Renewable cut costs
+	private float cost_sl; // cost shedded load
 	private float etac; //Duration of each time step
 	private float etad; //Charge and discharge efficiency of storages
 	private float delta; //Length of the time step.
 	private Node[] nodelist;
 	private Edge[][] network;
 	private Edge[] edges;
+	private ConfigCollection config = new ConfigCollection();
 
 	public Graph(int nnode, int ngenerators, int nrgenerators, int nconsumers, int loadmax, int nstorage, float delta,
 			float etac, float etad) {
+
+
 		setNodeList(new Node[nnode]);
 		this.network = new Edge[nnode][nnode];
 		setLoadmax(loadmax);
@@ -35,8 +39,15 @@ public class Graph implements Cloneable {
 		setNrgenetarors(nrgenerators);
 		setNConsumers(nconsumers);
 		setNstorage(nstorage);
-		setCcurt(200.0F); //TODO: move to configuration file
-		setEfficency(75);
+
+		int costLoadShedding = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "costLoadShedding");
+		int costCurtailment = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "costCurtailment");
+		int efficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "efficiency");
+		setCostSheddedLoad(costLoadShedding);
+		setCostCurtailment(costCurtailment);
+		setEfficency(efficiency);
+//		setCostCurtailment(200.0F); //TODO: move to configuration file
+//		setEfficency(75);
 		setDelta(delta);
 		setEtac(etac);
 		setEtad(etad);
@@ -205,13 +216,19 @@ public class Graph implements Cloneable {
 		this.efficency = efficency;
 	}
 
-	public float getCcurt() {
-		return this.ccurt;
+	public float getCostCurtailment() {
+		return this.cost_curt;
 	}
 
-	public void setCcurt(float ccurt) {
-		this.ccurt = ccurt;
+	public void setCostCurtailment(float cost_curt) {
+		this.cost_curt = cost_curt;
 	}
+
+	public float getCostSheddedLoad() {
+		return this.cost_sl;
+	}
+
+	public void setCostSheddedLoad(float cost_sl){this.cost_sl = cost_sl;}
 
 	/**
 	 *

@@ -3,9 +3,10 @@ package pgrid_opt;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 
 public class DataModelPrint {
+	private static ConfigCollection config = new ConfigCollection();
 
 	/**
 	 * Write storage nodes to txt file
@@ -40,6 +41,10 @@ public class DataModelPrint {
 		float etac = g.getEtac();
 		float etad = g.getEtad();
 		float delta = g.getDelta();
+//		int current_hour = Integer.getInteger(outname);
+
+		String beginChargeTime = config.getConfigStringValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+		String endChargeTime = config.getConfigStringValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
 		try {
 			PrintWriter writer = new PrintWriter(filename, "UTF-8");
 			writer.println("param n_tgen := " + (g.getNGenerators() - 1) + ";");
@@ -52,8 +57,12 @@ public class DataModelPrint {
 			writer.println("param pi := 3.1415;");
 			writer.println("param n_storage := " + g.getNstorage() + ";");
 			writer.println("param totload :=" + g.getLoadmax() + ";");
-			writer.println("param c_curt := " + g.getCcurt() + ";");
+			writer.println("param cost_curt := " + g.getCostCurtailment() + ";");
+			writer.println("param cost_sl := " + g.getCostSheddedLoad() + ";");
 			writer.println("param outname := " + outname + ";");
+			writer.println("param current_hour := " + outname + ";");
+			writer.println("param start_charge_time := " + beginChargeTime + ";");
+			writer.println("param end_charge_time := " + endChargeTime + ";");
 
 			writer.println("param weight :=");
 
@@ -210,7 +219,7 @@ public class DataModelPrint {
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == Storage.class){
 					counter++;
-					//System.out.println(((Storage) g.getNodeList()[i]).getFlowFromStorage());
+
 					if (counter != g.getNstorage()) {
 						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow());
 					} else {
