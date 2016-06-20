@@ -73,11 +73,13 @@ public class Storage extends Node {
 			newSoC = maximumCharge;
 			flowComingIn = maximumCharge * chargeEfficiency;
 			currentCharge = newSoC;
+			flowStorage = flowComingIn;
 		}
 
 		if(flowComingIn > flowLimit){
 			newSoC = currentCharge + (flowLimit * chargeEfficiency);
 			currentCharge = newSoC;
+			flowStorage = flowComingIn;
 		}
 
 		return flowComingIn;
@@ -99,12 +101,14 @@ public class Storage extends Node {
 			double minSoC = minimumCharge;
 			outgoingFlow = minSoC * dischargeEfficiency;
 			tempCurrentCharge  = minSoC;
+			flowStorage = outgoingFlow;
 		}
 
 		if(outgoingFlow > flowLimit){
 			double minSoC = currentCharge - flowLimit;
 			outgoingFlow = flowLimit;
 			tempCurrentCharge = minSoC;
+			flowStorage = outgoingFlow;
 		}
 
 		currentCharge = tempCurrentCharge;
