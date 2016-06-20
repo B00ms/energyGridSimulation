@@ -1,5 +1,8 @@
 package pgrid_opt;
 
+/**
+ * Initializes graphs for each timestep
+ */
 public class SimulationStateInitializer {
 	private Graph g;
 	private Graph[] gDay;

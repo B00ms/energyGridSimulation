@@ -121,7 +121,7 @@ public class Graph implements Cloneable {
 				this.nstorage, this.delta, this.etac, this.etad);
 
 		Node[] tempNodeList = new Node[g.getNodeList().length];
-		int counter = 0;
+
 		for (int i = 0; i < g.getNodeList().length; i++) {
 
 			if(getNodeList()[i].getClass() == (ConventionalGenerator.class))
@@ -356,10 +356,9 @@ public class Graph implements Cloneable {
 
 			bufferedWriter.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.exit(0);
 		}
-		System.out.println("rawr rawr rawr");
 	}
 
 	/**
@@ -404,7 +403,5 @@ public class Graph implements Cloneable {
 			System.exit(0);
 		}
 		return graph;
-
-
 	}
 }

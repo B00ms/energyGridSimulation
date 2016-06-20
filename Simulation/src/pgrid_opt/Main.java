@@ -24,7 +24,7 @@ public class Main {
 
 	// Path to the summer load curve
 	private static String OS = System.getProperty("os.name");
-	//private static Config conf;
+
 	private static ConfigCollection config = new ConfigCollection();
 
 	public static void main(String[] args) {
@@ -83,7 +83,7 @@ public class Main {
 				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); // This creates a new input file.
 
 				try {
-					StringBuffer output = new StringBuffer();
+
 					String command = "" + String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
 					command = command + " --nopresol --output filename.out ";
 					System.out.println(command);
@@ -91,8 +91,10 @@ public class Main {
 					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 					proc.waitFor();
 
+					StringBuffer output = new StringBuffer();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); // Using the new input file, we apply the model to solve the cost function given the new state of the grid.
 					String line = "";
+
 					while ((line = reader.readLine()) != null) {
 						output.append(String.valueOf(line) + "\n");
 					}

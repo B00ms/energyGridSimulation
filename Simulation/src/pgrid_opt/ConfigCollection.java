@@ -67,9 +67,9 @@ public class ConfigCollection {
 		switch (configType){
 		case GENERAL:
 			if(doubleDot == false && (
-					configurationKeyWord.equalsIgnoreCase("model-file") ||
+//					configurationKeyWord.equalsIgnoreCase("model-file") ||
 					configurationKeyWord.equalsIgnoreCase("input-file") ||
-//					configurationKeyWord.equalsIgnoreCase("output-folder")||
+					configurationKeyWord.equalsIgnoreCase("output-folder")||
 					configurationKeyWord.equalsIgnoreCase("graphstate-folder"))){
 				confValue = generalConfig.getString(configurationKeyWord);
 				confValue = confValue.substring(1, confValue.length());

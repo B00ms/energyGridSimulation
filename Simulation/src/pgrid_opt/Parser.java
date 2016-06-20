@@ -303,7 +303,7 @@ public class Parser {
 	/**
 	 * Parse offers from input csv files
 	 % D1 and D2 are MWh; PD1 and PD2 are euro/MWh
-	 * @param path
+	 * @param generator
 	 * @return
 	 */
 	public ConventionalGenerator setOffers(ConventionalGenerator generator){
