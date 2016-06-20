@@ -81,7 +81,7 @@ public class Storage extends Node {
 			currentCharge = newSoC;
 			flowStorage = flowComingIn;
 		}
-
+		flowStorage = flowStorage * -1; //Make flow negative because the edge goes Storage->innnerNode.
 		return flowComingIn;
 	}
 
