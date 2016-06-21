@@ -53,12 +53,15 @@ subject to anglestability :
 	theta[46], = 0;
 
 
-# if later than 
-for {{0}: current_hour >= start_charge_time}{  # IF condition THEN
+# if later than  start_charge_time and earlier than end_charge_time, charge storage
+for {{0}: current_hour >= start_charge_time || current_hour <= end_charge_time}{# IF condition THEN
 	#charge storage
-}
-#} for {{0}: not condition} {  	# ELSE
-#}                             	# ENDIF
+	#subject to setChargeStorage {i in storage}:
+	 #
+} 
+for {{0}: current_hour <= start_charge_time || current_hour >= end_charge_time} {# ELSE
+	# do not charge storage
+}# ENDIF
 
 
 #Maximum flow rate
@@ -80,11 +83,8 @@ subject to flowcons { i in inner } :
 #Minimum generation of a renewable node
 #subject to rgenmax { i in rgen } :
 #	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= rprodmax[i];
-	
-subject to setRewProduction { i in rgen } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = rewproduction[i];
 
-# TODO vragen waarom deze uit staat? deze checkt of capaciteit van de lijn hoger is dan minimum van traditional production en maximum van traditional production, lijkt me dat deze uiteindelijk wel weer aan moet staan en dat de capaciteit van de lijnen aangepast moeten worden om aan deze constraint te voldoen	
+# TODO vragen waarom deze uit staat? deze checkt of capaciteit van de lijn hoger is dan minimum van traditional production en maximum van traditional production, lijkt me dat deze uiteindelijk wel weer aan moet staan en dat de capaciteit van de lijnen aangepast moeten worden om aan deze constraint te voldoen.
 #Minimum generation of a conventional generation node
 #subject to genmin { i in tgen } :
 #	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= mintprod[i];
@@ -92,14 +92,19 @@ subject to setRewProduction { i in rgen } :
 #maximum dischage of conventional generation nodes
 #subject to genmax { i in tgen } :
 #	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= maxtprod[i];
-	
+
+# todo julien vragen
+subject to setRewProduction { i in rgen } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = rewproduction[i];
+
+# todo julien vragen	
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
 # TODO deze constriant wordt momenteel niet aan voldaan vragen waarom dat zo is aangezien dit niet zon gekke constraint is
 # ../model.mod:114: storagemin[104.000000570012] out of domain
 # ook lijkt storagemin momenteel negatief te kunnen zijn wat 0 of hoger zou moeten zijn lijkt me 
-# constraint check opf capiciteit van de lijn minimaal de storage min en max aan kan
+# constraint check op capiciteit van de lijn minimaal de storage min en max aan kan
 #Minimum discharge of storage nodes
 #subject to sgenmin { i in storage } :
 #	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= storagemin[i];
@@ -125,7 +130,6 @@ subject to prodloadeq :
 	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0}
 		((theta[i]-theta[j])/weight[i,j])*m_factor, =
 		sum { i in consumers, j in nodes : capacity[j,i] <> 0}
-
 		((theta[j]-theta[i])/weight[j,i])*m_factor;
 	
 
