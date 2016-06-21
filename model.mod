@@ -43,22 +43,10 @@ var theta {nodes} >= -pi/2, <= pi/2;
 
 #The function to minimize daily system cost.
 minimize obj :
-	(sum{i in tgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*costs[i])) +
-	(sum{i in rgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*rcost[i])) +
-	(sum{i in rgen} cost_curt*(rprodmax[i]-(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor));
-
-#minimize obj :
-#	(sum{i in tgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*costs[i])) + 
+#	(sum{i in tgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*costs[i])) +
 #	(sum{i in rgen} ((sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/ weight[i,j] )*rcost[i])) + 
-#	(
-#		sum{i in rgen}
-#			cost_curt*(
-#				rprodmax[i]-(
-#					sum{j in nodes : capacity[i,j] <> 0}
-#					(theta[i]-theta[j])/weight[i,j]*m_factor
-#				))
-#	);
-
+	(sum{i in rgen} cost_curt * (rprodmax[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) +
+	(sum{i in tgen} cost_sl	  *	(maxtprod[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor));
 
 #Subject to these constrains
 subject to anglestability :
@@ -66,9 +54,9 @@ subject to anglestability :
 
 
 # if later than 
-#for {{0}: current_hour >= start_charge_time || current_hour =< end_charge_time}{  # IF condition THEN
+for {{0}: current_hour >= start_charge_time}{  # IF condition THEN
 	#charge storage
-
+}
 #} for {{0}: not condition} {  	# ELSE
 #}                             	# ENDIF
 
@@ -95,7 +83,8 @@ subject to flowcons { i in inner } :
 	
 subject to setRewProduction { i in rgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = rewproduction[i];
-	
+
+# TODO vragen waarom deze uit staat? deze checkt of capaciteit van de lijn hoger is dan minimum van traditional production en maximum van traditional production, lijkt me dat deze uiteindelijk wel weer aan moet staan en dat de capaciteit van de lijnen aangepast moeten worden om aan deze constraint te voldoen	
 #Minimum generation of a conventional generation node
 #subject to genmin { i in tgen } :
 #	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= mintprod[i];
@@ -107,14 +96,17 @@ subject to setRewProduction { i in rgen } :
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
-
+# TODO deze constriant wordt momenteel niet aan voldaan vragen waarom dat zo is aangezien dit niet zon gekke constraint is
+# ../model.mod:114: storagemin[104.000000570012] out of domain
+# ook lijkt storagemin momenteel negatief te kunnen zijn wat 0 of hoger zou moeten zijn lijkt me 
+# constraint check opf capiciteit van de lijn minimaal de storage min en max aan kan
 #Minimum discharge of storage nodes
 #subject to sgenmin { i in storage } :
 #	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= storagemin[i];
 
 #Demand of consumer nodes.
-#subject to sgenmax { i in storage } :
-#	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
+subject to sgenmax { i in storage } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
 
 ## evening
 subject to storageFlow { i in storage } :
@@ -137,7 +129,7 @@ subject to prodloadeq :
 		((theta[j]-theta[i])/weight[j,i])*m_factor;
 	
 
-#go ahead and solve the equation/model
+#go ahead and solve the model
 solve;
 #display {i in nodes,j in nodes : capacity[i,j] <> 0}: i,j, ((theta[i] - theta[j])/ weight[i,j])*m_factor;
 printf {i in storage,j in nodes : capacity [i,j] <> 0 } : "%d %d %.3f\n", i, j, ((theta[i] - theta[j])/ weight[i,j])*m_factor > "update.txt";
