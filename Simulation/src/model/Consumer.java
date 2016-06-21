@@ -1,6 +1,6 @@
 package model;
 
-import pgrid_opt.Node;
+import graph.Node;
 
 public class Consumer extends Node {
 	private double load;

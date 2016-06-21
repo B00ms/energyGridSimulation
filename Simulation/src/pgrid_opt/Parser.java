@@ -12,8 +12,13 @@ import java.util.List;
 import java.util.Scanner;
 
 import au.com.bytecode.opencsv.CSVReader;
+import graph.Edge;
+import graph.Graph;
+import graph.InnerNode;
+import graph.Node;
+import model.*;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
-import pgrid_opt.Generator.GENERATOR_TYPE;
+import model.Generator.GENERATOR_TYPE;
 
 public class Parser {
 	private ConfigCollection config = new ConfigCollection();

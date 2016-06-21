@@ -2,7 +2,7 @@ package model;
 
 import pgrid_opt.ConfigCollection;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
-import pgrid_opt.Node;
+import graph.Node;
 
 public class Storage extends Node {
 	private double currentCharge;

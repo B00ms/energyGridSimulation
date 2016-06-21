@@ -1,7 +1,5 @@
 package pgrid_opt;
 
-import com.typesafe.config.Config;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -9,16 +7,18 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.GeneralSecurityException;
 import java.util.*;
 
+import graph.Graph;
+import graph.Node;
+import model.*;
 import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
 import net.e175.klaus.solarpositioning.DeltaT;
 import net.e175.klaus.solarpositioning.Grena3;
 import net.e175.klaus.solarpositioning.SPA;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
-import pgrid_opt.Generator.GENERATOR_TYPE;
-import pgrid_opt.Storage.StorageStatus;
+import model.Generator.GENERATOR_TYPE;
+import model.Storage.StorageStatus;
 
 public class Main {
 
@@ -59,7 +59,7 @@ public class Main {
 
 			timestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
 			timestepsGraph = simulationState.creategraphs(graph, timestepsGraph);
-			int i = 0;
+			int currentTimeStep = 0;
 
 			String solutionPath = dirpath + "simRes" + numOfSim + "";
 			try {
@@ -74,17 +74,17 @@ public class Main {
 
 			// set real load from consumers using Monte carlo draws
 			timestepsGraph = setRealLoad(timestepsGraph);
-			while (i < plannedTimestepsGraph.length) {
-				System.out.println("TimeStep: "+ i);
+			while (currentTimeStep < plannedTimestepsGraph.length) {
+				System.out.println("TimeStep: "+ currentTimeStep);
 
-				timestepsGraph[i] = randomizeGridState(timestepsGraph[i], i);
-				timestepsGraph[i] = checkGridEquilibrium(timestepsGraph[i], i);
+				timestepsGraph[currentTimeStep] = randomizeGridState(timestepsGraph[currentTimeStep], currentTimeStep);
+				timestepsGraph[currentTimeStep] = checkGridEquilibrium(timestepsGraph[currentTimeStep], currentTimeStep);
 
-				mp.printData(timestepsGraph[i], String.valueOf(dirpath) + outpath1 + i + outpath2, Integer.toString(i)); // This creates a new input file.
+				mp.printData(timestepsGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
 				try {
 
-					String command = "" + String.valueOf(solpath1) + outpath1 + i + outpath2 + solpath2 + model;
+					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
 					command = command + " --nopresol --output filename.out ";
 					System.out.println(command);
 
@@ -100,24 +100,27 @@ public class Main {
 					}
 					System.out.println(output);
 
-					timestepsGraph[i] = timestepsGraph[i].setFlowFromOutputFile(timestepsGraph[i], i);
-					timestepsGraph[i].printGraph(i, numOfSim);
+					timestepsGraph[currentTimeStep] = timestepsGraph[currentTimeStep].setFlowFromOutputFile(timestepsGraph[currentTimeStep], currentTimeStep);
+					timestepsGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
 
 					// write output to solution file
-					writeOutputFiles(dirpath, solutionPath, i);
+					writeOutputFiles(dirpath, solutionPath, currentTimeStep);
 
 					if (graph.getNstorage() > 0) {
-						timestepsGraph[i] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
-								timestepsGraph[i]); // Keeps track of the new state for storages.
-						if (i < 23)
-							timestepsGraph[i + 1] = simulationState.updateStorages(timestepsGraph[i],
-									timestepsGraph[i + 1]); // Apply the new state of the storage for the next time step.
+						timestepsGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
+								timestepsGraph[currentTimeStep]); // Keeps track of the new state for storages.
+
+					// TODO only last timestep doesn't need to update the storages, Julien?
+					if (currentTimeStep < 23)
+						timestepsGraph[currentTimeStep + 1] = simulationState.updateStorages(timestepsGraph[currentTimeStep],
+								timestepsGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
 					}
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
 					System.exit(0);
 				}
-				++i;
+
+				++currentTimeStep;
 			}
 
 			if (graph.getNstorage() > 0) {
