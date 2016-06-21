@@ -18,7 +18,6 @@ import net.e175.klaus.solarpositioning.Grena3;
 import net.e175.klaus.solarpositioning.SPA;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 import model.Generator.GENERATOR_TYPE;
-import model.Storage.StorageStatus;
 
 public class Main {
 
@@ -26,6 +25,9 @@ public class Main {
 	private static String OS = System.getProperty("os.name");
 
 	private static ConfigCollection config = new ConfigCollection();
+	private static ProductionLoadHandler productionLoadHandler = new ProductionLoadHandler();
+	private static StorageHandler storageHandler = new StorageHandler();
+
 
 	public static void main(String[] args) {
 
@@ -482,13 +484,13 @@ public class Main {
 		boolean dischargeAllowed = true;
 		// timestep >= 23 && timestep <= 4
 		if(timestep >= beginTime && timestep <= endTime){
-			grid = chargeStorage(grid);
+			grid = storageHandler.chargeStorage(grid);
 			dischargeAllowed = false;
 		}
-		realLoad = calculateLoad(grid);
+		realLoad = productionLoadHandler.calculateLoad(grid);
 
 		// overProduction = 0 needs to be satisfied
-		realProduction = calculateProduction(grid);
+		realProduction = productionLoadHandler.calculateProduction(grid);
 		double overProduction = (realProduction - realLoad);
 		System.out.println("RealProduction: " + realProduction + " " + "realLoad: "+ realLoad);
 
@@ -642,21 +644,21 @@ public class Main {
 		grid.setNodeList(nodeList);
 
 		if(dischargeAllowed){
-			grid = chargeOrDischargeStorage(grid);
-			realProduction = calculateProduction(grid);
-			realLoad = calculateLoad(grid);
+			grid = storageHandler.chargeOrDischargeStorage(grid);
+			realProduction = productionLoadHandler.calculateProduction(grid);
+			realLoad = productionLoadHandler.calculateLoad(grid);
 		}
 		System.out.println("Prod after charging storage:" + realProduction);
 		System.out.println("Load after charging storage:" + realLoad);
-		System.out.println("Renewable prod: " + calculateRenewableProduction(grid));
+		System.out.println("Renewable prod: " + productionLoadHandler.calculateRenewableProduction(grid));
 
 		//TODO: curtailment decrease production
 		if(realProduction - realLoad > 0){
 			grid = curtailRenewables(grid, realProduction, realLoad);
-			realProduction = calculateProduction(grid);
-			realLoad = calculateLoad(grid);
-			System.out.println("After cuirtailment Real production: " + calculateProduction(grid) + " Total load: " + calculateLoad(grid));
-			System.out.println("Renewable prod: " + calculateRenewableProduction(grid));
+			realProduction = productionLoadHandler.calculateProduction(grid);
+			realLoad = productionLoadHandler.calculateLoad(grid);
+			System.out.println("After cuirtailment Real production: " + productionLoadHandler.calculateProduction(grid) + " Total load: " + productionLoadHandler.calculateLoad(grid));
+			System.out.println("Renewable prod: " + productionLoadHandler.calculateRenewableProduction(grid));
 		}
 
 		System.out.print("After balancing - ");
@@ -667,7 +669,7 @@ public class Main {
 	private static Graph curtailRenewables(Graph grid, double realProduction, double realLoad) {
 
 		double productionTarget = realProduction - realLoad;
-		System.out.println("RenewProd before curtailment " + calculateRenewableProduction(grid));
+		System.out.println("RenewProd before curtailment " + productionLoadHandler.calculateRenewableProduction(grid));
 		for( int i = 0; i < grid.getNodeList().length; i++){
 			if(grid.getNodeList()[i].getClass() == RewGenerator.class){
 				RewGenerator renew = ((RewGenerator)grid.getNodeList()[i]);
@@ -682,84 +684,63 @@ public class Main {
 				grid.getNodeList()[i] = renew;
 			}
 		}
-		System.out.print("Load: "+calculateLoad(grid));
-		System.out.println(" renewProd after curtailment " + calculateRenewableProduction(grid));
+		System.out.print("Load: " + productionLoadHandler.calculateLoad(grid));
+		System.out.println(" renewProd after curtailment " + productionLoadHandler.calculateRenewableProduction(grid));
 
 		return grid;
 	}
 
-	/**
-	 * Calculates the total production on the grid from conventional generators, renewable generators and storage if it's discharing.
-	 * @param graph
-	 * @return
-	 */
-	private static double calculateProduction(Graph graph){
-
-		double sumProduction = 0;
-		for(int i = 0; i < graph.getNodeList().length; i++){
-			if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
-				sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-			//if(!((ConventionalGenerator)graph.getNodeList()[i]).getGeneratorFailure()){
-				//sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-			 if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == StorageStatus.DISCHARGING)
-				sumProduction += ((Storage)graph.getNodeList()[i]).getFlow();
-			//} else if(graph.getNodeList()[i].getClass() == RewGenerator.class)//dont add production from renewable because we substract it from the load.
-				//sumProduction += ((RewGenerator)graph.getNodeList()[i]).getProduction();
-
-
-		}
-		return sumProduction;
-	}
-
-	/**
-	 * Calculates the total load on the grid from consumers and storage if the latter is charging.
-	 * @param graph
-	 * @return
-	 */
-	private static double calculateLoad(Graph graph){
-		double sumLoad = 0;
-
-		for(int i = 0; i < graph.getNodeList().length; i++){
-			if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == StorageStatus.CHARGING )
-				sumLoad += ((Storage)graph.getNodeList()[i]).getFlow();
-			else if (graph.getNodeList()[i].getClass() == Consumer.class)
-				sumLoad += ((Consumer)graph.getNodeList()[i]).getLoad();
-			 else if(graph.getNodeList()[i].getClass() == RewGenerator.class)
-				sumLoad -= ((RewGenerator)graph.getNodeList()[i]).getProduction();
-
-		}
-		return sumLoad;
-	}
-
-	private static double calculateRenewableProduction(Graph graph){
-		double production = 0;
-		for(int i = 0; i < graph.getNodeList().length; i++){
-			if (graph.getNodeList()[i].getClass() == RewGenerator.class)
-				production += ((RewGenerator)graph.getNodeList()[i]).getProduction();
-		}
-		return production;
-	}
-
-
-	/**
-	 * Charges storage but only if the current charge is less than 50% of its capacity.
-	 * @param graph
-	 * @return graph in which the state of storages has been set.
-	 */
-	private static Graph chargeStorage(Graph graph){
-
-		//Double[] sumProdAndLoad = calcSumProductionSumLoad(graph);
-		double sumLoads = calculateLoad(graph);
-
-		for(int i = 0; i < graph.getNodeList().length; i++){
-			if(graph.getNodeList()[i].getClass() == Storage.class){
-				if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentCharge()){
-					sumLoads += ((Storage)graph.getNodeList()[i]).charge(((Storage) graph.getNodeList()[i]).getMaximumCharge() * 0.5);
-				}
-			}
-		}
-		return graph;
-	}
+//	/**
+//	 * Calculates the total production on the grid from conventional generators, renewable generators and storage if it's discharing.
+//	 * @param graph
+//	 * @return
+//	 */
+//	private static double calculateProduction(Graph graph){
+//
+//		double sumProduction = 0;
+//		for(int i = 0; i < graph.getNodeList().length; i++){
+//			if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
+//				sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
+//			//if(!((ConventionalGenerator)graph.getNodeList()[i]).getGeneratorFailure()){
+//				//sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
+//			 if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == StorageStatus.DISCHARGING)
+//				sumProduction += ((Storage)graph.getNodeList()[i]).getFlow();
+//			//} else if(graph.getNodeList()[i].getClass() == RewGenerator.class)//dont add production from renewable because we substract it from the load.
+//				//sumProduction += ((RewGenerator)graph.getNodeList()[i]).getProduction();
+//
+//
+//		}
+//		return sumProduction;
+//	}
+//
+//	/**
+//	 * Calculates the total load on the grid from consumers and storage if the latter is charging.
+//	 * @param graph
+//	 * @return
+//	 */
+//	private static double calculateLoad(Graph graph){
+//		double sumLoad = 0;
+//
+//		for(int i = 0; i < graph.getNodeList().length; i++){
+//			if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == StorageStatus.CHARGING )
+//				sumLoad += ((Storage)graph.getNodeList()[i]).getFlow();
+//			else if (graph.getNodeList()[i].getClass() == Consumer.class)
+//				sumLoad += ((Consumer)graph.getNodeList()[i]).getLoad();
+//			 else if(graph.getNodeList()[i].getClass() == RewGenerator.class)
+//				sumLoad -= ((RewGenerator)graph.getNodeList()[i]).getProduction();
+//
+//		}
+//		return sumLoad;
+//	}
+//
+//	private static double calculateRenewableProduction(Graph graph){
+//		double production = 0;
+//		for(int i = 0; i < graph.getNodeList().length; i++){
+//			if (graph.getNodeList()[i].getClass() == RewGenerator.class)
+//				production += ((RewGenerator)graph.getNodeList()[i]).getProduction();
+//		}
+//		return production;
+//	}
 
 	/**
 	 * Calculates the sum of production and the sum of the loads.
@@ -785,46 +766,5 @@ public class Main {
 		return result;
 	}*/
 
-	/**
-	 * Charges or discharges storage depending depending on the state of production and load.
-	 * @param graph
-	 * @return
-	 */
-	private static Graph chargeOrDischargeStorage(Graph graph){
-
-		//Double[] sumProdAndLoad = calcSumProductionSumLoad(graph);
-		double totalCurrentProduction = calculateProduction(graph);
-		double sumLoad = calculateLoad(graph);
-		double rewProd = calculateRenewableProduction(graph);
-
-		Node[] nodeList = graph.getNodeList();
-		if (totalCurrentProduction > sumLoad) {
-			//Charge the batteries
-			System.out.println("Storage charging ");
-			for (int i = 0; i < nodeList.length; i++) {
-				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class) {
-					if (sumLoad + ((Storage) nodeList[i]).getMaximumCharge() <= totalCurrentProduction){
-						sumLoad += ((Storage) nodeList[i]).charge(((Storage) nodeList[i]).getMaximumCharge());
-					} else
-						sumLoad += ((Storage) nodeList[i]).charge(((Storage) nodeList[i]).charge(Math.abs(sumLoad - totalCurrentProduction))); //charge the remainder to fully meet the demand.
-				}
-			}
-		} else if (totalCurrentProduction < sumLoad) {
-			System.out.println("battery discharge ");
-			for (int i = 0; i < nodeList.length; i++) {
-				if (nodeList[i] != null && nodeList[i].getClass() == Storage.class) {
-					if (totalCurrentProduction + ((Storage) nodeList[i]).getMaximumCharge() <= sumLoad) {
-						totalCurrentProduction += ((Storage) nodeList[i]).discharge(((Storage) nodeList[i]).getMaximumCharge());
-					} else
-						totalCurrentProduction += ((Storage) nodeList[i]).discharge(sumLoad - totalCurrentProduction);
-				}
-			}
-		} else {
-			System.out.print("Balanced ");
-			// Production and load are balanced.
-		}
-		graph.setNodeList(nodeList);
-		return graph;
-	}
 
 }
