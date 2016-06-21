@@ -72,7 +72,7 @@ public class Main {
 			}
 
 			//Plan production for the day.
-			Graph[] plannedTimestepsGraph = setExpectedLoadAndProduction(timestepsGraph);
+			Graph[] plannedTimestepsGraph = ProductionLoadHandler.setExpectedLoadAndProduction(timestepsGraph);
 
 			// set real load from consumers using Monte carlo draws
 			timestepsGraph = ProductionLoadHandler.setRealLoad(timestepsGraph);
@@ -181,42 +181,6 @@ public class Main {
 	}
 
 	/**
-	 * Sets the expected load and production of an entire day
-	 * @param graphs
-	 * @return Array where [0] = expectedLoad and [1] = expectedProduction
-	 */
-	private static Graph[] setExpectedLoadAndProduction(Graph[] graphs) {
-
-		Graph[] plannedProduction = graphs; // clone state of graphs
-
-		for(int hour=0; hour < 24; hour++){
-			double sumExpectedLoad = 0;
-			double sumExpectedProduction = 0;
-			plannedProduction[hour] = randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
-
-			// calculate expected load
-			for(int i = 0; i < plannedProduction[hour].getNodeList().length; i++){
-				if(plannedProduction[hour].getNodeList()[i].getClass() == Consumer.class){
-					sumExpectedLoad += ((Consumer)plannedProduction[hour].getNodeList()[i]).getLoad();
-				} else if (plannedProduction[hour].getNodeList()[i].getClass() == RewGenerator.class) {
-					sumExpectedLoad -=  ((RewGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
-				}
-			}
-
-			// calculate expected conventional generator production
-			plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour, sumExpectedLoad);
-
-			// get expected production
-			for (int i = 0; i < plannedProduction[hour].getNodeList().length; i ++){
-				if (plannedProduction[hour].getNodeList()[i].getClass() == ConventionalGenerator.class){
-					sumExpectedProduction +=  ((ConventionalGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
-				}
-			}
-		}
-		return plannedProduction;
-	}
-
-	/**
 	 * Set the state of generators and loads.
 	 * @return Graphs of which the state has been changed using Monte Carlo draws
 	 */
@@ -276,7 +240,7 @@ public class Main {
 	 * @param currentTimeStep used for solar data generation
 	 * @return The graph in which renewable production has been set.
 	 */
-	private static Graph randomizeRenewableGenerator(Graph graph, int currentTimeStep) {
+	public static Graph randomizeRenewableGenerator(Graph graph, int currentTimeStep) {
 		MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
 		for (int j = 0; j < graph.getNodeList().length - 1; j++) {
@@ -385,7 +349,7 @@ public class Main {
 
 
 
-	private static Graph planExpectedProductionConvGen(Graph[] grid, int timestep, double sumExpectedLoad) {
+	public static Graph planExpectedProductionConvGen(Graph[] grid, int timestep, double sumExpectedLoad) {
 		Node[] nodeList = grid[timestep].getNodeList();
 
 		double sumExpectedProduction = 0;

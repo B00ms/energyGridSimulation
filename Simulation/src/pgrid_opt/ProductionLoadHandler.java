@@ -95,4 +95,40 @@ public class ProductionLoadHandler {
         }
         return timestepsGraph;
     }
+
+    /**
+     * Sets the expected load and production of an entire day
+     * @param graphs
+     * @return Array where [0] = expectedLoad and [1] = expectedProduction
+     */
+    static Graph[] setExpectedLoadAndProduction(Graph[] graphs) {
+
+        Graph[] plannedProduction = graphs; // clone state of graphs
+
+        for(int hour=0; hour < 24; hour++){
+            double sumExpectedLoad = 0;
+            double sumExpectedProduction = 0;
+            plannedProduction[hour] = Main.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
+
+            // calculate expected load
+            for(int i = 0; i < plannedProduction[hour].getNodeList().length; i++){
+                if(plannedProduction[hour].getNodeList()[i].getClass() == Consumer.class){
+                    sumExpectedLoad += ((Consumer)plannedProduction[hour].getNodeList()[i]).getLoad();
+                } else if (plannedProduction[hour].getNodeList()[i].getClass() == RewGenerator.class) {
+                    sumExpectedLoad -=  ((RewGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
+                }
+            }
+
+            // calculate expected conventional generator production
+            plannedProduction[hour] = Main.planExpectedProductionConvGen(plannedProduction, hour, sumExpectedLoad);
+
+            // get expected production
+            for (int i = 0; i < plannedProduction[hour].getNodeList().length; i ++){
+                if (plannedProduction[hour].getNodeList()[i].getClass() == ConventionalGenerator.class){
+                    sumExpectedProduction +=  ((ConventionalGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
+                }
+            }
+        }
+        return plannedProduction;
+    }
 }
