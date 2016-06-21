@@ -62,4 +62,37 @@ public class ProductionLoadHandler {
         }
         return production;
     }
+
+    /**
+     * Calculates and sets the real load by taking into account monte carlo draws.
+     * @param timestepsGraph
+     * @return The graph where the real load has been set for each Consumer.
+     */
+    static Graph[] setRealLoad(Graph[] timestepsGraph) {
+        MontoCarloHelper mcHelper = new MontoCarloHelper();
+        for (int i = 0; i < timestepsGraph.length; i++) {
+            double totalLoad = 0;
+            for (int n = 0; n < timestepsGraph[i].getNodeList().length; n++) {
+                if (timestepsGraph[i].getNodeList()[n] != null
+                        && timestepsGraph[i].getNodeList()[n].getClass() == Consumer.class) {
+                    double mcDraw = mcHelper.getRandomNormDist();
+                    double previousError = 0;
+
+                    // Calculate and set the load error of a single consumer.
+                    double error = (((Consumer) timestepsGraph[i].getNodeList()[n]).getLoad() * mcDraw);
+                    totalLoad += ((Consumer) timestepsGraph[i].getNodeList()[n]).getLoad();
+                    if (i > 0)
+                        previousError = ((Consumer) timestepsGraph[i - 1].getNodeList()[n]).getLoadError();
+
+                    ((Consumer) timestepsGraph[i].getNodeList()[n]).setLoadError(error + previousError); // plus load error of i-1 makes it cumulative.
+
+                    // Calculate and set the real load of a single consumer
+                    double realLoad = ((Consumer) timestepsGraph[i].getNodeList()[n]).getLoad()
+                            + ((Consumer) timestepsGraph[i].getNodeList()[n]).getLoadError();
+                    ((Consumer) timestepsGraph[i].getNodeList()[n]).setLoad(realLoad);
+                }
+            }
+        }
+        return timestepsGraph;
+    }
 }
