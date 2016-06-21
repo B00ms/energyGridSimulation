@@ -120,6 +120,17 @@ public class Main {
 					System.exit(0);
 				}
 
+				// set state of graph for the next hour to the state of the current graph (failure)
+				if(currentTimeStep >0 && currentTimeStep < 23){
+					for (int n = 0; n < timestepsGraph[currentTimeStep].getNodeList().length; n++) {
+						if (timestepsGraph[currentTimeStep].getNodeList()[n].getClass() == ConventionalGenerator.class){
+							// cascade generator failure to the next hour.
+							ConventionalGenerator cgen = (ConventionalGenerator)timestepsGraph[currentTimeStep].getNodeList()[n];
+							((ConventionalGenerator) timestepsGraph[currentTimeStep+1].getNodeList()[n]).setGeneratorFailure(cgen.getGeneratorFailure());
+						}
+					}
+				}
+
 				++currentTimeStep;
 			}
 
