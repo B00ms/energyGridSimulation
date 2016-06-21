@@ -1,4 +1,4 @@
-package pgrid_opt;
+package graph;
 
 public abstract class Node {
 	public abstract boolean isRenew();

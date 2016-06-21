@@ -1,4 +1,6 @@
-package pgrid_opt;
+package model;
+
+import pgrid_opt.Node;
 
 public class Consumer extends Node {
 	private double load;

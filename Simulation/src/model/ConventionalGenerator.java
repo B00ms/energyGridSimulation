@@ -1,6 +1,8 @@
-package pgrid_opt;
+package model;
 
+import pgrid_opt.ConfigCollection;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import pgrid_opt.Offer;
 
 public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>{
 

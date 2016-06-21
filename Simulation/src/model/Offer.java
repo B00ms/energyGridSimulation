@@ -1,4 +1,4 @@
-package pgrid_opt;
+package model;
 
 public class Offer implements Comparable<Offer>{
 

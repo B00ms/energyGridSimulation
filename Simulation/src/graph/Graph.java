@@ -1,4 +1,4 @@
-package pgrid_opt;
+package graph;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -6,6 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Scanner;
+
+import model.Consumer;
+import model.ConventionalGenerator;
+import model.RewGenerator;
+import model.Storage;
+import pgrid_opt.ConfigCollection;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 
 

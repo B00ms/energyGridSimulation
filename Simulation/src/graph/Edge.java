@@ -1,4 +1,4 @@
-package pgrid_opt;
+package graph;
 
 public class Edge implements Comparable<Edge> {
 	private double weight;

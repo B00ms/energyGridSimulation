@@ -1,6 +1,8 @@
-package pgrid_opt;
+package model;
 
+import pgrid_opt.ConfigCollection;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import pgrid_opt.Node;
 
 public class Storage extends Node {
 	private double currentCharge;
