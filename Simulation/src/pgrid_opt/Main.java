@@ -407,6 +407,7 @@ public class Main {
 		double totalCurrentProduction = 0;
 		double sumLoads = 0;
 		double realLoad = 0;
+		double renewableProduction = productionLoadHandler.calculateRenewableProduction(grid);
 		double realProduction = 0; //TODO: check that real production is correctly adjusted when production changes.
 
 		int beginTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
@@ -420,13 +421,14 @@ public class Main {
 		}
 		realLoad = productionLoadHandler.calculateLoad(grid);
 
-		// overProduction = 0 needs to be satisfied
+		// deltaP = 0 needs to be satisfied
 		realProduction = productionLoadHandler.calculateProduction(grid);
-		double overProduction = (realProduction - realLoad);
+		// real load fix when real load is negative
+		double deltaP = (realProduction - realLoad);
 		System.out.println("RealProduction: " + realProduction + " " + "realLoad: "+ realLoad);
 
 		// Check if we need to increase current production
-		if (overProduction < 0) {
+		if (deltaP < 0) {
 			System.out.println("Increasing production ");
 
 			List<Offer> offers = new ArrayList<Offer>();
@@ -447,19 +449,19 @@ public class Main {
 			for (int i = 0; i < offers.size(); i++) {
 				Offer offer = offers.get(i);
 				double offeredProduction = offer.getProduction();
-				if (overProduction < 0 && offer.getAvailable()) {
+				if (deltaP < 0 && offer.getAvailable()) {
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
 					double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()
 							+ offer.getProduction();
 
 
-					if (Math.abs(overProduction) <= newProduction) {
-						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(overProduction));
+					if (Math.abs(deltaP) <= newProduction) {
+						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(deltaP));
 					} else {
 						totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
 					}
 					offers.remove(i); // remove offer from list
-					overProduction = (totalCurrentProduction - sumLoads); // update demand
+					deltaP = (totalCurrentProduction - sumLoads); // update demand
 				}
 			}
 
@@ -468,16 +470,16 @@ public class Main {
 				double offeredProduction = offer.getProduction();
 
 				// check if deltaP isn't satisfied, and if offer is available
-				if (overProduction < 0 && offer.getAvailable()) {
+				if (deltaP < 0 && offer.getAvailable()) {
 					ConventionalGenerator generator = (ConventionalGenerator) nodeList[offer.getNodeIndex()];
-					if((overProduction+offeredProduction) <= 0){ // take offer
+					if((deltaP+offeredProduction) <= 0){ // take offer
 						double oldProduction = generator.getProduction();
 						double newProduction = generator.setProduction(generator.getProduction() + offer.getProduction());
 						if(oldProduction != newProduction)
 							realProduction += offer.getProduction();
-					}else if((overProduction+offeredProduction)>0){ // only take difference between deltaP and offeredProduction
+					}else if((deltaP+offeredProduction)>0){ // only take difference between deltaP and offeredProduction
 						double oldProduction = generator.getProduction();
-						double remainingProduction = offeredProduction-(offeredProduction+overProduction);
+						double remainingProduction = offeredProduction-(offeredProduction+deltaP);
 						double newProduction = generator.setProduction(generator.getProduction() + remainingProduction);
 						if(oldProduction != newProduction)
 							realProduction += remainingProduction;
@@ -486,13 +488,13 @@ public class Main {
 					nodeList[offer.getNodeIndex()] = generator;
 					// disable offer from generator
 					((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
-					overProduction = (realProduction - realLoad); // update deltaP
+					deltaP = (realProduction - realLoad); // update deltaP
 				}else{
 					break; // load is satisfied
 				}
 			}
 
-		} else if (overProduction > 0) {
+		} else if (deltaP > 0) {
 			// we need to decrease energy production
 			System.out.println("Decreasing production ");
 
@@ -524,23 +526,23 @@ public class Main {
 
 					if(convGenerator != null && convGenerator.getNodeId() == offer.getNodeIndex()){
 						// check if deltaP isn't satisfied, and if offer is available
-						if (overProduction > 0 && offer.getAvailable()) {
-							if((overProduction-offeredProduction) >= 0){ // take offer
+						if (deltaP > 0 && offer.getAvailable()) {
+							if((deltaP-offeredProduction) >= 0){ // take offer
 								double oldProduction = convGenerator.getProduction();
 								double newProduction = convGenerator.setProduction(convGenerator.getProduction() - offer.getProduction());
 								if(oldProduction != newProduction)
 									realProduction -= offer.getProduction();
-							}else if(offer.getProduction() > overProduction){ // only take difference between deltaP and offeredProduction
+							}else if(offer.getProduction() > deltaP){ // only take difference between deltaP and offeredProduction
 								double oldProduction = convGenerator.getProduction();
-								double newProduction = convGenerator.setProduction( convGenerator.getProduction() - (overProduction));
+								double newProduction = convGenerator.setProduction( convGenerator.getProduction() - (deltaP));
 								if(oldProduction != newProduction)
-									realProduction -= (overProduction);
+									realProduction -= (deltaP);
 							}
 							// disable offer from generator
 							convGenerator.takeDecreaseOffer(offer.getOfferListId());
 							nodeList[j] = convGenerator;
 							grid.setNodeList(nodeList);
-							overProduction = (realProduction - realLoad); // update deltaP
+							deltaP = (realProduction - realLoad); // update deltaP
 						}else{
 							break; // load is satisfied
 						}
@@ -550,7 +552,7 @@ public class Main {
 
 
 
-			if(overProduction > 0){
+			if(deltaP > 0){
 				// turn off OIL generators when Production is still to high.
 				// loop over generators and when this.maxP < 60 disable generator
 				for (int i = 0; i < nodeList.length; i++) {
@@ -560,11 +562,11 @@ public class Main {
 						int disableCheapGeneratorThresholdMaxP = config.
 						getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "disableCheapGeneratorThresholdMaxP");
 
-						if(maxP < disableCheapGeneratorThresholdMaxP && overProduction >0){
+						if(maxP < disableCheapGeneratorThresholdMaxP && deltaP >0){
 							realProduction -= ((ConventionalGenerator) nodeList[i]).getProduction();
 							((ConventionalGenerator) nodeList[i]).disableProduction();
 
-							overProduction = (realProduction - realLoad); // update deltaP
+							deltaP = (realProduction - realLoad); // update deltaP
 						}
 					}
 				}
