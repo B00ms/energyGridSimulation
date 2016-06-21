@@ -556,7 +556,11 @@ public class Main {
 				for (int i = 0; i < nodeList.length; i++) {
 					if (nodeList[i] != null && nodeList[i].getClass() == ConventionalGenerator.class && ((ConventionalGenerator) nodeList[i]).getType() == GENERATOR_TYPE.OIL) {
 						double maxP = ((ConventionalGenerator) nodeList[i]).getMaxP();
-						if(maxP < 60 && overProduction >0){
+
+						int disableCheapGeneratorThresholdMaxP = config.
+						getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "disableCheapGeneratorThresholdMaxP");
+
+						if(maxP < disableCheapGeneratorThresholdMaxP && overProduction >0){
 							realProduction -= ((ConventionalGenerator) nodeList[i]).getProduction();
 							((ConventionalGenerator) nodeList[i]).disableProduction();
 
