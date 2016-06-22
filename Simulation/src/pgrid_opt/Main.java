@@ -21,13 +21,9 @@ import model.Generator.GENERATOR_TYPE;
 
 public class Main {
 
-	// Path to the summer load curve
-	private static String OS = System.getProperty("os.name");
-
 	private static ConfigCollection config = new ConfigCollection();
 	private static ProductionLoadHandler productionLoadHandler = new ProductionLoadHandler();
 	private static StorageHandler storageHandler = new StorageHandler();
-
 
 	public static void main(String[] args) {
 
@@ -35,7 +31,6 @@ public class Main {
 		Graph[] timestepsGraph = null;
 		Parser parser = new Parser();
 		Graph graph;
-
 
 		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 
@@ -73,6 +68,9 @@ public class Main {
 
 			//Plan production for the day.
 			Graph[] plannedTimestepsGraph = ProductionLoadHandler.setExpectedLoadAndProduction(timestepsGraph);
+
+			//Plan storage for the entire day.
+			plannedTimestepsGraph = storageHandler.PlanStorageCharging(plannedTimestepsGraph);
 
 			// set real load from consumers using Monte carlo draws
 			timestepsGraph = ProductionLoadHandler.setRealLoad(timestepsGraph);
@@ -228,6 +226,9 @@ public class Main {
 						// System.out.println(mcDraw);
 						graph = checkConventionalGeneratorFailure(graph, j, mcDraw);
 						break;
+				default:
+					//We Don't care about renewables at this point.
+					break;
 				}
 			}
 		}
@@ -345,9 +346,6 @@ public class Main {
 		}
 		return graph;
 	}
-
-
-
 
 	public static Graph planExpectedProductionConvGen(Graph[] grid, int timestep, double sumExpectedLoad) {
 		Node[] nodeList = grid[timestep].getNodeList();
@@ -550,8 +548,6 @@ public class Main {
 				}
 			}
 
-
-
 			if(deltaP > 0){
 				// turn off OIL generators when Production is still to high.
 				// loop over generators and when this.maxP < 60 disable generator
@@ -626,82 +622,4 @@ public class Main {
 
 		return grid;
 	}
-
-//	/**
-//	 * Calculates the total production on the grid from conventional generators, renewable generators and storage if it's discharing.
-//	 * @param graph
-//	 * @return
-//	 */
-//	private static double calculateProduction(Graph graph){
-//
-//		double sumProduction = 0;
-//		for(int i = 0; i < graph.getNodeList().length; i++){
-//			if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
-//				sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-//			//if(!((ConventionalGenerator)graph.getNodeList()[i]).getGeneratorFailure()){
-//				//sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-//			 if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == StorageStatus.DISCHARGING)
-//				sumProduction += ((Storage)graph.getNodeList()[i]).getFlow();
-//			//} else if(graph.getNodeList()[i].getClass() == RewGenerator.class)//dont add production from renewable because we substract it from the load.
-//				//sumProduction += ((RewGenerator)graph.getNodeList()[i]).getProduction();
-//
-//
-//		}
-//		return sumProduction;
-//	}
-//
-//	/**
-//	 * Calculates the total load on the grid from consumers and storage if the latter is charging.
-//	 * @param graph
-//	 * @return
-//	 */
-//	private static double calculateLoad(Graph graph){
-//		double sumLoad = 0;
-//
-//		for(int i = 0; i < graph.getNodeList().length; i++){
-//			if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == StorageStatus.CHARGING )
-//				sumLoad += ((Storage)graph.getNodeList()[i]).getFlow();
-//			else if (graph.getNodeList()[i].getClass() == Consumer.class)
-//				sumLoad += ((Consumer)graph.getNodeList()[i]).getLoad();
-//			 else if(graph.getNodeList()[i].getClass() == RewGenerator.class)
-//				sumLoad -= ((RewGenerator)graph.getNodeList()[i]).getProduction();
-//
-//		}
-//		return sumLoad;
-//	}
-//
-//	private static double calculateRenewableProduction(Graph graph){
-//		double production = 0;
-//		for(int i = 0; i < graph.getNodeList().length; i++){
-//			if (graph.getNodeList()[i].getClass() == RewGenerator.class)
-//				production += ((RewGenerator)graph.getNodeList()[i]).getProduction();
-//		}
-//		return production;
-//	}
-
-	/**
-	 * Calculates the sum of production and the sum of the loads.
-	 * @param graph
-	 * @return array where position [0] contains the sum of production and position [1] contains the sum of the load minus production of renewables.
-
-	private static Double[] calcSumProductionSumLoad(Graph graph){
-		double totalCurrentProduction = 0;
-		double sumLoads = 0;
-
-		for(int i = 0; i < graph.getNodeList().length; i++){
-			if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class && ((ConventionalGenerator)graph.getNodeList()[i]).getGeneratorFailure() == false){
-				totalCurrentProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-			} else if(graph.getNodeList()[i].getClass() == Consumer.class){
-				sumLoads += ((Consumer)graph.getNodeList()[i]).getLoad();
-			} else if(graph.getNodeList()[i].getClass() == RewGenerator.class){
-				sumLoads -= ((RewGenerator)graph.getNodeList()[i]).getProduction();
-			}
-		}
-		Double[] result = new Double[2];
-		result[0] = totalCurrentProduction;
-		result[1] = sumLoads;
-		return result;
-	}*/
-
-
 }

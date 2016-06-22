@@ -5,18 +5,21 @@ import model.Consumer;
 import model.ConventionalGenerator;
 import model.RewGenerator;
 import model.Storage;
+import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 
 /**
  * Created by ejay on 21/06/16.
  */
 public class ProductionLoadHandler {
 
+	private static ConfigCollection config = new ConfigCollection();
+
     /**
      * Calculates the total production on the grid from conventional generators, renewable generators and storage if it's discharing.
      * @param graph
      * @return
      */
-    public static double calculateProduction(Graph graph){
+    public double calculateProduction(Graph graph){
 
         double sumProduction = 0;
         for(int i = 0; i < graph.getNodeList().length; i++){
@@ -39,7 +42,7 @@ public class ProductionLoadHandler {
      * @param graph
      * @return
      */
-    public static double calculateLoad(Graph graph){
+    public double calculateLoad(Graph graph){
         double sumLoad = 0;
 
         for(int i = 0; i < graph.getNodeList().length; i++){
@@ -54,7 +57,7 @@ public class ProductionLoadHandler {
         return sumLoad;
     }
 
-    public static double calculateRenewableProduction(Graph graph){
+    public double calculateRenewableProduction(Graph graph){
         double production = 0;
         for(int i = 0; i < graph.getNodeList().length; i++){
             if (graph.getNodeList()[i].getClass() == RewGenerator.class)
@@ -101,7 +104,7 @@ public class ProductionLoadHandler {
      * @param graphs
      * @return Array where [0] = expectedLoad and [1] = expectedProduction
      */
-    static Graph[] setExpectedLoadAndProduction(Graph[] graphs) {
+    public static Graph[] setExpectedLoadAndProduction(Graph[] graphs) {
 
         Graph[] plannedProduction = graphs; // clone state of graphs
 
@@ -110,14 +113,22 @@ public class ProductionLoadHandler {
             double sumExpectedProduction = 0;
             plannedProduction[hour] = Main.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
 
+            int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+            int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+
             // calculate expected load
             for(int i = 0; i < plannedProduction[hour].getNodeList().length; i++){
                 if(plannedProduction[hour].getNodeList()[i].getClass() == Consumer.class){
                     sumExpectedLoad += ((Consumer)plannedProduction[hour].getNodeList()[i]).getLoad();
                 } else if (plannedProduction[hour].getNodeList()[i].getClass() == RewGenerator.class) {
                     sumExpectedLoad -=  ((RewGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
+                } else if (plannedProduction[hour].getNodeList()[i].getClass() == Storage.class) {
+                	sumExpectedLoad += ((Storage)plannedProduction[hour].getNodeList()[i]).getFlow();
                 }
             }
+
+            //Make sure sumExpectedLoad cannot be negative.
+            sumExpectedLoad = Math.abs(sumExpectedLoad);
 
             // calculate expected conventional generator production
             plannedProduction[hour] = Main.planExpectedProductionConvGen(plannedProduction, hour, sumExpectedLoad);

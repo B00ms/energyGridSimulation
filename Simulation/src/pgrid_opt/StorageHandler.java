@@ -3,21 +3,47 @@ package pgrid_opt;
 import graph.Graph;
 import graph.Node;
 import model.Storage;
+import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 
 /**
  * Created by ejay on 21/06/16.
  */
 public class StorageHandler {
+	ConfigCollection config = new ConfigCollection();
 
     private static ProductionLoadHandler hpl = new ProductionLoadHandler();
 
+	public Graph[] PlanStorageCharging(Graph[] plannedTimestepsGraph) {
+
+	    int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+	    int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
+		int hour = 0;
+
+		while(hour < 24){
+			if(hour  >= beginChargeTime || hour  <= endChargeTime){
+				Graph graph = plannedTimestepsGraph[hour];
+				for (int i = 0; i < graph.getNodeList().length; i++){
+					if(graph.getNodeList()[i].getClass() == Storage.class){
+						Storage storage = (Storage) graph.getNodeList()[i];
+						//We calculate 50% of max charge then divide by efficiency which will give us the amount we need to charge to 50% of max charge
+						double chargeTarget = (storage.getMaximumCharge() * 0.5 / storage.getChargeEfficiency()) - storage.getCurrentCharge() / storage.getChargeEfficiency();
+						storage.charge(chargeTarget);
+						graph.getNodeList()[i] = storage;
+					}
+				}
+				plannedTimestepsGraph[hour] = graph;
+			}
+			hour++;
+		}
+	return plannedTimestepsGraph;
+	}
 
     /**
      * Charges storage but only if the current charge is less than 50% of its capacity.
      * @param graph
      * @return graph in which the state of storages has been set.
      */
-    public static Graph chargeStorage(Graph graph){
+    public Graph chargeStorage(Graph graph){
 
         //Double[] sumProdAndLoad = calcSumProductionSumLoad(graph);
         double sumLoads = hpl.calculateLoad(graph);
@@ -37,7 +63,7 @@ public class StorageHandler {
      * @param graph
      * @return
      */
-    public static Graph chargeOrDischargeStorage(Graph graph){
+    public Graph chargeOrDischargeStorage(Graph graph){
 
         //Double[] sumProdAndLoad = calcSumProductionSumLoad(graph);
         double totalCurrentProduction = hpl.calculateProduction(graph);

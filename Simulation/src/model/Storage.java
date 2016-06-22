@@ -65,6 +65,8 @@ public class Storage extends Node {
 		double newSoC = currentCharge + (charge * chargeEfficiency);
 		double flowComingIn = charge;
 		double tempCurrentcharge;
+		flowStorage = charge;
+		currentCharge = newSoC;
 
 		if (newSoC > maximumCharge){
 			newSoC = maximumCharge;
@@ -79,7 +81,7 @@ public class Storage extends Node {
 			flowStorage = flowComingIn;
 		}
 		flowStorage = flowStorage * -1; //Make flow negative because the edge goes Storage->innnerNode.
-		return flowComingIn;
+		return flowStorage;
 	}
 
 	/**
@@ -93,6 +95,8 @@ public class Storage extends Node {
 		double outgoingFlow = dischargedEnergy * dischargeEfficiency; //Actual flow we put into the network, should equal charge
 		double newSoC = currentCharge - dischargedEnergy;
 		double tempCurrentCharge = newSoC;
+		currentCharge = newSoC;
+		flowStorage = charge;
 
 		if(newSoC < minimumCharge){
 			double minSoC = minimumCharge;
@@ -109,7 +113,7 @@ public class Storage extends Node {
 		}
 
 		currentCharge = tempCurrentCharge;
-		return outgoingFlow;
+		return flowStorage;
 	}
 
 	public double getMaximumCharge() {
