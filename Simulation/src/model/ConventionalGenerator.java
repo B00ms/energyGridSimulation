@@ -43,6 +43,9 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public void setGeneratorFailure(boolean generatorFailure) {
+		if(generatorFailure == true){
+			this.production = 0;
+		}
 		this.generatorFailure = generatorFailure;
 	}
 

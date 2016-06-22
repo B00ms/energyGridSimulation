@@ -19,17 +19,13 @@ public class ProductionLoadHandler {
     public static double calculateProduction(Graph graph){
 
         double sumProduction = 0;
-        for(int i = 0; i < graph.getNodeList().length; i++){
-            if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
-                sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-            //if(!((ConventionalGenerator)graph.getNodeList()[i]).getGeneratorFailure()){
-            //sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-            if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.DISCHARGING)
-                sumProduction += ((Storage)graph.getNodeList()[i]).getFlow();
-            //} else if(graph.getNodeList()[i].getClass() == RewGenerator.class)//dont add production from renewable because we substract it from the load.
-            //sumProduction += ((RewGenerator)graph.getNodeList()[i]).getProduction();
-
-
+        for(int i = 0; i < graph.getNodeList().length; i++) {
+            if (graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
+                sumProduction += ((ConventionalGenerator) graph.getNodeList()[i]).getProduction();
+            else if (graph.getNodeList()[i].getClass() == RewGenerator.class)
+                sumProduction += ((RewGenerator) graph.getNodeList()[i]).getProduction();
+            else if (graph.getNodeList()[i].getClass() == Storage.class && ((Storage) graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.DISCHARGING)
+                sumProduction += ((Storage) graph.getNodeList()[i]).getFlow();
         }
         return sumProduction;
     }
@@ -47,9 +43,6 @@ public class ProductionLoadHandler {
                 sumLoad += ((Storage)graph.getNodeList()[i]).getFlow();
             else if (graph.getNodeList()[i].getClass() == Consumer.class)
                 sumLoad += ((Consumer)graph.getNodeList()[i]).getLoad();
-            else if(graph.getNodeList()[i].getClass() == RewGenerator.class)
-                sumLoad -= ((RewGenerator)graph.getNodeList()[i]).getProduction();
-
         }
         return sumLoad;
     }
