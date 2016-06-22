@@ -132,7 +132,7 @@ public class Parser {
 						break;
 				}
 
-				RewGenerator renewableGenerator = new RewGenerator(maxProduction, 0, cost, realType, nodeId);
+				RenewableGenerator renewableGenerator = new RenewableGenerator(maxProduction, 0, cost, realType, nodeId);
 				nodeList.add(renewableGenerator);
 				numberOfRenewableGenerators++;
 				break;
@@ -202,7 +202,7 @@ public class Parser {
 						else
 							return 1;
 
-					else if(o1.getClass() != RewGenerator.class)
+					else if(o1.getClass() != RenewableGenerator.class)
 						if (o2.getClass() != ConventionalGenerator.class || o2.getClass() != Consumer.class || o2.getClass() != InnerNode.class)
 							return -1;
 						else

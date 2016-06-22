@@ -21,21 +21,19 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	public ConventionalGenerator(double minProduction, double maxProduction, double coef, GENERATOR_TYPE type, double production, int nodeId) {
 		super(minProduction, maxProduction, coef, type, production, nodeId);
 
-		// only used with conventional generator.
-		this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
-		this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttr");
+		// if conv generator is a hydro planet custom mttf
+		if(type == GENERATOR_TYPE.HYDRO){
+			this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttf");
+			this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttr");
+		}else{
+			// only used with conventional generator.
+			this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
+			this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttr");
+		}
 
 		maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease");
 		dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
 		dayAheadLimitMin =  config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
-	}
-
-	public ConventionalGenerator(double minProduction, double maxProduction, double coef, GENERATOR_TYPE type, double production) {
-		super(minProduction, maxProduction, coef, type, production);
-
-		// only used with conventional generator.
-		this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
-		this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttr");
 	}
 
 	public boolean getGeneratorFailure() {
@@ -43,21 +41,10 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	}
 
 	public void setGeneratorFailure(boolean generatorFailure) {
-		this.generatorFailure = generatorFailure;
-	}
-
-	public double initializeProduction(double production){
-
-		// check edge cases for initialization
-		if(production>this.maxp){
-			this.production = this.maxp*dayAheadLimitMax;
-		}else if(production<this.minp){
-			this.production = this.minp*dayAheadLimitMin;
-		}else{
-			this.production = production;
+		if(generatorFailure == true){
+			this.production = 0;
 		}
-
-		return this.production;
+		this.generatorFailure = generatorFailure;
 	}
 
 	public double setProduction(double production) {
@@ -182,36 +169,6 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 
 	public Offer[] getDecreaseProductionOffers(){
 		return this.listOfferDecreaseProduction;
-	}
-
-	public Offer getBestIncreaseOffer(){
-		Offer bestOffer = null;
-		bestOffer = this.getBestOffer(this.listOfferIncreaseProduction);
-		return bestOffer;
-	}
-
-	public Offer getBestDecreaseOffer(){
-		Offer bestOffer = null;
-		bestOffer = this.getBestOffer(this.listOfferDecreaseProduction);
-		return bestOffer;
-	}
-
-	public Offer getBestOffer(Offer[] offerList){
-		Offer bestOffer = null;
-
-		for(Offer offer : offerList){
-			if(offer.getAvailable()){
-				if(bestOffer == null){
-					bestOffer = offer;
-				}
-
-				if(offer.getPrice() < bestOffer.getPrice()){
-					bestOffer = offer;
-				}
-			}
-		}
-
-		return bestOffer;
 	}
 
 	public void disableProduction(){

@@ -203,7 +203,7 @@ public class Main {
 		for (int j = 0; j < graph.getNodeList().length - 1; j++) {
 			// Check the class of the current node and deal with it accordingly.
 			if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class
-					|| graph.getNodeList()[j].getClass() == RewGenerator.class)) {
+					|| graph.getNodeList()[j].getClass() == RenewableGenerator.class)) {
 				GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
 				double mcDraw = 0; // This will hold our Monte Carlo draw
 				// (hahaha mac draw)
@@ -247,7 +247,7 @@ public class Main {
 		for (int j = 0; j < graph.getNodeList().length - 1; j++) {
 			// Check the class of the current node and deal with it accordingly.
 			if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class
-					|| graph.getNodeList()[j].getClass() == RewGenerator.class)) {
+					|| graph.getNodeList()[j].getClass() == RenewableGenerator.class)) {
 				GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
 				double mcDraw = 0; // This will hold our Monte Carlo draw
 				switch (generatorType) {
@@ -260,14 +260,14 @@ public class Main {
 
 					if (mcDraw <= vCutIn || mcDraw >= vCutOff) {
 						// Wind speed is outside the margins
-						((RewGenerator) graph.getNodeList()[j]).setProduction(0);
+						((RenewableGenerator) graph.getNodeList()[j]).setProduction(0);
 					} else if (mcDraw >= vCutIn && mcDraw <= vRated) {
 						// In a sweet spot for max wind production
 						double production = (pRated * ((Math.pow(mcDraw, 3) - Math.pow(vCutIn, 3))
 								/ (Math.pow(vRated, 3) - Math.pow(vCutIn, 3))));// Should be the same as the matlab from Laura
-						((RewGenerator) graph.getNodeList()[j]).setProduction(production);
+						((RenewableGenerator) graph.getNodeList()[j]).setProduction(production);
 					} else if (vRated <= mcDraw && mcDraw <= vCutOff) {
-						((RewGenerator) graph.getNodeList()[j]).setProduction(pRated);
+						((RenewableGenerator) graph.getNodeList()[j]).setProduction(pRated);
 					}
 					break;
 				case SOLAR: // Solar generator
@@ -313,7 +313,7 @@ public class Main {
 					// panels on the horizontal plane.
 					double production = 45 * efficiency * irradiance;
 
-					((RewGenerator) graph.getNodeList()[j]).setProduction(production);
+					((RenewableGenerator) graph.getNodeList()[j]).setProduction(production);
 					// System.out.println("sunRise:" + sunrise + " currentTime:" + currentTimeStep + " sunset:" + sunset + " production:" + production + " max irradiance:" + extratIrradianceMax + " MC draw:" + mcDraw + " nodeId:" + ((RewGenerator)graph.getNodeList()[j]).getNodeId());
 
 					break;
@@ -604,8 +604,8 @@ public class Main {
 		double productionTarget = realProduction - realLoad;
 		System.out.println("RenewProd before curtailment " + productionLoadHandler.calculateRenewableProduction(grid));
 		for( int i = 0; i < grid.getNodeList().length; i++){
-			if(grid.getNodeList()[i].getClass() == RewGenerator.class){
-				RewGenerator renew = ((RewGenerator)grid.getNodeList()[i]);
+			if(grid.getNodeList()[i].getClass() == RenewableGenerator.class){
+				RenewableGenerator renew = ((RenewableGenerator)grid.getNodeList()[i]);
 				if(productionTarget - renew .getProduction() > 0 && productionTarget != 0){
 					productionTarget -= renew .getProduction();
 					renew.setProduction(0);

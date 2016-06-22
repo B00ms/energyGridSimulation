@@ -148,12 +148,12 @@ public class DataModelPrint {
 			if (g.getNrgenetarors() != 0) {
 				writer.println("param rprodmax :=");
 				for (int i = 0; i < g.getNodeList().length; i++) {
-					if(g.getNodeList()[i].getClass() == RewGenerator.class){
+					if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 						counter++;
 						if( counter != g.getNrgenetarors())
-							writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getMaxP());
+							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMaxP());
 						else
-							writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getMaxP() + ";");
+							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMaxP() + ";");
 					}
 				}
 
@@ -162,12 +162,12 @@ public class DataModelPrint {
 			if (g.getNrgenetarors() != 0) {
 				writer.println("param rprodmin :=");
 				for (int i = 0; i < g.getNodeList().length; i++) {
-						if(g.getNodeList()[i].getClass() == RewGenerator.class){
+						if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 							counter++;
 							if(counter != g.getNrgenetarors())
-								writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getMinP());
+								writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMinP());
 							else
-								writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getMinP() + ";");
+								writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMinP() + ";");
 					}
 				}
 			}
@@ -175,12 +175,12 @@ public class DataModelPrint {
 			if (g.getNrgenetarors() != 0) {
 				writer.println("param rcost :=");
 				for (int i = 0; i < g.getNodeList().length; i++) {
-					if(g.getNodeList()[i].getClass() == RewGenerator.class){
+					if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 						counter++;
 						if(counter != g.getNrgenetarors())
-							writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getCoef());
+							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getCoef());
 						else
-							writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getCoef() + ";");
+							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getCoef() + ";");
 					}
 				}
 			}
@@ -209,12 +209,12 @@ public class DataModelPrint {
 			counter = 0;
 			writer.println("param rewproduction :=");
 			for (int i = 0; i < g.getNodeList().length; i++) {
-				if(g.getNodeList()[i].getClass() == RewGenerator.class){
+				if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 					counter++;
 					if (counter != g.getNrgenetarors())
-						writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getProduction());
+						writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction());
 					else
-						writer.println(i + " " + (float)((RewGenerator) g.getNodeList()[i]).getProduction() + ";");
+						writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction() + ";");
 				}
 			}
 			counter = 0;

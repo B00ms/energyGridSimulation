@@ -3,7 +3,7 @@ package pgrid_opt;
 import graph.Graph;
 import model.Consumer;
 import model.ConventionalGenerator;
-import model.RewGenerator;
+import model.RenewableGenerator;
 import model.Storage;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 
@@ -22,17 +22,13 @@ public class ProductionLoadHandler {
     public double calculateProduction(Graph graph){
 
         double sumProduction = 0;
-        for(int i = 0; i < graph.getNodeList().length; i++){
-            if(graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
-                sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-            //if(!((ConventionalGenerator)graph.getNodeList()[i]).getGeneratorFailure()){
-            //sumProduction += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
-            if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.DISCHARGING)
-                sumProduction += ((Storage)graph.getNodeList()[i]).getFlow();
-            //} else if(graph.getNodeList()[i].getClass() == RewGenerator.class)//dont add production from renewable because we substract it from the load.
-            //sumProduction += ((RewGenerator)graph.getNodeList()[i]).getProduction();
-
-
+        for(int i = 0; i < graph.getNodeList().length; i++) {
+            if (graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
+                sumProduction += ((ConventionalGenerator) graph.getNodeList()[i]).getProduction();
+            else if (graph.getNodeList()[i].getClass() == RenewableGenerator.class)
+                sumProduction += ((RenewableGenerator) graph.getNodeList()[i]).getProduction();
+            else if (graph.getNodeList()[i].getClass() == Storage.class && ((Storage) graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.DISCHARGING)
+                sumProduction += ((Storage) graph.getNodeList()[i]).getFlow();
         }
         return sumProduction;
     }
@@ -50,9 +46,6 @@ public class ProductionLoadHandler {
                 sumLoad += ((Storage)graph.getNodeList()[i]).getFlow();
             else if (graph.getNodeList()[i].getClass() == Consumer.class)
                 sumLoad += ((Consumer)graph.getNodeList()[i]).getLoad();
-            else if(graph.getNodeList()[i].getClass() == RewGenerator.class)
-                sumLoad -= ((RewGenerator)graph.getNodeList()[i]).getProduction();
-
         }
         return sumLoad;
     }
@@ -60,8 +53,8 @@ public class ProductionLoadHandler {
     public double calculateRenewableProduction(Graph graph){
         double production = 0;
         for(int i = 0; i < graph.getNodeList().length; i++){
-            if (graph.getNodeList()[i].getClass() == RewGenerator.class)
-                production += ((RewGenerator)graph.getNodeList()[i]).getProduction();
+            if (graph.getNodeList()[i].getClass() == RenewableGenerator.class)
+                production += ((RenewableGenerator)graph.getNodeList()[i]).getProduction();
         }
         return production;
     }
@@ -120,8 +113,8 @@ public class ProductionLoadHandler {
             for(int i = 0; i < plannedProduction[hour].getNodeList().length; i++){
                 if(plannedProduction[hour].getNodeList()[i].getClass() == Consumer.class){
                     sumExpectedLoad += ((Consumer)plannedProduction[hour].getNodeList()[i]).getLoad();
-                } else if (plannedProduction[hour].getNodeList()[i].getClass() == RewGenerator.class) {
-                    sumExpectedLoad -=  ((RewGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
+                } else if (plannedProduction[hour].getNodeList()[i].getClass() == RenewableGenerator.class) {
+                    sumExpectedLoad -=  ((RenewableGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
                 } else if (plannedProduction[hour].getNodeList()[i].getClass() == Storage.class) {
                 	sumExpectedLoad += ((Storage)plannedProduction[hour].getNodeList()[i]).getFlow();
                 }

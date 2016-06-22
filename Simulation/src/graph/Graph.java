@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 import model.Consumer;
 import model.ConventionalGenerator;
-import model.RewGenerator;
+import model.RenewableGenerator;
 import model.Storage;
 import pgrid_opt.ConfigCollection;
 import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
@@ -155,13 +155,13 @@ public class Graph implements Cloneable {
 				conventionalGenerator.setOfferIncreaseProduction(((ConventionalGenerator) nodelist[i]).getIncreaseProductionOffers());
 				conventionalGenerator.setOfferDecreaseProduction(((ConventionalGenerator) nodelist[i]).getDecreaseProductionOffers());
 				tempNodeList[i] = conventionalGenerator;
-			} else if(getNodeList()[i].getClass() == RewGenerator.class){
+			} else if(getNodeList()[i].getClass() == RenewableGenerator.class){
 
-				RewGenerator renewableGenerator = new RewGenerator(((RewGenerator) nodelist[i]).getMaxP(),
-																	((RewGenerator)nodelist[i]).getMinP(),
-																	((RewGenerator)nodelist[i]).getCoef(),
-																	((RewGenerator)nodelist[i]).getType(),
-																	((RewGenerator)nodelist[i]).getNodeId());
+				RenewableGenerator renewableGenerator = new RenewableGenerator(((RenewableGenerator) nodelist[i]).getMaxP(),
+																	((RenewableGenerator)nodelist[i]).getMinP(),
+																	((RenewableGenerator)nodelist[i]).getCoef(),
+																	((RenewableGenerator)nodelist[i]).getType(),
+																	((RenewableGenerator)nodelist[i]).getNodeId());
 				tempNodeList[i] = renewableGenerator;
 
 			} else if (getNodeList()[i].getClass() == Storage.class){
@@ -326,16 +326,16 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"maxProduction\":" + "\"" + convGenerator.getMaxP() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"minProduction\":" + "\"" + convGenerator.getMinP() + "\""); bufferedWriter.newLine();
 
-				}else if (node.getClass() == RewGenerator.class){
-					RewGenerator rewGenerator = (RewGenerator) nodelist[i];
-					bufferedWriter.write("an " + "\"" + rewGenerator.getNodeId() + "\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"ui.label\":" + "\"" + rewGenerator.getNodeId() +"\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"ui.class\":" + "\"" + rewGenerator.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
+				}else if (node.getClass() == RenewableGenerator.class){
+					RenewableGenerator renewableGenerator = (RenewableGenerator) nodelist[i];
+					bufferedWriter.write("an " + "\"" + renewableGenerator.getNodeId() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + renewableGenerator.getNodeId() + "\" \"ui.label\":" + "\"" + renewableGenerator.getNodeId() +"\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + renewableGenerator.getNodeId() + "\" \"ui.class\":" + "\"" + renewableGenerator.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
 
-					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"subType\":" + "\"" + rewGenerator.getType() + "\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"production\":" + "\"" + rewGenerator.getProduction()+ "\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"maxProduction\":" + "\"" + rewGenerator.getMaxP()+ "\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + rewGenerator.getNodeId() + "\" \"minProduction\":" + "\"" + rewGenerator.getMinP()+ "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + renewableGenerator.getNodeId() + "\" \"subType\":" + "\"" + renewableGenerator.getType() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + renewableGenerator.getNodeId() + "\" \"production\":" + "\"" + renewableGenerator.getProduction()+ "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + renewableGenerator.getNodeId() + "\" \"maxProduction\":" + "\"" + renewableGenerator.getMaxP()+ "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + renewableGenerator.getNodeId() + "\" \"minProduction\":" + "\"" + renewableGenerator.getMinP()+ "\""); bufferedWriter.newLine();
 
 				}else if (node.getClass() == InnerNode.class){
 					InnerNode innderNode = (InnerNode) nodelist[i];
