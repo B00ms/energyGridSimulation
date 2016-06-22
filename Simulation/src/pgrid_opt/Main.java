@@ -50,6 +50,7 @@ public class Main {
 
 		// load simulation limit
 		int simLimit = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "simulation-runs");
+		int EENScum = 0;
 		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
@@ -70,11 +71,12 @@ public class Main {
 			Graph[] plannedTimestepsGraph = ProductionLoadHandler.setExpectedLoadAndProduction(timestepsGraph);
 
 			//Plan storage for the entire day.
+			// todo i don't think that the plannedTimestepsGraph currently is being used, in the sense of applying the planning to the timestepsGraph
 			plannedTimestepsGraph = storageHandler.PlanStorageCharging(plannedTimestepsGraph);
 
 			// set real load from consumers using Monte carlo draws
 			timestepsGraph = ProductionLoadHandler.setRealLoad(timestepsGraph);
-			while (currentTimeStep < plannedTimestepsGraph.length) {
+			while (currentTimeStep < timestepsGraph.length) {
 				System.out.println("TimeStep: "+ currentTimeStep);
 
 				timestepsGraph[currentTimeStep] = randomizeGridState(timestepsGraph[currentTimeStep], currentTimeStep);
@@ -109,7 +111,7 @@ public class Main {
 					if (graph.getNstorage() > 0) {
 						timestepsGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
 								timestepsGraph[currentTimeStep]); // Keeps track of the new state for storages.
-						
+
 					if (currentTimeStep < 23)
 						timestepsGraph[currentTimeStep + 1] = simulationState.updateStorages(timestepsGraph[currentTimeStep],
 								timestepsGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
@@ -129,7 +131,6 @@ public class Main {
 						}
 					}
 				}
-
 				++currentTimeStep;
 			}
 
@@ -144,13 +145,35 @@ public class Main {
 						e.printStackTrace();
 					}
 			}
+
+//			EENScum += calculateEENS(plannedTimestepsGraph, timestepsGraph);
 		}
+
+//		checkEENS(pl)
 
 		//TODO: compare expected load/prod versus actual load/prod
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
+
+	public double calculateEENS(Graph[] plannedTimestepsGraph, Graph[] realTimestepsGraph){
+		int currentTimeStep =0;
+
+		double sheddedLoad = 0;
+		while (currentTimeStep < realTimestepsGraph.length) {
+			double plannedLoad = productionLoadHandler.calculateLoad(plannedTimestepsGraph[currentTimeStep]);
+			double realLoad = productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]);
+
+			// if there is expected energy not supplied then count it as shedded load
+			if((realLoad - plannedLoad) >0)
+				sheddedLoad += (realLoad - plannedLoad);
+		}
+
+		// calculate EENS
+		return sheddedLoad;
+	}
+
 
 	/**
 	 * Move glpsol output to structured folders
