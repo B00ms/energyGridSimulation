@@ -35,7 +35,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
 		dayAheadLimitMin =  config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
 	}
-	
+
 	public boolean getGeneratorFailure() {
 		return generatorFailure;
 	}
@@ -45,20 +45,6 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 			this.production = 0;
 		}
 		this.generatorFailure = generatorFailure;
-	}
-
-	public double initializeProduction(double production){
-
-		// check edge cases for initialization
-		if(production>this.maxp){
-			this.production = this.maxp*dayAheadLimitMax;
-		}else if(production<this.minp){
-			this.production = this.minp*dayAheadLimitMin;
-		}else{
-			this.production = production;
-		}
-
-		return this.production;
 	}
 
 	public double setProduction(double production) {
@@ -183,36 +169,6 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 
 	public Offer[] getDecreaseProductionOffers(){
 		return this.listOfferDecreaseProduction;
-	}
-
-	public Offer getBestIncreaseOffer(){
-		Offer bestOffer = null;
-		bestOffer = this.getBestOffer(this.listOfferIncreaseProduction);
-		return bestOffer;
-	}
-
-	public Offer getBestDecreaseOffer(){
-		Offer bestOffer = null;
-		bestOffer = this.getBestOffer(this.listOfferDecreaseProduction);
-		return bestOffer;
-	}
-
-	public Offer getBestOffer(Offer[] offerList){
-		Offer bestOffer = null;
-
-		for(Offer offer : offerList){
-			if(offer.getAvailable()){
-				if(bestOffer == null){
-					bestOffer = offer;
-				}
-
-				if(offer.getPrice() < bestOffer.getPrice()){
-					bestOffer = offer;
-				}
-			}
-		}
-
-		return bestOffer;
 	}
 
 	public void disableProduction(){

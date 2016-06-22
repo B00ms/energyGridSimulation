@@ -9,10 +9,6 @@ public class RewGenerator extends Generator {
 		super(min, max, cost, type, (max / 2.0F), nodeId);
 	}
 
-	public RewGenerator(double max, double min, double cost, GENERATOR_TYPE type) {
-		super(min, max, cost, type, (max / 2.0F));
-	}
-
 	public boolean isRenew() {
 		return true;
 	}
