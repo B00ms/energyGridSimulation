@@ -51,10 +51,10 @@ public class DataModelPrint {
 		try {
 			PrintWriter writer = new PrintWriter(filename, "UTF-8");
 			writer.println("param n_tgen := " + (g.getNGenerators() - 1) + ";");
-			writer.println("param n_rgen := " + g.getNrgenetarors() + ";");
+			writer.println("param n_rgen := " + g.getNrGenerators() + ";");
 			writer.println("param n_cons := " + g.getNConsumers() + ";");
 			writer.println("param n_inner := " + (g.getNNode() - 1
-					- (g.getNGenerators() - 1 + g.getNrgenetarors() + g.getNConsumers()) - g.getNstorage()) + ";");
+					- (g.getNGenerators() - 1 + g.getNrGenerators() + g.getNConsumers()) - g.getNstorage()) + ";");
 			writer.println("param n_tot := " + (g.getNNode() - 1) + ";");
 			writer.println("param m_factor := 100;");
 			writer.println("param pi := 3.1415;");
@@ -145,12 +145,12 @@ public class DataModelPrint {
 				}
 			}
 			counter = 0;
-			if (g.getNrgenetarors() != 0) {
+			if (g.getNrGenerators() != 0) {
 				writer.println("param rprodmax :=");
 				for (int i = 0; i < g.getNodeList().length; i++) {
 					if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 						counter++;
-						if( counter != g.getNrgenetarors())
+						if( counter != g.getNrGenerators())
 							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMaxP());
 						else
 							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMaxP() + ";");
@@ -159,12 +159,12 @@ public class DataModelPrint {
 
 			}
 			counter = 0;
-			if (g.getNrgenetarors() != 0) {
+			if (g.getNrGenerators() != 0) {
 				writer.println("param rprodmin :=");
 				for (int i = 0; i < g.getNodeList().length; i++) {
 						if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 							counter++;
-							if(counter != g.getNrgenetarors())
+							if(counter != g.getNrGenerators())
 								writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMinP());
 							else
 								writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMinP() + ";");
@@ -172,12 +172,12 @@ public class DataModelPrint {
 				}
 			}
 			counter = 0;
-			if (g.getNrgenetarors() != 0) {
+			if (g.getNrGenerators() != 0) {
 				writer.println("param rcost :=");
 				for (int i = 0; i < g.getNodeList().length; i++) {
 					if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 						counter++;
-						if(counter != g.getNrgenetarors())
+						if(counter != g.getNrGenerators())
 							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getCoef());
 						else
 							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getCoef() + ";");
@@ -211,7 +211,7 @@ public class DataModelPrint {
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 					counter++;
-					if (counter != g.getNrgenetarors())
+					if (counter != g.getNrGenerators())
 						writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction());
 					else
 						writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction() + ";");
@@ -274,15 +274,17 @@ public class DataModelPrint {
 						double cap = 0;
 						float eps = 0.001F;
 
+
 						if (((Storage) g.getNodeList()[i]).getMaximumCharge() < ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
 							((Storage) g.getNodeList()[i]).charge(((Storage) g.getNodeList()[i]).getMaximumCharge());
 						}
 
-						double max = ((Storage) g.getNodeList()[i]).getMaximumCharge();
-						double current = ((Storage) g.getNodeList()[i]).getCurrentCharge();
+//						double max = ((Storage) g.getNodeList()[i]).getMaximumCharge();
+//						double current = ((Storage) g.getNodeList()[i]).getCurrentCharge();
 
 						double val = (((Storage) g.getNodeList()[i]).getMaximumCharge() - ((Storage) g.getNodeList()[i]).getCurrentCharge()) / delta / etac;
-						for (int j = g.getNGenerators() + g.getNConsumers(); j < g.getNNode() - (g.getNstorage() + g.getNrgenetarors()); j++) {
+
+						for (int j = g.getNGenerators() + g.getNConsumers(); j < g.getNNode() - (g.getNstorage() + g.getNrGenerators()); j++) {
 							if (g.getEdges()[j].getCapacity() != 0.0F) {
 								cap = g.getEdges()[j].getCapacity();
 								break;

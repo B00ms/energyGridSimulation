@@ -19,7 +19,7 @@ public class Graph implements Cloneable {
 	private int nnode; //Total Number of nodes in the graph
 	private int ngenerators; //Number of conventional generators
 	private int nconsumers; //Number of loads
-	private int nrgenetarors; //Number of renewable generators
+	private int nrgenerators; //Number of renewable generators
 	private int loadmax; //Daily max load demand
 	private int nstorage; //Number of storage systems in the grid
 	private int efficency; //TODO: determine what this variable represents(capacity of real edges?), it's hardcoded to 75
@@ -42,7 +42,7 @@ public class Graph implements Cloneable {
 		setLoadmax(loadmax);
 		setNNode(nnode);
 		setNGenerators(ngenerators);
-		setNrgenetarors(nrgenerators);
+		setNrGenerators(nrgenerators);
 		setNConsumers(nconsumers);
 		setNstorage(nstorage);
 
@@ -114,12 +114,12 @@ public class Graph implements Cloneable {
 		this.nnode = nnode;
 	}
 
-	public int getNrgenetarors() {
-		return this.nrgenetarors;
+	public int getNrGenerators() {
+		return this.nrgenerators;
 	}
 
-	public void setNrgenetarors(int nrgenetarors) {
-		this.nrgenetarors = nrgenetarors;
+	public void setNrGenerators(int nrgenerators) {
+		this.nrgenerators = nrgenerators;
 	}
 
 	public int getLoadmax() {
@@ -134,7 +134,7 @@ public class Graph implements Cloneable {
 	 * @return A copy of the graph.
 	 */
 	public Graph clone() {
-		Graph g = new Graph(this.nnode, this.ngenerators, this.nrgenetarors, this.nconsumers, this.loadmax,
+		Graph g = new Graph(this.nnode, this.ngenerators, this.nrgenerators, this.nconsumers, this.loadmax,
 				this.nstorage, this.delta, this.etac, this.etad);
 
 		Node[] tempNodeList = new Node[g.getNodeList().length];
