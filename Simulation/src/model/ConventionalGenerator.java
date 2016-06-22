@@ -35,21 +35,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
 		dayAheadLimitMin =  config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
 	}
-
-	public ConventionalGenerator(double minProduction, double maxProduction, double coef, GENERATOR_TYPE type, double production) {
-		super(minProduction, maxProduction, coef, type, production);
-
-		// if conv generator is a hydro planet custom mttf
-		if(type == GENERATOR_TYPE.HYDRO){
-			this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttf");
-			this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttr");
-		}else{
-			// only used with conventional generator.
-			this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
-			this.mttr = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttr");
-		}
-	}
-
+	
 	public boolean getGeneratorFailure() {
 		return generatorFailure;
 	}
