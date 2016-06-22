@@ -11,8 +11,8 @@ import model.Consumer;
 import model.ConventionalGenerator;
 import model.RenewableGenerator;
 import model.Storage;
-import pgrid_opt.ConfigCollection;
-import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import config.ConfigCollection;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 
 
 public class Graph implements Cloneable {

@@ -1,9 +1,10 @@
-package pgrid_opt;
+package simulation;
 
+import config.ConfigCollection;
 import graph.Graph;
 import graph.Node;
 import model.Storage;
-import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 
 /**
  * Created by ejay on 21/06/16.

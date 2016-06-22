@@ -1,4 +1,4 @@
-package pgrid_opt;
+package filehandler;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -17,7 +17,8 @@ import graph.Graph;
 import graph.InnerNode;
 import graph.Node;
 import model.*;
-import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import config.ConfigCollection;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 import model.Generator.GENERATOR_TYPE;
 
 public class Parser {

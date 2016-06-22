@@ -1,6 +1,7 @@
-package pgrid_opt;
+package simulation;
 
 
+import filehandler.Parser;
 import graph.Graph;
 import model.Consumer;
 import model.ConventionalGenerator;

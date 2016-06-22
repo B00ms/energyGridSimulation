@@ -1,4 +1,4 @@
-package pgrid_opt;
+package filehandler;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -6,7 +6,8 @@ import java.io.UnsupportedEncodingException;
 
 import graph.Graph;
 import model.*;
-import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import config.ConfigCollection;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 
 public class DataModelPrint {
 	private static ConfigCollection config = new ConfigCollection();

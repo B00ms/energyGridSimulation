@@ -1,6 +1,7 @@
-package pgrid_opt;
+package simulation;
 
-import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import config.ConfigCollection;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
 

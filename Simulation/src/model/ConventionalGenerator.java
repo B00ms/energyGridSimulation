@@ -1,7 +1,7 @@
 package model;
 
-import pgrid_opt.ConfigCollection;
-import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import config.ConfigCollection;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 
 public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>{
 

@@ -1,7 +1,7 @@
 package model;
 
-import pgrid_opt.ConfigCollection;
-import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import config.ConfigCollection;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 import graph.Node;
 
 public class Storage extends Node {

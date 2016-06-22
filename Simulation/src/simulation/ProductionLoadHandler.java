@@ -1,11 +1,13 @@
-package pgrid_opt;
+package simulation;
 
+import config.ConfigCollection;
 import graph.Graph;
+import graph.Node;
 import model.Consumer;
 import model.ConventionalGenerator;
 import model.RenewableGenerator;
 import model.Storage;
-import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 
 /**
  * Created by ejay on 21/06/16.
@@ -13,6 +15,7 @@ import pgrid_opt.ConfigCollection.CONFIGURATION_TYPE;
 public class ProductionLoadHandler {
 
 	private static ConfigCollection config = new ConfigCollection();
+    private static SimulationMonteCarloHelper simulationMonteCarloHelper = new SimulationMonteCarloHelper();
 
     /**
      * Calculates the total production on the grid from conventional generators, renewable generators and storage if it's discharing.
@@ -64,7 +67,7 @@ public class ProductionLoadHandler {
      * @param timestepsGraph
      * @return The graph where the real load has been set for each Consumer.
      */
-    static Graph[] setRealLoad(Graph[] timestepsGraph) {
+    public static Graph[] setRealLoad(Graph[] timestepsGraph) {
         MontoCarloHelper mcHelper = new MontoCarloHelper();
         for (int i = 0; i < timestepsGraph.length; i++) {
             double totalLoad = 0;
@@ -104,7 +107,7 @@ public class ProductionLoadHandler {
         for(int hour=0; hour < 24; hour++){
             double sumExpectedLoad = 0;
             double sumExpectedProduction = 0;
-            plannedProduction[hour] = Main.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
+            plannedProduction[hour] = simulationMonteCarloHelper.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
 
             int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
             int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
@@ -124,7 +127,7 @@ public class ProductionLoadHandler {
             sumExpectedLoad = Math.abs(sumExpectedLoad);
 
             // calculate expected conventional generator production
-            plannedProduction[hour] = Main.planExpectedProductionConvGen(plannedProduction, hour, sumExpectedLoad);
+            plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour, sumExpectedLoad);
 
             // get expected production
             for (int i = 0; i < plannedProduction[hour].getNodeList().length; i ++){
@@ -134,5 +137,54 @@ public class ProductionLoadHandler {
             }
         }
         return plannedProduction;
+    }
+
+    public static Graph planExpectedProductionConvGen(Graph[] grid, int timestep, double sumExpectedLoad) {
+        Node[] nodeList = grid[timestep].getNodeList();
+
+        double sumExpectedProduction = 0;
+
+        for ( int i = 0; i < nodeList.length; i++){
+            if(nodeList[i].getClass() == ConventionalGenerator.class){
+                ConventionalGenerator generator =  ((ConventionalGenerator) nodeList[i]);
+                if (timestep > 0){ //We take into account spinup after hour 0, maximum increase with spinup is 50% of max generation.
+                    double previousProduction =  ((ConventionalGenerator)grid[timestep - 1].getNodeList()[i]).getProduction();
+                    double production = previousProduction + generator.getMaxP() * 0.5;
+                    if(sumExpectedProduction+production < sumExpectedLoad){
+                        sumExpectedProduction += generator.setScheduledProduction(production, previousProduction);
+                    } else{
+                        //We don't need to use maximum production to meet the load, so we set production to remainder.
+                        production = sumExpectedLoad - sumExpectedProduction;
+
+                        //Check if production isn't to low, if it is set generator to min production.
+                        if (production < generator.getDayAheadMinProduction())
+                            sumExpectedProduction += generator.setScheduledProduction(production, previousProduction);
+                        else
+                            sumExpectedProduction += generator.setScheduledProduction(generator.getDayAheadMinProduction(), previousProduction);
+                    }
+                }else{
+                    double production = generator.getDayAheadMaxProduction();
+                    if(sumExpectedProduction+production < sumExpectedLoad){
+                        sumExpectedProduction += generator.setProduction(production);
+                    } else{
+                        production = sumExpectedLoad - sumExpectedProduction;
+
+                        if (production < generator.getDayAheadMinProduction())
+                            sumExpectedProduction += generator.setProduction(production);
+                        else
+                            sumExpectedProduction += generator.setProduction(generator.getDayAheadMinProduction());
+                    }
+                }
+
+                if(generator.getProduction() == 0){ //Turn off offers for decreasing production if we're not producing anything.
+                    generator.getDecreaseProductionOffers()[0].setAvailable(false);
+                    generator.getDecreaseProductionOffers()[1].setAvailable(false);
+                }
+
+                nodeList[i] = generator;
+            }
+        }
+        grid[timestep].setNodeList(nodeList);
+        return grid[timestep];
     }
 }

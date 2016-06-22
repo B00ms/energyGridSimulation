@@ -1,4 +1,4 @@
-package pgrid_opt;
+package config;
 
 import java.io.File;
 
