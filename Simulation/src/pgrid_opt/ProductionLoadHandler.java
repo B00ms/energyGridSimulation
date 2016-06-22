@@ -3,7 +3,7 @@ package pgrid_opt;
 import graph.Graph;
 import model.Consumer;
 import model.ConventionalGenerator;
-import model.RewGenerator;
+import model.RenewableGenerator;
 import model.Storage;
 
 /**
@@ -22,8 +22,8 @@ public class ProductionLoadHandler {
         for(int i = 0; i < graph.getNodeList().length; i++) {
             if (graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
                 sumProduction += ((ConventionalGenerator) graph.getNodeList()[i]).getProduction();
-            else if (graph.getNodeList()[i].getClass() == RewGenerator.class)
-                sumProduction += ((RewGenerator) graph.getNodeList()[i]).getProduction();
+            else if (graph.getNodeList()[i].getClass() == RenewableGenerator.class)
+                sumProduction += ((RenewableGenerator) graph.getNodeList()[i]).getProduction();
             else if (graph.getNodeList()[i].getClass() == Storage.class && ((Storage) graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.DISCHARGING)
                 sumProduction += ((Storage) graph.getNodeList()[i]).getFlow();
         }
@@ -50,8 +50,8 @@ public class ProductionLoadHandler {
     public static double calculateRenewableProduction(Graph graph){
         double production = 0;
         for(int i = 0; i < graph.getNodeList().length; i++){
-            if (graph.getNodeList()[i].getClass() == RewGenerator.class)
-                production += ((RewGenerator)graph.getNodeList()[i]).getProduction();
+            if (graph.getNodeList()[i].getClass() == RenewableGenerator.class)
+                production += ((RenewableGenerator)graph.getNodeList()[i]).getProduction();
         }
         return production;
     }
@@ -107,8 +107,8 @@ public class ProductionLoadHandler {
             for(int i = 0; i < plannedProduction[hour].getNodeList().length; i++){
                 if(plannedProduction[hour].getNodeList()[i].getClass() == Consumer.class){
                     sumExpectedLoad += ((Consumer)plannedProduction[hour].getNodeList()[i]).getLoad();
-                } else if (plannedProduction[hour].getNodeList()[i].getClass() == RewGenerator.class) {
-                    sumExpectedLoad -=  ((RewGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
+                } else if (plannedProduction[hour].getNodeList()[i].getClass() == RenewableGenerator.class) {
+                    sumExpectedLoad -=  ((RenewableGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
                 }
             }
 

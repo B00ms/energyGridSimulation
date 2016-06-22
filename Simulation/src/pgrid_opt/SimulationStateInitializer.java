@@ -4,7 +4,7 @@ package pgrid_opt;
 import graph.Graph;
 import model.Consumer;
 import model.ConventionalGenerator;
-import model.RewGenerator;
+import model.RenewableGenerator;
 import model.Storage;
 
 /**
@@ -88,10 +88,10 @@ public class SimulationStateInitializer {
 
 
 		}*/
+
 		for (int i = 0; i < this.gDay.length; i++) {
 			// todo check if loadmax is ever updated should probably be after first day ahead simulation
 			if (this.g.getLoadmax() / 100 * 70 > ((ConventionalGenerator)g.getNodeList()[i]).getProduction()) {
-
 				for (int j = 0; j < this.g.getNGenerators(); j++) {
 					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
 						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
@@ -112,8 +112,8 @@ public class SimulationStateInitializer {
 	private void calculateRewProd() {
 		for (int i = 0; i < gDay.length; i++){
 			for (int j = 0; j < gDay[i].getNodeList().length; j++){
-				if(gDay[i].getNodeList()[i].getClass() == RewGenerator.class){
-					((RewGenerator)gDay[i].getNodeList()[j]).setProduction(((RewGenerator) gDay[i].getNodeList()[j]).getMaxP() * ((RewGenerator) gDay[i].getNodeList()[j]).getProduction());
+				if(gDay[i].getNodeList()[i].getClass() == RenewableGenerator.class){
+					((RenewableGenerator)gDay[i].getNodeList()[j]).setProduction(((RenewableGenerator) gDay[i].getNodeList()[j]).getMaxP() * ((RenewableGenerator) gDay[i].getNodeList()[j]).getProduction());
 				}
 			}
 		}
