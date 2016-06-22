@@ -72,35 +72,18 @@ public class SimulationStateInitializer {
 	 * TODO this is old and this check should possibly be done later on
 	 */
 	private void checkGen() {
-		/*for (int i = 0; i < this.gDay.length - 1; i++) {
-
+		// todo ASK laura if this is still valid if so, when to disable
+		for (int i = 0; i < this.gDay.length; i++) {
 			if (this.g.getLoadmax() / 100 * 70 > this.loads[i]) {
-
 				for (int j = 0; j < this.g.getNGenerators(); j++) {
-					if (	("H".compareTo(((ConventionalGenerator) this.g.getNodeList()[j]).getType()) == 0)
-						||  ("H".compareTo(((ConventionalGenerator) this.g.getNodeList()[j]).getType()) == 1))
-					{
-						((ConventionalGenerator) this.gDay[i].getNodeList()[j]).setMaxP(0.0F);
-						((ConventionalGenerator) this.gDay[i].getNodeList()[j]).setMinP(0.0F);
+					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
+						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
+							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
+							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
+						}
 					}
 				}
 			}
-
-
-		}*/
-		// todo ASK laura if this is still valid if so, when to disable
-		for (int i = 0; i < this.gDay.length; i++) {
-//			// todo check if loadmax is ever updated should probably be after first day ahead simulation
-//			if (this.g.getLoadmax() / 100 * 70 > ((ConventionalGenerator)g.getNodeList()[i]).getProduction()) {
-//				for (int j = 0; j < this.g.getNGenerators(); j++) {
-//					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
-//						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
-//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
-//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
-//						}
-//					}
-//				}
-//			}
 		}
 	}
 
