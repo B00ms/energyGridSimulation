@@ -49,8 +49,8 @@ public class SimulationStateInitializer {
 	public Graph updateStorages(Graph oldg, Graph newg) {
 		for (int i = 0; i < oldg.getNodeList().length; i++) {
 			if(oldg.getNodeList()[i].getClass() == Storage.class) {
-				float etac = oldg.getEtac();
-				float etad = oldg.getEtad();
+				float chargeEfficiency = oldg.getChargeEfficiency();
+				float dischargeEfficiency = oldg.getDischargeEfficiency();
 				float delta = oldg.getDelta();
 				double av = ((Storage) oldg.getNodeList()[i]).getCurrentCharge();
 				float flow = 0.0F;
@@ -58,9 +58,9 @@ public class SimulationStateInitializer {
 					flow += oldg.getEdges()[j].getFlow();
 				}
 				if (flow >= 0.0F)
-					((Storage) newg.getNodeList()[i]).charge(av - flow / etad * delta);
+					((Storage) newg.getNodeList()[i]).charge(av - flow / dischargeEfficiency * delta);
 				else
-					((Storage) newg.getNodeList()[i]).charge(av - flow * etac * delta);
+					((Storage) newg.getNodeList()[i]).charge(av - flow * chargeEfficiency * delta);
 			}
 		}
 		return newg;
@@ -88,19 +88,19 @@ public class SimulationStateInitializer {
 
 
 		}*/
-
+		// todo ASK laura if this is still valid if so, when to disable
 		for (int i = 0; i < this.gDay.length; i++) {
-			// todo check if loadmax is ever updated should probably be after first day ahead simulation
-			if (this.g.getLoadmax() / 100 * 70 > ((ConventionalGenerator)g.getNodeList()[i]).getProduction()) {
-				for (int j = 0; j < this.g.getNGenerators(); j++) {
-					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
-						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
-							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
-							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
-						}
-					}
-				}
-			}
+//			// todo check if loadmax is ever updated should probably be after first day ahead simulation
+//			if (this.g.getLoadmax() / 100 * 70 > ((ConventionalGenerator)g.getNodeList()[i]).getProduction()) {
+//				for (int j = 0; j < this.g.getNGenerators(); j++) {
+//					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
+//						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
+//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
+//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
+//						}
+//					}
+//				}
+//			}
 		}
 	}
 

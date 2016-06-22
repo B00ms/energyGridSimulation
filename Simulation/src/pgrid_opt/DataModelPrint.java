@@ -41,8 +41,8 @@ public class DataModelPrint {
 	 * @param outname current timestep
 	 */
 	public void printData(Graph g, String filename, String outname) {
-		float etac = g.getEtac();
-		float etad = g.getEtad();
+		float chargeEfficiency = g.getChargeEfficiency();
+		float dischargeEfficiency = g.getDischargeEfficiency();
 		float delta = g.getDelta();
 //		int current_hour = Integer.getInteger(outname);
 
@@ -95,7 +95,7 @@ public class DataModelPrint {
 				int vertexOne = g.getEdges()[e].getEndVertexes()[0];
 				int vertexTwo = g.getEdges()[e].getEndVertexes()[1];
 				if (g.getEdges()[e].getCapacity() > 0)
-					edgesPrintArray[vertexOne][vertexTwo] = (float) g.getEdges()[e].getCapacity() / etac;
+					edgesPrintArray[vertexOne][vertexTwo] = (float) g.getEdges()[e].getCapacity() / chargeEfficiency;
 			}
 
 			for (int i = 0; i < edgesPrintArray.length; i++) {
@@ -241,7 +241,7 @@ public class DataModelPrint {
 							((Storage) g.getNodeList()[i]).charge(((Storage) g.getNodeList()[i]).getMinimumCharge());
 						}
 						Storage stor = (Storage) g.getNodeList()[i];
-						double val = (((Storage) g.getNodeList()[i]).getCurrentCharge()	- ((Storage) g.getNodeList()[i]).getMinimumCharge()) / delta * etad;
+						double val = (((Storage) g.getNodeList()[i]).getCurrentCharge()	- ((Storage) g.getNodeList()[i]).getMinimumCharge()) / delta * dischargeEfficiency;
 						//System.out.print(stor.getCurrentCharge() + " ");
 						//System.out.println(val);
 						//TODO: val is negative sometimes.
@@ -252,11 +252,11 @@ public class DataModelPrint {
 							}
 						}
 						counter++;
-						if (cap * etad < val) {
+						if (cap * dischargeEfficiency < val) {
 							if (counter != g.getNstorage())
-								writer.println(i + " " + cap * etad);
+								writer.println(i + " " + cap * dischargeEfficiency);
 							else
-								writer.println(i + " " + cap * etad + ";");
+								writer.println(i + " " + cap * dischargeEfficiency + ";");
 
 						} else if (counter != g.getNstorage()) {
 							writer.println(i + " " + val);
@@ -281,8 +281,8 @@ public class DataModelPrint {
 
 //						double max = ((Storage) g.getNodeList()[i]).getMaximumCharge();
 //						double current = ((Storage) g.getNodeList()[i]).getCurrentCharge();
-
-						double val = (((Storage) g.getNodeList()[i]).getMaximumCharge() - ((Storage) g.getNodeList()[i]).getCurrentCharge()) / delta / etac;
+						// chargeEfficiency is (dis)charge efficiency
+						double val = (((Storage) g.getNodeList()[i]).getMaximumCharge() - ((Storage) g.getNodeList()[i]).getCurrentCharge()) / delta / chargeEfficiency;
 
 						for (int j = g.getNGenerators() + g.getNConsumers(); j < g.getNNode() - (g.getNstorage() + g.getNrGenerators()); j++) {
 							if (g.getEdges()[j].getCapacity() != 0.0F) {
@@ -292,11 +292,11 @@ public class DataModelPrint {
 						}
 
 						counter++;
-						if (cap / etac < val) {
+						if (cap / chargeEfficiency < val) {
 							if (counter != g.getNstorage())
-								writer.println(i + " -" + cap / etac);
+								writer.println(i + " -" + cap / chargeEfficiency);
 							else
-								writer.println(i + " -" + cap / etac + ";");
+								writer.println(i + " -" + cap / chargeEfficiency + ";");
 
 						} else if (counter != g.getNstorage()) {
 							//writer.println(i + " -" + val);

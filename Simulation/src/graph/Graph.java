@@ -22,11 +22,11 @@ public class Graph implements Cloneable {
 	private int nrgenerators; //Number of renewable generators
 	private int loadmax; //Daily max load demand
 	private int nstorage; //Number of storage systems in the grid
-	private int efficency; //TODO: determine what this variable represents(capacity of real edges?), it's hardcoded to 75
+	private int efficiency; //TODO: determine what this variable represents(capacity of real edges?), it's hardcoded to 75
 	private float cost_curt; //Renewable cut costs
 	private float cost_sl; // cost shedded load
-	private float etac; //Duration of each time step
-	private float etad; //Charge and discharge efficiency of storages
+	private float chargeEfficiency; //Duration of each time step
+	private float dischargeEfficiency; //Charge and discharge efficiency of storages
 	private float delta; //Length of the time step.
 	private Node[] nodelist;
 	private Edge[][] network;
@@ -34,7 +34,7 @@ public class Graph implements Cloneable {
 	private ConfigCollection config = new ConfigCollection();
 
 	public Graph(int nnode, int ngenerators, int nrgenerators, int nconsumers, int loadmax, int nstorage, float delta,
-			float etac, float etad) {
+			float chargeEfficiency, float dischargeEfficiency) {
 
 
 		setNodeList(new Node[nnode]);
@@ -51,12 +51,10 @@ public class Graph implements Cloneable {
 		int efficiency = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "efficiency");
 		setCostSheddedLoad(costLoadShedding);
 		setCostCurtailment(costCurtailment);
-		setEfficency(efficiency);
-//		setCostCurtailment(200.0F); //TODO: move to configuration file
-//		setEfficency(75);
+		setEfficiency(efficiency);
 		setDelta(delta);
-		setEtac(etac);
-		setEtad(etad);
+		setChargeEfficiency(chargeEfficiency);
+		setDischargeEfficiency(dischargeEfficiency);
 	}
 
 	public Edge[][] getNetwork() {
@@ -135,7 +133,7 @@ public class Graph implements Cloneable {
 	 */
 	public Graph clone() {
 		Graph g = new Graph(this.nnode, this.ngenerators, this.nrgenerators, this.nconsumers, this.loadmax,
-				this.nstorage, this.delta, this.etac, this.etad);
+				this.nstorage, this.delta, this.chargeEfficiency, this.dischargeEfficiency);
 
 		Node[] tempNodeList = new Node[g.getNodeList().length];
 
@@ -148,7 +146,7 @@ public class Graph implements Cloneable {
 																					((ConventionalGenerator) nodelist[i]).getCoef(),
 																					((ConventionalGenerator) nodelist[i]).getType(),
 																					((ConventionalGenerator) nodelist[i]).getProduction(),
-																					((ConventionalGenerator) nodelist[i]).getNodeId());
+																					(nodelist[i]).getNodeId());
 
 				conventionalGenerator.setMTTF(((ConventionalGenerator) nodelist[i]).getMTTF());
 				conventionalGenerator.setMTTR(((ConventionalGenerator) nodelist[i]).getMTTR());
@@ -161,7 +159,7 @@ public class Graph implements Cloneable {
 																	((RenewableGenerator)nodelist[i]).getMinP(),
 																	((RenewableGenerator)nodelist[i]).getCoef(),
 																	((RenewableGenerator)nodelist[i]).getType(),
-																	((RenewableGenerator)nodelist[i]).getNodeId());
+																	(nodelist[i]).getNodeId());
 				tempNodeList[i] = renewableGenerator;
 
 			} else if (getNodeList()[i].getClass() == Storage.class){
@@ -169,17 +167,17 @@ public class Graph implements Cloneable {
 				Storage storage = new Storage(((Storage)getNodeList()[i]).getCurrentCharge(),
 											((Storage)getNodeList()[i]).getMaximumCharge(),
 											((Storage)getNodeList()[i]).getMinimumCharge(),
-											((Storage)getNodeList()[i]).getNodeId());
+											(getNodeList()[i]).getNodeId());
 
 				tempNodeList[i] = storage;
 
 			} else if (getNodeList()[i].getClass() == InnerNode.class){
-				int nodeId = ((InnerNode)nodelist[i]).getNodeId();
+				int nodeId = (nodelist[i]).getNodeId();
 				InnerNode innerNode = new InnerNode(nodeId);
 				tempNodeList[i] = innerNode;
 
 			}else if (getNodeList()[i].getClass() == Consumer.class){
-				Consumer consumer = new Consumer(((Consumer)getNodeList()[i]).getLoad(), ((Consumer)getNodeList()[i]).getNodeId());
+				Consumer consumer = new Consumer(((Consumer)getNodeList()[i]).getLoad(), (getNodeList()[i]).getNodeId());
 				tempNodeList[i] = consumer;
 			}
 		}
@@ -200,26 +198,26 @@ public class Graph implements Cloneable {
 
 	/**
 	 *
-	 * @return number of loads in graph
+	 * @return number of storage nodes in graph
 	 */
 	public int getNstorage() {
 		return this.nstorage;
 	}
 
 	/**
-	 * Sets the number of loads in the graph
+	 * Sets the number of storage nodes in the graph
 	 * @param nstorage
 	 */
 	public void setNstorage(int nstorage) {
 		this.nstorage = nstorage;
 	}
 
-	public int getEfficency() {
-		return this.efficency;
+	public int getEfficiency() {
+		return this.efficiency;
 	}
 
-	public void setEfficency(int efficency) {
-		this.efficency = efficency;
+	public void setEfficiency(int efficiency) {
+		this.efficiency = efficiency;
 	}
 
 	public float getCostCurtailment() {
@@ -237,52 +235,49 @@ public class Graph implements Cloneable {
 	public void setCostSheddedLoad(float cost_sl){this.cost_sl = cost_sl;}
 
 	/**
-	 *
-	 * @return Number of storage systems
+	 * @return duriation of time
 	 */
 	public float getDelta() {
 		return this.delta;
 	}
 
 	/**
-	 * Set the Number of storage systems
-	 * @param delta
+	 * Set the duration of time (e.g. 1 hour, 0.25 = 1/4th hour)
+	 * @param delta current duration of time
 	 */
 	public void setDelta(float delta) {
 		this.delta = delta;
 	}
 
 	/**
-	 *
-	 * @return Charge and discharge efficiency of storages
+	 * @return discharge efficiency of storage nodes
 	 */
-	public float getEtad() {
-		return this.etad;
+	public float getDischargeEfficiency() {
+		return this.dischargeEfficiency;
 	}
 
 	/**
-	 * Set the Charge and discharge efficiency of storages
-	 * @param etad
+	 * Set the discharge efficiency of storage nodes
+	 * @param dischargeEfficiency discharge efficiency
 	 */
-
-	public void setEtad(float etad) {
-		this.etad = etad;
+	public void setDischargeEfficiency(float dischargeEfficiency) {
+		this.dischargeEfficiency = dischargeEfficiency;
 	}
 
 	/**
-	 *
-	 * @return the duration of each time step.
+	 * Charge efficiency of storage nodes
+	 * @return charge efficiency of storage nodes.
 	 */
-	public float getEtac() {
-		return this.etac;
+	public float getChargeEfficiency() {
+		return this.chargeEfficiency;
 	}
 
 	/**
-	 * Sets the duration of a time step.
-	 * @param etac
+	 * charge efficiency of storage nodes
+	 * @param chargeEfficiency charge efficiency of storage nodes
 	 */
-	public void setEtac(float etac) {
-		this.etac = etac;
+	public void setChargeEfficiency(float chargeEfficiency) {
+		this.chargeEfficiency = chargeEfficiency;
 	}
 
 	/**
@@ -386,7 +381,7 @@ public class Graph implements Cloneable {
 
 	/**
 	 * For a single graph: copy the flow of the output file to the graph in the simulation
-	 * @return
+	 * @return updated graph with adjusted flow after minimizing objective function in simulation
 	 */
 	public Graph setFlowFromOutputFile(Graph graph, int timestep){
 		ConfigCollection config = new ConfigCollection();
