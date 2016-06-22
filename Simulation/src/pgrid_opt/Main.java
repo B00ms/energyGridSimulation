@@ -109,8 +109,7 @@ public class Main {
 					if (graph.getNstorage() > 0) {
 						timestepsGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
 								timestepsGraph[currentTimeStep]); // Keeps track of the new state for storages.
-
-					// TODO only last timestep doesn't need to update the storages, Julien?
+						
 					if (currentTimeStep < 23)
 						timestepsGraph[currentTimeStep + 1] = simulationState.updateStorages(timestepsGraph[currentTimeStep],
 								timestepsGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.

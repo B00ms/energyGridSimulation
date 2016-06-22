@@ -73,13 +73,16 @@ public class SimulationStateInitializer {
 	 */
 	private void checkGen() {
 		// todo ASK laura if this is still valid if so, when to disable
+		// todo this should probably happen during planning phase or something
 		for (int i = 0; i < this.gDay.length; i++) {
-			if (this.g.getLoadmax() / 100 * 70 > this.loads[i]) {
+			if (this.g.getLoadmax() / 100 * 10 > this.loads[i]) {
 				for (int j = 0; j < this.g.getNGenerators(); j++) {
 					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
 						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
-							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
-							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
+//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
+//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
+							((ConventionalGenerator) gDay[i].getNodeList()[j]).setGeneratorDisabled(true);
+
 						}
 					}
 				}

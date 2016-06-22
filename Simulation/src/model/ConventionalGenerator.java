@@ -9,6 +9,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	private int mttf;//mean time to failure
 	private int mttr;//mean time to repair
 	private boolean generatorFailure = false; //Indicates if the generator is working normally or if it has failed
+	private boolean disabled = false; //Indicates if the generator is disabled
 	private ConfigCollection config = new ConfigCollection();
 
 	private double maxProductionIncrease;
@@ -45,6 +46,13 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 			this.production = 0;
 		}
 		this.generatorFailure = generatorFailure;
+	}
+
+	public void setGeneratorDisabled(boolean disabled){
+		this.disabled = true;
+		this.production = 0;
+		this.maxp=0;
+		this.minp=0;
 	}
 
 	public double setProduction(double production) {
