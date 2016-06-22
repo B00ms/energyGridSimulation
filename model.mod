@@ -74,8 +74,9 @@ subject to setRewProduction { i in rgen } :
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
-
-
+#unable to do this constraint because of the li
+#subject to storageFlow { i in storage } :
+#	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];
 
 #look at this part
 # if later than  start_charge_time and earlier than end_charge_time, charge storage
@@ -85,8 +86,7 @@ subject to genproduction { i in tgen } :
 	# take in account the capacity of the storage
 	# extra renewable increase power going into the storage
 	
-#	subject to storageFlow { i in storage } :
-#	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];
+	
 
 #} 
 #for {{0}: current_hour <= start_charge_time || current_hour >= end_charge_time} {# ELSE
@@ -95,12 +95,7 @@ subject to genproduction { i in tgen } :
 	# ook lijkt storagemin momenteel negatief te kunnen zijn wat 0 of hoger zou moeten zijn lijkt me 
 	# constraint check op capiciteit van de lijn minimaal de storage min en max aan kan
 	#Minimum discharge of storage nodes
-	#subject to sgenmin { i in storage } :
-	#	sum { j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j]*m_factor, >= storagemin[i];
 
-	# maximum charge of storage nodes
-#	subject to sgenmax { i in storage } :
-#		sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= storagemax[i];
 #}# ENDIF
 
 		
