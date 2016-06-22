@@ -12,6 +12,7 @@ public class ConfigCollection {
 	private Config generalConfig;
 	private Config monteCarlo;
 	private Config conventionalGenerator;
+	private Config hydroelectricGenerator;
 	private Config loadCurves;
 	private Config production;
 	private Config windGenerator;
@@ -25,24 +26,25 @@ public class ConfigCollection {
 	private Config hydroOilOffer;
 
 	//Do we want ../directory or ./directory?
-	private boolean doubleDot;
+	private boolean osxCheck;
 
-	public enum CONFIGURATION_TYPE { GENERAL, MONTE_CARLO, CONVENTIONAL_GENERATOR,
+	public enum CONFIGURATION_TYPE { GENERAL, MONTE_CARLO, CONVENTIONAL_GENERATOR, HYDROELECTRIC_GENERATOR,
 			LOAD_CURVES, OIL_OFFER, COAL_OFFER, NUCLEAR_OFFER, HYRDO_OFFER, PRODUCTION, WIND_GENERATOR, SOLAR_GENERATOR, STORAGE, GLPSOL};
 
 
 	public ConfigCollection(){
 		if (OS.startsWith("Windows") || OS.startsWith("Linux")) {
 			conf = ConfigFactory.parseFile(new File("../config/application.conf"));
-			doubleDot = true;
+			osxCheck = true;
 		} else {
 			conf = ConfigFactory.parseFile(new File("config/application.conf"));
-			doubleDot = false;
+			osxCheck = false;
 		}
 
 		generalConfig 			= conf.getConfig("general");
 		monteCarlo 				= conf.getConfig("monte-carlo");
 		conventionalGenerator 	= conf.getConfig("conventionalGenerator");
+		hydroelectricGenerator 	= conf.getConfig("hydroelectricGenerator");
 		loadCurves 				= conf.getConfig("conventionalGenerator").getConfig("load-curves");
 		
 		oilOffer 				= conf.getConfig("conventionalGenerator").getConfig("oilOffer");
@@ -62,105 +64,115 @@ public class ConfigCollection {
 		return OS;
 	}
 
-	public String getConfigStringValue(CONFIGURATION_TYPE configType, String configurationKeyWord ){
+	private boolean osxConfigFolderCheck(String configurationKeyWord){
+		return (
+			configurationKeyWord.equalsIgnoreCase("input-file") ||
+			configurationKeyWord.equalsIgnoreCase("output-folder") ||
+			configurationKeyWord.equalsIgnoreCase("graphstate-folder")
+		);
+	}
+
+	public String getConfigStringValue(CONFIGURATION_TYPE configType, String configurationKeyWord) {
 		String confValue = null;
-		switch (configType){
-		case GENERAL:
-			if(doubleDot == false && (
-//					configurationKeyWord.equalsIgnoreCase("model-file") ||
-					configurationKeyWord.equalsIgnoreCase("input-file") ||
-					configurationKeyWord.equalsIgnoreCase("output-folder")||
-					configurationKeyWord.equalsIgnoreCase("graphstate-folder"))){
-				confValue = generalConfig.getString(configurationKeyWord);
-				confValue = confValue.substring(1, confValue.length());
-			}else{
-				confValue = generalConfig.getString(configurationKeyWord);
-			}
-			break;
-		case MONTE_CARLO:
-			confValue = monteCarlo.getString(configurationKeyWord);
-			break;
-		case CONVENTIONAL_GENERATOR:
-			confValue = conventionalGenerator.getString(configurationKeyWord);
-			break;
-		case LOAD_CURVES:
-			confValue = loadCurves.getString(configurationKeyWord);
-			break;
-		case OIL_OFFER:
-			confValue = oilOffer.getString(configurationKeyWord);
-			break;
-		case COAL_OFFER:
-			confValue = coalOffer.getString(configurationKeyWord);
-			break;
-		case NUCLEAR_OFFER:
-			confValue = nuclearOffer.getString(configurationKeyWord);
-			break;
-		case HYRDO_OFFER:
-			confValue = hydroOilOffer.getString(configurationKeyWord);
-			break;						
-		case PRODUCTION:
-			confValue = production.getString(configurationKeyWord);
-			break;
-		case WIND_GENERATOR:
-			confValue = windGenerator.getString(configurationKeyWord);
-			break;
-		case SOLAR_GENERATOR:
-			confValue = solarGenerator.getString(configurationKeyWord);
-			break;
-		case STORAGE:
-			confValue = storage.getString(configurationKeyWord);
-			break;
-		case GLPSOL:
-			confValue = glpsol.getString(configurationKeyWord);
-			break;
+		switch (configType) {
+			case GENERAL:
+				if (osxCheck == false && osxConfigFolderCheck(configurationKeyWord)) {
+					confValue = generalConfig.getString(configurationKeyWord);
+					confValue = confValue.substring(1, confValue.length());
+				} else {
+					confValue = generalConfig.getString(configurationKeyWord);
+				}
+				break;
+			case MONTE_CARLO:
+				confValue = monteCarlo.getString(configurationKeyWord);
+				break;
+			case CONVENTIONAL_GENERATOR:
+				confValue = conventionalGenerator.getString(configurationKeyWord);
+				break;
+			case HYDROELECTRIC_GENERATOR:
+				confValue = hydroelectricGenerator.getString(configurationKeyWord);
+				break;
+			case LOAD_CURVES:
+				confValue = loadCurves.getString(configurationKeyWord);
+				break;
+			case OIL_OFFER:
+				confValue = oilOffer.getString(configurationKeyWord);
+				break;
+			case COAL_OFFER:
+				confValue = coalOffer.getString(configurationKeyWord);
+				break;
+			case NUCLEAR_OFFER:
+				confValue = nuclearOffer.getString(configurationKeyWord);
+				break;
+			case HYRDO_OFFER:
+				confValue = hydroOilOffer.getString(configurationKeyWord);
+				break;
+			case PRODUCTION:
+				confValue = production.getString(configurationKeyWord);
+				break;
+			case WIND_GENERATOR:
+				confValue = windGenerator.getString(configurationKeyWord);
+				break;
+			case SOLAR_GENERATOR:
+				confValue = solarGenerator.getString(configurationKeyWord);
+				break;
+			case STORAGE:
+				confValue = storage.getString(configurationKeyWord);
+				break;
+			case GLPSOL:
+				confValue = glpsol.getString(configurationKeyWord);
+				break;
 		}
 
 		return confValue;
 
 	}
 
-	public Integer getConfigIntValue(CONFIGURATION_TYPE configType, String configurationKeyWord ){
+	public Integer getConfigIntValue(CONFIGURATION_TYPE configType, String configurationKeyWord) {
 		Integer confValue = null;
-		switch (configType){
-		case GENERAL:
-			confValue = generalConfig.getInt(configurationKeyWord);
-			break;
-		case MONTE_CARLO:
-			confValue = monteCarlo.getInt(configurationKeyWord);
-			break;
-		case CONVENTIONAL_GENERATOR:
-			confValue = conventionalGenerator.getInt(configurationKeyWord);
-			break;
-		case LOAD_CURVES:
-			confValue = loadCurves.getInt(configurationKeyWord);
-			break;
-		case OIL_OFFER:
-			confValue = oilOffer.getInt(configurationKeyWord);
-			break;
-		case COAL_OFFER:
-			confValue = coalOffer.getInt(configurationKeyWord);
-			break;
-		case NUCLEAR_OFFER:
-			confValue = nuclearOffer.getInt(configurationKeyWord);
-			break;
-		case HYRDO_OFFER:
-			confValue = hydroOilOffer.getInt(configurationKeyWord);
-			break;		
-		case PRODUCTION:
-			confValue = production.getInt(configurationKeyWord);
-			break;
-		case WIND_GENERATOR:
-			confValue = windGenerator.getInt(configurationKeyWord);
-			break;
-		case SOLAR_GENERATOR:
-			confValue = solarGenerator.getInt(configurationKeyWord);
-			break;
-		case STORAGE:
-			confValue = storage.getInt(configurationKeyWord);
-			break;
-		case GLPSOL:
-			confValue = glpsol.getInt(configurationKeyWord);
-			break;
+		switch (configType) {
+			case GENERAL:
+				confValue = generalConfig.getInt(configurationKeyWord);
+				break;
+			case MONTE_CARLO:
+				confValue = monteCarlo.getInt(configurationKeyWord);
+				break;
+			case CONVENTIONAL_GENERATOR:
+				confValue = conventionalGenerator.getInt(configurationKeyWord);
+				break;
+			case HYDROELECTRIC_GENERATOR:
+				confValue = hydroelectricGenerator.getInt(configurationKeyWord);
+				break;
+			case LOAD_CURVES:
+				confValue = loadCurves.getInt(configurationKeyWord);
+				break;
+			case OIL_OFFER:
+				confValue = oilOffer.getInt(configurationKeyWord);
+				break;
+			case COAL_OFFER:
+				confValue = coalOffer.getInt(configurationKeyWord);
+				break;
+			case NUCLEAR_OFFER:
+				confValue = nuclearOffer.getInt(configurationKeyWord);
+				break;
+			case HYRDO_OFFER:
+				confValue = hydroOilOffer.getInt(configurationKeyWord);
+				break;
+			case PRODUCTION:
+				confValue = production.getInt(configurationKeyWord);
+				break;
+			case WIND_GENERATOR:
+				confValue = windGenerator.getInt(configurationKeyWord);
+				break;
+			case SOLAR_GENERATOR:
+				confValue = solarGenerator.getInt(configurationKeyWord);
+				break;
+			case STORAGE:
+				confValue = storage.getInt(configurationKeyWord);
+				break;
+			case GLPSOL:
+				confValue = glpsol.getInt(configurationKeyWord);
+				break;
 		}
 
 		return confValue;
@@ -169,46 +181,49 @@ public class ConfigCollection {
 
 	public Double getConfigDoubleValue(CONFIGURATION_TYPE configType, String configurationKeyWord ){
 		Double confValue = null;
-		switch (configType){
-		case GENERAL:
-			confValue = generalConfig.getDouble(configurationKeyWord);
-			break;
-		case MONTE_CARLO:
-			confValue = monteCarlo.getDouble(configurationKeyWord);
-			break;
-		case CONVENTIONAL_GENERATOR:
-			confValue = conventionalGenerator.getDouble(configurationKeyWord);
-			break;
-		case LOAD_CURVES:
-			confValue = loadCurves.getDouble(configurationKeyWord);
-			break;
-		case OIL_OFFER:
-			confValue = oilOffer.getDouble(configurationKeyWord);
-			break;
-		case COAL_OFFER:
-			confValue = coalOffer.getDouble(configurationKeyWord);
-			break;
-		case NUCLEAR_OFFER:
-			confValue = nuclearOffer.getDouble(configurationKeyWord);
-			break;
-		case HYRDO_OFFER:
-			confValue = hydroOilOffer.getDouble(configurationKeyWord);
-			break;	
-		case PRODUCTION:
-			confValue = production.getDouble(configurationKeyWord);
-			break;
-		case WIND_GENERATOR:
-			confValue = windGenerator.getDouble(configurationKeyWord);
-			break;
-		case SOLAR_GENERATOR:
-			confValue = solarGenerator.getDouble(configurationKeyWord);
-			break;
-		case STORAGE:
-			confValue = storage.getDouble(configurationKeyWord);
-			break;
-		case GLPSOL:
-			confValue = glpsol.getDouble(configurationKeyWord);
-			break;
+		switch (configType) {
+			case GENERAL:
+				confValue = generalConfig.getDouble(configurationKeyWord);
+				break;
+			case MONTE_CARLO:
+				confValue = monteCarlo.getDouble(configurationKeyWord);
+				break;
+			case CONVENTIONAL_GENERATOR:
+				confValue = conventionalGenerator.getDouble(configurationKeyWord);
+				break;
+			case HYDROELECTRIC_GENERATOR:
+				confValue = hydroelectricGenerator.getDouble(configurationKeyWord);
+				break;
+			case LOAD_CURVES:
+				confValue = loadCurves.getDouble(configurationKeyWord);
+				break;
+			case OIL_OFFER:
+				confValue = oilOffer.getDouble(configurationKeyWord);
+				break;
+			case COAL_OFFER:
+				confValue = coalOffer.getDouble(configurationKeyWord);
+				break;
+			case NUCLEAR_OFFER:
+				confValue = nuclearOffer.getDouble(configurationKeyWord);
+				break;
+			case HYRDO_OFFER:
+				confValue = hydroOilOffer.getDouble(configurationKeyWord);
+				break;
+			case PRODUCTION:
+				confValue = production.getDouble(configurationKeyWord);
+				break;
+			case WIND_GENERATOR:
+				confValue = windGenerator.getDouble(configurationKeyWord);
+				break;
+			case SOLAR_GENERATOR:
+				confValue = solarGenerator.getDouble(configurationKeyWord);
+				break;
+			case STORAGE:
+				confValue = storage.getDouble(configurationKeyWord);
+				break;
+			case GLPSOL:
+				confValue = glpsol.getDouble(configurationKeyWord);
+				break;
 		}
 
 		return confValue;
