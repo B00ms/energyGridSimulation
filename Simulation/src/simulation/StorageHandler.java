@@ -14,7 +14,12 @@ public class StorageHandler {
 
     private static ProductionLoadHandler hpl = new ProductionLoadHandler();
 
-	public Graph[] PlanStorageCharging(Graph[] plannedTimestepsGraph) {
+   /**
+    * Sets the state of storage to charge to 50% of max SoC between a begin time and end time.
+    * @param plannedTimestepsGraph
+    * @return
+    */
+	public Graph[] planStorageCharging(Graph[] plannedTimestepsGraph) {
 
 	    int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
 	    int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
@@ -38,6 +43,25 @@ public class StorageHandler {
 		}
 	return plannedTimestepsGraph;
 	}
+
+	@SuppressWarnings("unused")
+	public Graph[] planStorageCharging(Graph graph, int timestep){
+
+	    int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+	    int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
+
+		if(timestep >= beginChargeTime || timestep <= endChargeTime){
+
+		    ProductionLoadHandler plh = new ProductionLoadHandler();
+		    double renewableProduction = plh.calculateRenewableProduction(graph);
+		    double conventionalProduction = plh.calculateProduction(graph);
+		    double realLoad = plh.calculateLoad(graph);
+
+		    double test = 0;
+		}
+		return null;
+	}
+
 
     /**
      * Charges storage but only if the current charge is less than 50% of its capacity.

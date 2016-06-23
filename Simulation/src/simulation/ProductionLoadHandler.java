@@ -46,7 +46,7 @@ public class ProductionLoadHandler {
 
         for(int i = 0; i < graph.getNodeList().length; i++){
             if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.CHARGING )
-                sumLoad += ((Storage)graph.getNodeList()[i]).getFlow();
+                sumLoad += Math.abs(((Storage)graph.getNodeList()[i]).getFlow());
             else if (graph.getNodeList()[i].getClass() == Consumer.class)
                 sumLoad += ((Consumer)graph.getNodeList()[i]).getLoad();
         }
@@ -96,16 +96,25 @@ public class ProductionLoadHandler {
     }
 
     /**
-     * Sets the expected load and production of an entire day
+     * Plans charging of storage during night period, sets expected renewable production, sets expected conventional production.
+     * This function sets the above mention for the entire day.
      * @param graphs
-     * @return Array where [0] = expectedLoad and [1] = expectedProduction
+     * @return Array of graphs for each hour where production and load has been set.
      */
-    public static Graph[] setExpectedLoadAndProduction(Graph[] graphs) {
+    public Graph[] setExpectedLoadAndProduction(Graph[] graphs) {
 
-        Graph[] plannedProduction = graphs; // clone state of graphs
+    	StorageHandler storageHandler = new StorageHandler();
 
-        for(int hour=0; hour < 24; hour++){
+    	// clone state of graphs
+        Graph[] plannedProduction = graphs;
+        System.out.println(calculateLoad(graphs[0]));
+        //Plan charging storage for during the night period of the day..
+        plannedProduction = storageHandler.planStorageCharging(plannedProduction);
+        System.out.println(calculateLoad(graphs[0]));
+
+        for(int i=0; i < graphs.length; i++){
             double sumExpectedLoad = 0;
+<<<<<<< Updated upstream:Simulation/src/simulation/ProductionLoadHandler.java
             double sumExpectedProduction = 0;
             plannedProduction[hour] = simulationMonteCarloHelper.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
 
@@ -122,19 +131,21 @@ public class ProductionLoadHandler {
                 	sumExpectedLoad += ((Storage)plannedProduction[hour].getNodeList()[i]).getFlow();
                 }
             }
+=======
+>>>>>>> Stashed changes:Simulation/src/pgrid_opt/ProductionLoadHandler.java
 
-            //Make sure sumExpectedLoad cannot be negative.
-            sumExpectedLoad = Math.abs(sumExpectedLoad);
+            //Set expected renewable production
+            plannedProduction[i] = Main.randomizeRenewableGenerator(plannedProduction[i], i);
 
+<<<<<<< Updated upstream:Simulation/src/simulation/ProductionLoadHandler.java
             // calculate expected conventional generator production
             plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour, sumExpectedLoad);
+=======
+            sumExpectedLoad = calculateLoad(plannedProduction[i]);
+>>>>>>> Stashed changes:Simulation/src/pgrid_opt/ProductionLoadHandler.java
 
-            // get expected production
-            for (int i = 0; i < plannedProduction[hour].getNodeList().length; i ++){
-                if (plannedProduction[hour].getNodeList()[i].getClass() == ConventionalGenerator.class){
-                    sumExpectedProduction +=  ((ConventionalGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
-                }
-            }
+            // calculate and set expected conventional generator production
+            plannedProduction[i] = Main.planExpectedProductionConvGen(plannedProduction, i);
         }
         return plannedProduction;
     }
