@@ -7,6 +7,7 @@ import model.Consumer;
 import model.ConventionalGenerator;
 import model.RenewableGenerator;
 import model.Storage;
+import pgrid_opt.Main;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 
 /**
@@ -112,49 +113,26 @@ public class ProductionLoadHandler {
         plannedProduction = storageHandler.planStorageCharging(plannedProduction);
         System.out.println(calculateLoad(graphs[0]));
 
-        for(int i=0; i < graphs.length; i++){
-            double sumExpectedLoad = 0;
-<<<<<<< Updated upstream:Simulation/src/simulation/ProductionLoadHandler.java
-            double sumExpectedProduction = 0;
+        for(int hour=0; hour < graphs.length; hour++){
             plannedProduction[hour] = simulationMonteCarloHelper.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
 
-            int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
-            int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
-
-            // calculate expected load
-            for(int i = 0; i < plannedProduction[hour].getNodeList().length; i++){
-                if(plannedProduction[hour].getNodeList()[i].getClass() == Consumer.class){
-                    sumExpectedLoad += ((Consumer)plannedProduction[hour].getNodeList()[i]).getLoad();
-                } else if (plannedProduction[hour].getNodeList()[i].getClass() == RenewableGenerator.class) {
-                    sumExpectedLoad -=  ((RenewableGenerator)plannedProduction[hour].getNodeList()[i]).getProduction();
-                } else if (plannedProduction[hour].getNodeList()[i].getClass() == Storage.class) {
-                	sumExpectedLoad += ((Storage)plannedProduction[hour].getNodeList()[i]).getFlow();
-                }
-            }
-=======
->>>>>>> Stashed changes:Simulation/src/pgrid_opt/ProductionLoadHandler.java
-
             //Set expected renewable production
-            plannedProduction[i] = Main.randomizeRenewableGenerator(plannedProduction[i], i);
+            plannedProduction[hour] = Main.randomizeRenewableGenerator(plannedProduction[hour], hour);
 
-<<<<<<< Updated upstream:Simulation/src/simulation/ProductionLoadHandler.java
             // calculate expected conventional generator production
-            plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour, sumExpectedLoad);
-=======
-            sumExpectedLoad = calculateLoad(plannedProduction[i]);
->>>>>>> Stashed changes:Simulation/src/pgrid_opt/ProductionLoadHandler.java
+            plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour);
 
             // calculate and set expected conventional generator production
-            plannedProduction[i] = Main.planExpectedProductionConvGen(plannedProduction, i);
+            plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour);
         }
         return plannedProduction;
     }
 
-    public static Graph planExpectedProductionConvGen(Graph[] grid, int timestep, double sumExpectedLoad) {
+    public Graph planExpectedProductionConvGen(Graph[] grid, int timestep) {
         Node[] nodeList = grid[timestep].getNodeList();
 
         double sumExpectedProduction = 0;
-
+        double sumExpectedLoad = calculateLoad(grid[timestep]);
         for ( int i = 0; i < nodeList.length; i++){
             if(nodeList[i].getClass() == ConventionalGenerator.class){
                 ConventionalGenerator generator =  ((ConventionalGenerator) nodeList[i]);

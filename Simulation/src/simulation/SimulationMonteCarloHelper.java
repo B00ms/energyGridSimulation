@@ -107,7 +107,7 @@ public class SimulationMonteCarloHelper {
      * @param currentTimeStep used for solar data generation
      * @return The graph in which renewable production has been set.
      */
-    public static Graph randomizeRenewableGenerator(Graph graph, int currentTimeStep) {
+    public Graph randomizeRenewableGenerator(Graph graph, int currentTimeStep) {
         MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
         for (int j = 0; j < graph.getNodeList().length - 1; j++) {
