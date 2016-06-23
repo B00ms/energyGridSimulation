@@ -76,8 +76,11 @@ public class Main {
 			//Plan production based on expected load and storage charging during the night period.
 			Graph[] plannedTimestepsGraph = productionLoadHandler.setExpectedLoadAndProduction(timestepsGraph);
 
-			double testload = productionLoadHandler.calculateLoad(plannedTimestepsGraph[0]);
-			double testprod = productionLoadHandler.calculateProduction(plannedTimestepsGraph[0]) - productionLoadHandler.calculateRenewableProduction(plannedTimestepsGraph[0]);
+			for(int i = 0; i < 24; i++){
+			double testload = productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
+			double testprod = productionLoadHandler.calculateProduction(plannedTimestepsGraph[i]);
+			System.out.println("expectedLoad: " + testload + " expectedProd: " + testprod);
+			}
 
 			// set real load for consumers using Monte carlo draws for the entire day.
 			Graph[] realTimestepsGraph = ProductionLoadHandler.setRealLoad(plannedTimestepsGraph);

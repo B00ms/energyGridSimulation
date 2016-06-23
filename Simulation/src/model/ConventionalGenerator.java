@@ -95,20 +95,21 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	 * @return production
 	 */
 	public double setScheduledProduction(double production, double previousProduction) {
-		double productionIncrease = 0;
+		double productionChange = 0;
 
-		if (production-production != production)
-			productionIncrease = this.production-production;
-		else
-			productionIncrease = 0;
+		if(production > maxp)
+			production = maxp;
+
+
+		productionChange = Math.abs(this.production-production);
 
 		// only use when previous production is higher than 0
 		// |Ph - Ph+1| <0,5% Pmax
 		if(previousProduction > 0 && Math.abs((previousProduction - production)) > this.getMaxP()*maxProductionIncrease){
-			if(productionIncrease > 0){
-				productionIncrease = this.getMaxP()*maxProductionIncrease; // limit production
+			if(productionChange > 0){
+				productionChange = this.getMaxP()*maxProductionIncrease; // limit production
 			}else{
-				productionIncrease = -this.getMaxP()*maxProductionIncrease; // limit production
+				productionChange = -this.getMaxP()*maxProductionIncrease; // limit production
 			}
 		}
 
@@ -116,9 +117,9 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		 * If the increase is smaller than xx% of maxp we go inside the if and set the production
 		 * If not the increase of production to the highest possible value.
 		 */
-		if((productionIncrease < 0 && (Math.abs(productionIncrease) <= maxp*maxProductionIncrease))){
-			production = this.production + Math.abs(productionIncrease);
-		} else if(productionIncrease < 0)
+		if((productionChange < 0 && (Math.abs(productionChange) <= maxp*maxProductionIncrease))){
+			production = this.production + Math.abs(productionChange);
+		} else if(productionChange < 0)
 			production = this.production + maxp*maxProductionIncrease;
 
 		if (this.getDayAheadMaxProduction() < production){

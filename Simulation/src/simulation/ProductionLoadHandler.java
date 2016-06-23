@@ -108,10 +108,9 @@ public class ProductionLoadHandler {
 
     	// clone state of graphs
         Graph[] plannedProduction = graphs;
-        System.out.println(calculateLoad(graphs[0]));
+
         //Plan charging storage for during the night period of the day..
         plannedProduction = storageHandler.planStorageCharging(plannedProduction);
-        System.out.println(calculateLoad(graphs[0]));
 
         for(int hour=0; hour < graphs.length; hour++){
             plannedProduction[hour] = simulationMonteCarloHelper.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
@@ -119,26 +118,31 @@ public class ProductionLoadHandler {
             //Set expected renewable production
             plannedProduction[hour] = Main.randomizeRenewableGenerator(plannedProduction[hour], hour);
 
-            // calculate expected conventional generator production
-            plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour);
-
             // calculate and set expected conventional generator production
             plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour);
         }
+
+        double expectedLoad = calculateLoad(plannedProduction[15]);
+        double expectedProd = calculateProduction(plannedProduction[15]);
+
         return plannedProduction;
     }
 
     public Graph planExpectedProductionConvGen(Graph[] grid, int timestep) {
         Node[] nodeList = grid[timestep].getNodeList();
 
-        double sumExpectedProduction = 0;
+        double sumExpectedProduction = calculateProduction(grid[timestep]);
         double sumExpectedLoad = calculateLoad(grid[timestep]);
         for ( int i = 0; i < nodeList.length; i++){
-            if(nodeList[i].getClass() == ConventionalGenerator.class){
+            if(nodeList[i].getClass() == ConventionalGenerator.class && sumExpectedLoad != sumExpectedProduction){
                 ConventionalGenerator generator =  ((ConventionalGenerator) nodeList[i]);
                 if (timestep > 0){ //We take into account spinup after hour 0, maximum increase with spinup is 50% of max generation.
                     double previousProduction =  ((ConventionalGenerator)grid[timestep - 1].getNodeList()[i]).getProduction();
                     double production = previousProduction + generator.getMaxP() * 0.5;
+
+                    //We're going to change the production of a generator so we remove the current production of that generator first.
+                    sumExpectedProduction -= generator.getProduction();
+
                     if(sumExpectedProduction+production < sumExpectedLoad){
                         sumExpectedProduction += generator.setScheduledProduction(production, previousProduction);
                     } else{
@@ -146,13 +150,17 @@ public class ProductionLoadHandler {
                         production = sumExpectedLoad - sumExpectedProduction;
 
                         //Check if production isn't to low, if it is set generator to min production.
-                        if (production < generator.getDayAheadMinProduction())
+                        if (production < generator.getDayAheadMinProduction() || production < generator.getDayAheadMaxProduction())
                             sumExpectedProduction += generator.setScheduledProduction(production, previousProduction);
                         else
                             sumExpectedProduction += generator.setScheduledProduction(generator.getDayAheadMinProduction(), previousProduction);
                     }
                 }else{
                     double production = generator.getDayAheadMaxProduction();
+
+                    //We're going to change the production of a generator so we remove the current production of that generator first.
+                    sumExpectedProduction -= generator.getProduction();
+
                     if(sumExpectedProduction+production < sumExpectedLoad){
                         sumExpectedProduction += generator.setProduction(production);
                     } else{
