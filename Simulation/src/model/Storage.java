@@ -58,7 +58,7 @@ public class Storage extends Node {
 	/**
 	 * Charge the storage using the given charge
 	 * @param charge The amount of energy the grid wants to get rid of.
-	 * @return
+	 * @return the amount of flow on the line when charging.
 	 */
 	public double charge(double charge) {
 		status = StorageStatus.CHARGING;

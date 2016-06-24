@@ -95,8 +95,15 @@ public class Main {
 				//Set failure state of conventional generators and calculates the real renewable production for a single hour.
 				realTimestepsGraph [currentTimeStep] = randomizeGridState(plannedTimestepsGraph[currentTimeStep], currentTimeStep);
 
+
+				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));
+				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
+
 				//Plan real storage charging using excess of renewable production to charge past 50% max SoC.
 				storageHandler.planStorageCharging(realTimestepsGraph[currentTimeStep], currentTimeStep);
+
+				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));
+				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
 
 				//Attempt to balance production and load  for a single hour.
 				realTimestepsGraph [currentTimeStep] = checkGridEquilibrium(plannedTimestepsGraph[currentTimeStep], currentTimeStep);

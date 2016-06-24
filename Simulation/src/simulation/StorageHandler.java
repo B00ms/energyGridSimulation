@@ -44,9 +44,8 @@ public class StorageHandler {
 	return plannedTimestepsGraph;
 	}
 
-	@SuppressWarnings("unused")
-	public Graph[] planStorageCharging(Graph graph, int timestep){
-
+	public Graph planStorageCharging(Graph graph, int timestep){
+		//TODO: use the excess renewable production to charge storage beyong 50% pmax.
 	    int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
 	    int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
 
@@ -57,9 +56,21 @@ public class StorageHandler {
 		    double conventionalProduction = plh.calculateProduction(graph);
 		    double realLoad = plh.calculateLoad(graph);
 
-		    double test = 0;
+		    double remainRenewableProd = (realLoad - conventionalProduction) + renewableProduction;
+
+	    	for(int i=0; i < graph.getNodeList().length; i++){
+	    		if(graph.getNodeList()[i].getClass() == Storage.class){
+	    			if(remainRenewableProd > 0){
+	    			Storage storage = (Storage)graph.getNodeList()[i];
+	    			//Set storage to charge and substract the flow from charging from renewable production.
+    				remainRenewableProd -= Math.abs(storage.charge(remainRenewableProd));
+    				graph.getNodeList()[i] = storage;
+	    			} else
+	    				break;
+	    		}
+	    	}
 		}
-		return null;
+		return graph;
 	}
 
 
