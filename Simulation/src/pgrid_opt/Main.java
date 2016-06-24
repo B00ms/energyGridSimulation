@@ -95,11 +95,10 @@ public class Main {
 				//Set failure state of conventional generators and calculates the real renewable production for a single hour.
 				realTimestepsGraph [currentTimeStep] = randomizeGridState(plannedTimestepsGraph[currentTimeStep], currentTimeStep);
 
-
 				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));
 				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
 
-				//Plan real storage charging using excess of renewable production to charge past 50% max SoC.
+				//Plan real storage charging using excess of renewable production to charge past 50% max SoC.x
 				storageHandler.planStorageCharging(realTimestepsGraph[currentTimeStep], currentTimeStep);
 
 				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));
@@ -149,7 +148,7 @@ public class Main {
 				}
 
 				// set state of graph for the next hour to the state of the current graph (failure)
-				if(currentTimeStep >0 && currentTimeStep < 23){
+				if(currentTimeStep >0 && currentTimeStep < timestepsGraph.length-1){
 					for (int n = 0; n < timestepsGraph[currentTimeStep].getNodeList().length; n++) {
 						if (timestepsGraph[currentTimeStep].getNodeList()[n].getClass() == ConventionalGenerator.class){
 							// cascade generator failure to the next hour.
@@ -158,7 +157,7 @@ public class Main {
 						}
 					}
 				}
-				++currentTimeStep;
+				currentTimeStep++;
 			}
 
 			if (graph.getNstorage() > 0) {
@@ -249,8 +248,7 @@ public class Main {
 
 		for (int j = 0; j < graph.getNodeList().length - 1; j++) {
 			// Check the class of the current node and deal with it accordingly.
-			if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class
-					|| graph.getNodeList()[j].getClass() == RenewableGenerator.class)) {
+			if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class)) {
 				GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
 				double mcDraw = 0; // This will hold our Monte Carlo draw
 				// (hahaha mac draw)
