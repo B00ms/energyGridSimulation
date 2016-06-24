@@ -121,10 +121,6 @@ public class ProductionLoadHandler {
             // calculate and set expected conventional generator production
             plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour);
         }
-
-        double expectedLoad = calculateLoad(plannedProduction[15]);
-        double expectedProd = calculateProduction(plannedProduction[15]);
-
         return plannedProduction;
     }
 
