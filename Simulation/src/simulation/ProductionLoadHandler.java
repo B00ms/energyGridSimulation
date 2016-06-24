@@ -113,10 +113,8 @@ public class ProductionLoadHandler {
         plannedProduction = storageHandler.planStorageCharging(plannedProduction);
 
         for(int hour=0; hour < graphs.length; hour++){
+        	//Set expected renewable production
             plannedProduction[hour] = simulationMonteCarloHelper.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
-
-            //Set expected renewable production
-            plannedProduction[hour] = Main.randomizeRenewableGenerator(plannedProduction[hour], hour);
 
             // calculate and set expected conventional generator production
             plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour);

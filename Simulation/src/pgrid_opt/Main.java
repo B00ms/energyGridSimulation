@@ -20,8 +20,10 @@ import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
 import net.e175.klaus.solarpositioning.DeltaT;
 import net.e175.klaus.solarpositioning.Grena3;
 import net.e175.klaus.solarpositioning.SPA;
+import simulation.GridBalancer;
 import simulation.MontoCarloHelper;
 import simulation.ProductionLoadHandler;
+import simulation.SimulationMonteCarloHelper;
 import simulation.SimulationStateInitializer;
 import simulation.StorageHandler;
 import model.Generator.GENERATOR_TYPE;
@@ -31,6 +33,8 @@ public class Main {
 	private static ConfigCollection config = new ConfigCollection();
 	private static ProductionLoadHandler productionLoadHandler = new ProductionLoadHandler();
 	private static StorageHandler storageHandler = new StorageHandler();
+	private static SimulationMonteCarloHelper simulationMonteCarloHelper = new SimulationMonteCarloHelper();
+	private static GridBalancer gridBalancer = new GridBalancer();
 
 	public static void main(String[] args) {
 
@@ -57,6 +61,7 @@ public class Main {
 
 		// load simulation limit
 		int simLimit = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "simulation-runs");
+		int EENScum = 0;
 		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
@@ -146,7 +151,6 @@ public class Main {
 						}
 					}
 				}
-
 				++currentTimeStep;
 			}
 
@@ -161,6 +165,8 @@ public class Main {
 						e.printStackTrace();
 					}
 			}
+
+//			EENScum += calculateEENS(plannedTimestepsGraph, timestepsGraph);
 		}
 
 		//TODO: compare expected load/prod versus actual load/prod
@@ -168,6 +174,24 @@ public class Main {
 		long duration = endtime - starttime;
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
+
+	public double calculateEENS(Graph[] plannedTimestepsGraph, Graph[] realTimestepsGraph){
+		int currentTimeStep =0;
+
+		double sheddedLoad = 0;
+		while (currentTimeStep < realTimestepsGraph.length) {
+			double plannedLoad = productionLoadHandler.calculateLoad(plannedTimestepsGraph[currentTimeStep]);
+			double realLoad = productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]);
+
+			// if there is expected energy not supplied then count it as shedded load
+			if((realLoad - plannedLoad) >0)
+				sheddedLoad += (realLoad - plannedLoad);
+		}
+
+		// calculate EENS
+		return sheddedLoad;
+	}
+
 
 	/**
 	 * Move glpsol output to structured folders
