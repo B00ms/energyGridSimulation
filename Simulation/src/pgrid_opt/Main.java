@@ -77,9 +77,9 @@ public class Main {
 			Graph[] plannedTimestepsGraph = productionLoadHandler.setExpectedLoadAndProduction(timestepsGraph);
 
 			for(int i = 0; i < 24; i++){
-			double testload = productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
-			double testprod = productionLoadHandler.calculateProduction(plannedTimestepsGraph[i]);
-			System.out.println("expectedLoad: " + testload + " expectedProd: " + testprod);
+				double testload = productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
+				double testprod = productionLoadHandler.calculateProduction(plannedTimestepsGraph[i]);
+				System.out.println("expectedLoad: " + testload + " expectedProd: " + testprod);
 			}
 
 			// set real load for consumers using Monte carlo draws for the entire day.
