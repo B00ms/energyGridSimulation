@@ -9,6 +9,7 @@ import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
 import net.e175.klaus.solarpositioning.DeltaT;
 import net.e175.klaus.solarpositioning.Grena3;
 import net.e175.klaus.solarpositioning.SPA;
+import model.Generator.GENERATOR_TYPE;
 
 import java.util.*;
 
@@ -21,7 +22,7 @@ public class SimulationMonteCarloHelper {
     private static ConfigCollection config = new ConfigCollection();
 
     /**
-     * Set the state of generators and loads.
+     * Set the failure state of generators and calculates the production of renewable production.
      * @return Graphs of which the state has been changed using Monte Carlo draws
      */
     public Graph randomizeGridState(Graph graph, int currentTimeStep) {
@@ -39,14 +40,13 @@ public class SimulationMonteCarloHelper {
      * @param graph
      * @return
      */
-    private static Graph randomizeConventionalGenerator(Graph graph){
+    private Graph randomizeConventionalGenerator(Graph graph){
         MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
         for (int j = 0; j < graph.getNodeList().length - 1; j++) {
             // Check the class of the current node and deal with it accordingly.
-            if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class
-                    || graph.getNodeList()[j].getClass() == RenewableGenerator.class)) {
-                Generator.GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
+            if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class)) {
+                GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
                 double mcDraw = 0; // This will hold our Monte Carlo draw
                 // (hahaha mac draw)
                 switch (generatorType) {
@@ -85,10 +85,7 @@ public class SimulationMonteCarloHelper {
      * @param mcDraw
      * @return
      */
-    private static Graph checkConventionalGeneratorFailure(Graph graph, int node, double mcDraw) {
-        // double convGeneratorProb = 0.5; //Probability of failure for
-        // conventional generators
-
+    private Graph checkConventionalGeneratorFailure(Graph graph, int node, double mcDraw) {
         if (((ConventionalGenerator) graph.getNodeList()[node]).getGeneratorFailure() == false) {// 0  means that  the reactor can fail.
             int nodeMTTF = ((ConventionalGenerator) graph.getNodeList()[node]).getMTTF();
             float mttf = (float) 1 / nodeMTTF;
@@ -114,7 +111,7 @@ public class SimulationMonteCarloHelper {
             // Check the class of the current node and deal with it accordingly.
             if (graph.getNodeList()[j] != null && (graph.getNodeList()[j].getClass() == ConventionalGenerator.class
                     || graph.getNodeList()[j].getClass() == RenewableGenerator.class)) {
-                Generator.GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
+                GENERATOR_TYPE generatorType = ((Generator) graph.getNodeList()[j]).getType();
                 double mcDraw = 0; // This will hold our Monte Carlo draw
                 switch (generatorType) {
                     case WIND: // Wind park generator
@@ -189,7 +186,5 @@ public class SimulationMonteCarloHelper {
 
         return graph;
     }
-
-
 
 }
