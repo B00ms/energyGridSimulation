@@ -41,7 +41,7 @@ public class DataModelPrint {
 	 * @param filename output filename
 	 * @param outname current timestep
 	 */
-	public void printData(Graph g, String filename, String outname) {
+	public void createModelInputFile(Graph g, String filename, String outname) {
 		float chargeEfficiency = g.getChargeEfficiency();
 		float dischargeEfficiency = g.getDischargeEfficiency();
 		float delta = g.getDelta();

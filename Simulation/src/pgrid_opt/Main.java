@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
@@ -42,7 +41,6 @@ public class Main {
 		// load general config
 		String model = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file");
 		String dirpath = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
-		String path = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file");
 
 		// load glpsol config
 		String outpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "outpath1");
@@ -56,6 +54,11 @@ public class Main {
 		// load simulation limit
 		int simLimit = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "simulation-runs");
 		int EENScum = 0;
+
+		double EENSConvergenceLimit = config.getConfigDoubleValue((CONFIGURATION_TYPE.GENERAL), "EENSConvergenceLimit");
+		boolean EENSConvergence = false;
+//		int numOfSim = 0;
+//		while(!EENSConvergence){
 		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
@@ -101,7 +104,7 @@ public class Main {
 				//Attempt to balance production and load  for a single hour.
 				realTimestepsGraph [currentTimeStep] = gridBalancer.checkGridEquilibrium(plannedTimestepsGraph[currentTimeStep], currentTimeStep);
 
-				mp.printData(plannedTimestepsGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
+				mp.createModelInputFile(plannedTimestepsGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
 				try {
 
@@ -125,13 +128,12 @@ public class Main {
 					timestepsGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
 
 					// write output to solution file
-					outputFileHandler.writeOutputFiles(dirpath, solutionPath, currentTimeStep);
+					outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
 
 					if (graph.getNstorage() > 0) {
 						timestepsGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
 								timestepsGraph[currentTimeStep]); // Keeps track of the new state for storages.
 
-					// TODO only last timestep doesn't need to update the storages, Julien?
 					if (currentTimeStep < 23)
 						timestepsGraph[currentTimeStep + 1] = simulationState.updateStorages(timestepsGraph[currentTimeStep],
 								timestepsGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
@@ -154,8 +156,19 @@ public class Main {
 				currentTimeStep++;
 			}
 
-			outputFileHandler.writeStorageTxtFile(timestepsGraph, dirpath, solutionPath, currentTimeStep);
-//			EENScum += calculateEENS(plannedTimestepsGraph, timestepsGraph);
+			// calculate EENS
+			double EENSday = calculateEENS(plannedTimestepsGraph, timestepsGraph);
+			EENScum += EENSday;
+
+			// handle storage.txt output
+			outputFileHandler.writeStorageTxtFile(timestepsGraph, dirpath, solutionPath);
+
+
+			// stop the simulation when converged
+			if(Math.abs(EENSday - EENScum) <= EENSConvergenceLimit){
+				EENSConvergence = true;
+
+			}
 		}
 
 		//TODO: compare expected load/prod versus actual load/prod
@@ -164,7 +177,7 @@ public class Main {
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
 
-	public double calculateEENS(Graph[] plannedTimestepsGraph, Graph[] realTimestepsGraph){
+	public static double calculateEENS(Graph[] plannedTimestepsGraph, Graph[] realTimestepsGraph){
 		int currentTimeStep =0;
 
 		double sheddedLoad = 0;
@@ -175,6 +188,8 @@ public class Main {
 			// if there is expected energy not supplied then count it as shedded load
 			if((realLoad - plannedLoad) >0)
 				sheddedLoad += (realLoad - plannedLoad);
+
+			currentTimeStep++;
 		}
 
 		// calculate EENS

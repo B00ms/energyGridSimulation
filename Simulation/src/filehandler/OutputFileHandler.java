@@ -21,7 +21,7 @@ public class OutputFileHandler {
      * @param solutionPath new location for files
      * @param timeStep current timestep
      */
-    public static void writeOutputFiles(String dirpath, String solutionPath, int timeStep){
+    public static void writeModelOutputFiles(String dirpath, String solutionPath, int timeStep){
         try {
             if (new File(dirpath + "/sol" + timeStep + ".txt").exists())
                 Files.move(Paths.get(dirpath + "/sol" + timeStep + ".txt"),
@@ -44,9 +44,10 @@ public class OutputFileHandler {
      * Write and save storage.txt file for later analyzing
      * @param timestepsGraph
      * @param dirpath
+     * @param solutionPath
      */
-    public void writeStorageTxtFile(Graph[] timestepsGraph, String dirpath, String solutionPath, int currentTimeStep){
-        if (timestepsGraph[currentTimeStep].getNstorage() > 0) {
+    public void writeStorageTxtFile(Graph[] timestepsGraph, String dirpath, String solutionPath){
+        if (timestepsGraph[0].getNstorage() > 0) {
             mp.printStorageData(timestepsGraph, String.valueOf(dirpath) + "storage.txt");
 
             if (new File(dirpath + "/storage.txt").exists()) {
