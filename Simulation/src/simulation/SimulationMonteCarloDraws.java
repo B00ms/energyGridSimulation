@@ -17,7 +17,7 @@ import java.util.*;
  * Created by ejay on 23/06/16.
  * Contains all of the functionality that applies the monte carlo draws to the grid
  */
-public class SimulationMonteCarloHelper {
+public class SimulationMonteCarloDraws {
 
     private static ConfigCollection config = new ConfigCollection();
 
