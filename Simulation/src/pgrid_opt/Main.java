@@ -34,7 +34,7 @@ public class Main {
 	public static void main(String[] args) {
 
 		long starttime = System.nanoTime();
-		Graph[] timestepsGraph = null;
+		Graph[] initialTimestepsGraph = null;
 		Parser parser = new Parser();
 		Graph graph;
 
@@ -68,8 +68,8 @@ public class Main {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
-			timestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
-			timestepsGraph = simulationState.creategraphs(graph, timestepsGraph);
+			initialTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
+			initialTimestepsGraph = simulationState.creategraphs(graph, initialTimestepsGraph);
 			int currentTimeStep = 0;
 
 			String solutionPath = dirpath + "simRes" + numOfSim + "";
@@ -81,7 +81,7 @@ public class Main {
 			}
 
 			//Plan production based on expected load and storage charging during the night period.
-			Graph[] plannedTimestepsGraph = productionLoadHandler.setExpectedLoadAndProduction(timestepsGraph);
+			Graph[] plannedTimestepsGraph = productionLoadHandler.setExpectedLoadAndProduction(initialTimestepsGraph);
 
 			for(int i = 0; i < 24; i++){
 				double testload = productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
@@ -91,6 +91,12 @@ public class Main {
 
 			// set real load for consumers using Monte carlo draws for the entire day.
 			Graph[] realTimestepsGraph = ProductionLoadHandler.setRealLoad(plannedTimestepsGraph);
+
+			for(int i = 0; i < 24; i++){
+				double testload = productionLoadHandler.calculateLoad(realTimestepsGraph[i]);
+				double testprod = productionLoadHandler.calculateProduction(realTimestepsGraph[i]);
+				System.out.println("realLoad: " + testload + " realProd: " + testprod);
+			}
 			while (currentTimeStep < realTimestepsGraph .length) {
 				System.out.println("TimeStep: "+ currentTimeStep);
 
@@ -129,19 +135,19 @@ public class Main {
 					}
 					System.out.println(output);
 
-					timestepsGraph[currentTimeStep] = timestepsGraph[currentTimeStep].setFlowFromOutputFile(timestepsGraph[currentTimeStep], currentTimeStep);
-					timestepsGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
+					realTimestepsGraph[currentTimeStep] = realTimestepsGraph[currentTimeStep].setFlowFromOutputFile(realTimestepsGraph[currentTimeStep], currentTimeStep);
+					realTimestepsGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
 
 					// write output to solution file
 					outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
 
 					if (graph.getNstorage() > 0) {
-						timestepsGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
-								timestepsGraph[currentTimeStep]); // Keeps track of the new state for storages.
+						realTimestepsGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
+								realTimestepsGraph[currentTimeStep]); // Keeps track of the new state for storages.
 
 					if (currentTimeStep < 23)
-						timestepsGraph[currentTimeStep + 1] = simulationState.updateStorages(timestepsGraph[currentTimeStep],
-								timestepsGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
+						realTimestepsGraph[currentTimeStep + 1] = simulationState.updateStorages(realTimestepsGraph[currentTimeStep],
+								realTimestepsGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
 					}
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
@@ -149,12 +155,12 @@ public class Main {
 				}
 
 				// set state of graph for the next hour to the state of the current graph (failure)
-				if(currentTimeStep >0 && currentTimeStep < timestepsGraph.length-1){
-					for (int n = 0; n < timestepsGraph[currentTimeStep].getNodeList().length; n++) {
-						if (timestepsGraph[currentTimeStep].getNodeList()[n].getClass() == ConventionalGenerator.class){
+				if(currentTimeStep >0 && currentTimeStep < realTimestepsGraph.length-1){
+					for (int n = 0; n < realTimestepsGraph[currentTimeStep].getNodeList().length; n++) {
+						if (realTimestepsGraph[currentTimeStep].getNodeList()[n].getClass() == ConventionalGenerator.class){
 							// cascade generator failure to the next hour.
-							ConventionalGenerator cgen = (ConventionalGenerator)timestepsGraph[currentTimeStep].getNodeList()[n];
-							((ConventionalGenerator) timestepsGraph[currentTimeStep+1].getNodeList()[n]).setGeneratorFailure(cgen.getGeneratorFailure());
+							ConventionalGenerator cgen = (ConventionalGenerator)realTimestepsGraph[currentTimeStep].getNodeList()[n];
+							((ConventionalGenerator) realTimestepsGraph[currentTimeStep+1].getNodeList()[n]).setGeneratorFailure(cgen.getGeneratorFailure());
 						}
 					}
 				}
@@ -162,9 +168,9 @@ public class Main {
 			}
 
 			// handle storage.txt output
-			outputFileHandler.writeStorageTxtFile(timestepsGraph, dirpath, solutionPath);
+			outputFileHandler.writeStorageTxtFile(realTimestepsGraph, dirpath, solutionPath);
 
-			EENSTab = calculateEENS(plannedTimestepsGraph, timestepsGraph, EENSTab);
+			EENSTab = calculateEENS(plannedTimestepsGraph, realTimestepsGraph, EENSTab);
 
 			EENSConvergence = checkEENSConvergence(EENSTab, EENSConvergenceLimit);
 			numOfSim++; // go to next day
@@ -177,23 +183,23 @@ public class Main {
 	}
 
 	public static List<Double> calculateEENS(Graph[] plannedTimestepsGraph, Graph[] realTimestepsGraph, List<Double> EENSTab){
-		int currentTimeStep = 0;
+		int hour = 0;
 		double sheddedLoad = 0;
 
-		while (currentTimeStep < realTimestepsGraph.length) {
-			double plannedLoad = productionLoadHandler.calculateLoad(plannedTimestepsGraph[currentTimeStep]);
-			double realLoad = productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]);
+		while (hour < realTimestepsGraph.length) {
+			double plannedProduction 	= productionLoadHandler.calculateProduction(plannedTimestepsGraph[hour]);
+			double realProduction 		= productionLoadHandler.calculateProduction(realTimestepsGraph[hour]);
+
+			double plannedLoad 	= productionLoadHandler.calculateLoad(plannedTimestepsGraph[hour]);
+			double realLoad 	= productionLoadHandler.calculateLoad(realTimestepsGraph[hour]);
 
 			// if there is expected energy not supplied then count it as shedded load
 			if((realLoad - plannedLoad) >0)
 				sheddedLoad += (realLoad - plannedLoad);
 
-			currentTimeStep++;
+			hour++;
 		}
 
-//		 calculate EENS
-
-//		double EENSday = calculateEENS(plannedTimestepsGraph, realTimestepsGraph);
 		EENSTab.add(sheddedLoad);
 
 		return EENSTab;
