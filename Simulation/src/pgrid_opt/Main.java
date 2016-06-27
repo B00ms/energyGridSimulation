@@ -170,13 +170,13 @@ public class Main {
 			// handle storage.txt output
 			outputFileHandler.writeStorageTxtFile(realTimestepsGraph, dirpath, solutionPath);
 
+			// todo findout why these two graphs have the same load and production
 			EENSTab = calculateEENS(plannedTimestepsGraph, realTimestepsGraph, EENSTab);
 
 			EENSConvergence = checkEENSConvergence(EENSTab, EENSConvergenceLimit);
 			numOfSim++; // go to next day
 		}
-
-		//TODO: compare expected load/prod versus actual load/prod
+		
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
