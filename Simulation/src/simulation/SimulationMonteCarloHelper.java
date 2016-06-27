@@ -141,8 +141,9 @@ public class SimulationMonteCarloHelper {
                         double langitude = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "langitude"); ;
                         double longitude = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "longitude"); ;
                         int month = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "month"); ;
+                        int year = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "year"); ;
 
-                        GregorianCalendar calendar = new GregorianCalendar(2016, month, 14, currentTimeStep, 0);
+                        GregorianCalendar calendar = new GregorianCalendar(year, month, 14, currentTimeStep, 0);
                         double deltaT = DeltaT.estimate(calendar);
                         GregorianCalendar[] sunriseset = SPA.calculateSunriseTransitSet(calendar, langitude, longitude, deltaT);
 
@@ -170,7 +171,6 @@ public class SimulationMonteCarloHelper {
                         else
                             irradiance = sMax * Math.sin(Math.PI * (currentTimeStep - sunrise) / (sunset - sunrise));
 
-				/*	double efficiency = conf.getConfig("solarGenerator").getDouble("panelEfficiency");*/
                         double efficiency = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "panelEfficiency");
                         // surface array of panels in m², efficiency, irradiance of
                         // panels on the horizontal plane.
