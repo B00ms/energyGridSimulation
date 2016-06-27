@@ -52,7 +52,6 @@ public class ConfigCollection {
 		nuclearOffer			= conf.getConfig("conventionalGenerator").getConfig("nuclearOffer");
 		hydroOilOffer			= conf.getConfig("conventionalGenerator").getConfig("hydroOffer");
 
-		production				= conf.getConfig("conventionalGenerator").getConfig("production");
 		windGenerator 			= conf.getConfig("windGenerator");
 		solarGenerator 			= conf.getConfig("solarGenerator");
 		storage 				= conf.getConfig("Storage");
@@ -107,9 +106,6 @@ public class ConfigCollection {
 			case HYRDO_OFFER:
 				confValue = hydroOilOffer.getString(configurationKeyWord);
 				break;
-			case PRODUCTION:
-				confValue = production.getString(configurationKeyWord);
-				break;
 			case WIND_GENERATOR:
 				confValue = windGenerator.getString(configurationKeyWord);
 				break;
@@ -158,9 +154,6 @@ public class ConfigCollection {
 			case HYRDO_OFFER:
 				confValue = hydroOilOffer.getInt(configurationKeyWord);
 				break;
-			case PRODUCTION:
-				confValue = production.getInt(configurationKeyWord);
-				break;
 			case WIND_GENERATOR:
 				confValue = windGenerator.getInt(configurationKeyWord);
 				break;
@@ -208,9 +201,6 @@ public class ConfigCollection {
 				break;
 			case HYRDO_OFFER:
 				confValue = hydroOilOffer.getDouble(configurationKeyWord);
-				break;
-			case PRODUCTION:
-				confValue = production.getDouble(configurationKeyWord);
 				break;
 			case WIND_GENERATOR:
 				confValue = windGenerator.getDouble(configurationKeyWord);
