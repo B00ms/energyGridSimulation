@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
@@ -54,12 +56,15 @@ public class Main {
 		// load simulation limit
 		int simLimit = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "simulation-runs");
 		int EENScum = 0;
+		List<Double> EENSTab = new ArrayList<Double>();
 
-		double EENSConvergenceLimit = config.getConfigDoubleValue((CONFIGURATION_TYPE.GENERAL), "EENSConvergenceLimit");
+		// EENS stuff
 		boolean EENSConvergence = false;
-//		int numOfSim = 0;
-//		while(!EENSConvergence){
-		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
+		double EENSConvergenceLimit = config.getConfigDoubleValue((CONFIGURATION_TYPE.GENERAL), "EENSConvergenceLimit");
+
+		int numOfSim = 0;
+		while(!EENSConvergence){
+//		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
@@ -156,19 +161,13 @@ public class Main {
 				currentTimeStep++;
 			}
 
-			// calculate EENS
-			double EENSday = calculateEENS(plannedTimestepsGraph, timestepsGraph);
-			EENScum += EENSday;
-
 			// handle storage.txt output
 			outputFileHandler.writeStorageTxtFile(timestepsGraph, dirpath, solutionPath);
 
+			EENSTab = calculateEENS(plannedTimestepsGraph, timestepsGraph, EENSTab);
 
-			// stop the simulation when converged
-			if(Math.abs(EENSday - EENScum) <= EENSConvergenceLimit){
-				EENSConvergence = true;
-
-			}
+			EENSConvergence = checkEENSConvergence(EENSTab, EENSConvergenceLimit);
+			numOfSim++; // go to next day
 		}
 
 		//TODO: compare expected load/prod versus actual load/prod
@@ -177,10 +176,10 @@ public class Main {
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
 
-	public static double calculateEENS(Graph[] plannedTimestepsGraph, Graph[] realTimestepsGraph){
-		int currentTimeStep =0;
-
+	public static List<Double> calculateEENS(Graph[] plannedTimestepsGraph, Graph[] realTimestepsGraph, List<Double> EENSTab){
+		int currentTimeStep = 0;
 		double sheddedLoad = 0;
+
 		while (currentTimeStep < realTimestepsGraph.length) {
 			double plannedLoad = productionLoadHandler.calculateLoad(plannedTimestepsGraph[currentTimeStep]);
 			double realLoad = productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]);
@@ -192,7 +191,40 @@ public class Main {
 			currentTimeStep++;
 		}
 
-		// calculate EENS
-		return sheddedLoad;
+//		 calculate EENS
+
+//		double EENSday = calculateEENS(plannedTimestepsGraph, realTimestepsGraph);
+		EENSTab.add(sheddedLoad);
+
+		return EENSTab;
+	}
+
+	public static boolean checkEENSConvergence(List<Double> EENSTab, double EENSConvergenceLimit){
+		double EENSSum = 0;
+		double EENScum = 0;
+		boolean EENSConvergence = false;
+
+		for(Double EENSd : EENSTab)
+			EENSSum += EENSd;
+
+		int r;
+		if(EENSTab.size() == 1){
+			r = 1;
+		}else {
+			r = (EENSTab.size()-1);
+		}
+
+		EENScum = EENSSum/r;
+
+		double convergence = Math.abs(EENScum - EENSTab.get(EENSTab.size()-1));
+
+		// stop the simulation when converged
+		if(convergence <= EENSConvergenceLimit){
+			EENSConvergence = true;
+		}
+
+		return EENSConvergence;
+//		calculate EENS
+//		return sheddedLoad;
 	}
 }
