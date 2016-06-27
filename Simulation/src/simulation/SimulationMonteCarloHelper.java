@@ -141,7 +141,7 @@ public class SimulationMonteCarloHelper {
                         double langitude = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "langitude"); ;
                         double longitude = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "longitude"); ;
                         int month = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "month"); ;
-                        
+
                         GregorianCalendar calendar = new GregorianCalendar(2016, month, 14, currentTimeStep, 0);
                         double deltaT = DeltaT.estimate(calendar);
                         GregorianCalendar[] sunriseset = SPA.calculateSunriseTransitSet(calendar, langitude, longitude, deltaT);
