@@ -7,8 +7,6 @@ import model.Consumer;
 import model.ConventionalGenerator;
 import model.RenewableGenerator;
 import model.Storage;
-import pgrid_opt.Main;
-import config.ConfigCollection.CONFIGURATION_TYPE;
 
 /**
  * Created by ejay on 21/06/16.
@@ -16,7 +14,7 @@ import config.ConfigCollection.CONFIGURATION_TYPE;
 public class ProductionLoadHandler {
 
 	private static ConfigCollection config = new ConfigCollection();
-    private static SimulationMonteCarloHelper simulationMonteCarloHelper = new SimulationMonteCarloHelper();
+    private static SimulationMonteCarloDraws simulationMonteCarloDraws = new SimulationMonteCarloDraws();
 
     /**
      * Calculates the total production on the grid from conventional generators, renewable generators and storage if it's discharing.
@@ -114,7 +112,7 @@ public class ProductionLoadHandler {
 
         for(int hour=0; hour < graphs.length; hour++){
         	//Set expected renewable production
-            plannedProduction[hour] = simulationMonteCarloHelper.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
+            plannedProduction[hour] = simulationMonteCarloDraws.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
 
             // calculate and set expected conventional generator production
             plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour);

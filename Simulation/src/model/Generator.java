@@ -6,9 +6,8 @@ public class Generator extends Node {
 
 	protected double maxp; //maximum production
 	protected double minp; //minimum production
-	private double lastmaxp,lastminp;
+
 	private double coef; //multiplication coefficient, used to get real production
-	private int reactivateAtTimeStep;
 	protected double production;
 	private GENERATOR_TYPE type; // Oil, coal or nuclear, wind, solar
 	
@@ -113,13 +112,6 @@ public class Generator extends Node {
 	}
 
 	/**
-	 * @return the time step at which this generator must come back online
-	 */
-	public int getReactivateAtTimeStep() {
-		return reactivateAtTimeStep;
-	}
-
-	/**
 	 *
 	 * @return The type of the generator (O = oil, C = Coal, N = Nuclear, H = Hydroeletric, W = Wind, S = Solar)
 	 */
@@ -133,29 +125,5 @@ public class Generator extends Node {
 	 */
 	public void setType(GENERATOR_TYPE type) {
 		this.type = type;
-	}
-
-	/**
-	 *
-	 * @param currentTime sets the time step at which this generator must be back online
-	 */
-	public void setReactivateAtTimeStep(int currentTime) {
-		this.reactivateAtTimeStep = reactivateAtTimeStep;
-	}
-
-	public double getLastmaxp() {
-		return lastmaxp;
-	}
-
-	public void setLastmaxp(float lastmaxp) {
-		this.lastmaxp = lastmaxp;
-	}
-
-	public double getLastminp() {
-		return lastminp;
-	}
-
-	public void setLastminp(float lastminp) {
-		this.lastminp = lastminp;
 	}
 }

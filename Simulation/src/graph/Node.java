@@ -9,8 +9,7 @@ public abstract class Node {
 		this.nodeId = nodeId;
 	}
 
-	public Node(){
-	}
+	public Node(){}
 
 	public int getNodeId() {
 		return nodeId;

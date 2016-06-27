@@ -18,7 +18,7 @@ import graph.Graph;
 import model.*;
 import simulation.GridBalancer;
 import simulation.ProductionLoadHandler;
-import simulation.SimulationMonteCarloHelper;
+import simulation.SimulationMonteCarloDraws;
 import simulation.SimulationStateInitializer;
 import simulation.StorageHandler;
 
@@ -27,7 +27,7 @@ public class Main {
 	private static ConfigCollection config = new ConfigCollection();
 	private static ProductionLoadHandler productionLoadHandler = new ProductionLoadHandler();
 	private static StorageHandler storageHandler = new StorageHandler();
-	private static SimulationMonteCarloHelper simulationMonteCarloHelper = new SimulationMonteCarloHelper();
+	private static SimulationMonteCarloDraws simulationMonteCarloDraws = new SimulationMonteCarloDraws();
 	private static GridBalancer gridBalancer = new GridBalancer();
 	private static OutputFileHandler outputFileHandler = new OutputFileHandler();
 
@@ -95,7 +95,7 @@ public class Main {
 				System.out.println("TimeStep: "+ currentTimeStep);
 
 				//Set failure state of conventional generators and calculates the real renewable production for a single hour.
-				realTimestepsGraph [currentTimeStep] = simulationMonteCarloHelper.randomizeGridState(plannedTimestepsGraph[currentTimeStep], currentTimeStep);
+				realTimestepsGraph [currentTimeStep] = simulationMonteCarloDraws.randomizeGridState(plannedTimestepsGraph[currentTimeStep], currentTimeStep);
 
 				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));
 				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
