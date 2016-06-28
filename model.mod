@@ -146,10 +146,10 @@ printf {i in storage} : "Stor,%d,%.4f \n", i, (sum{j in nodes : capacity[i,j] <>
 printf : "\n" >> "sol" & outname & ".txt";
 
 printf "CURTAILMENT,%.4f \n", (sum{i in rgen} 
-	 	cost_curt * (rprodmax[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
+	 	(rprodmax[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
 
 printf "EENS,%.4f \n", (sum{i in consumers}
-		cost_sl * (loads[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor))>> "sol" & outname & ".txt";
+		(loads[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor))>> "sol" & outname & ".txt";
 
 printf : "\n" >> "sol" & outname & ".txt";
 #printf {i in nodes,j in nodes : capacity[j,i] <> 0} : " flow in [ %d , %d ] = %.6f \n", j, i, ((theta[j] - theta[i])/ weight[j,i])*m_factor;
