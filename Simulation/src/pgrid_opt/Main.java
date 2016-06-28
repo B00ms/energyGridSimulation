@@ -145,8 +145,8 @@ public class Main {
 						realTimestepsGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
 								realTimestepsGraph[currentTimeStep]); // Keeps track of the new state for storages.
 
-					if (currentTimeStep < 23)
-						realTimestepsGraph[currentTimeStep + 1] = simulationState.updateStorages(realTimestepsGraph[currentTimeStep],
+						if (currentTimeStep < 23)
+							realTimestepsGraph[currentTimeStep + 1] = simulationState.updateStorages(realTimestepsGraph[currentTimeStep],
 								realTimestepsGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
 					}
 				} catch (IOException | InterruptedException e) {
@@ -191,7 +191,7 @@ public class Main {
 			double realProduction 		= productionLoadHandler.calculateProduction(realTimestepsGraph[hour]);
 
 			double plannedLoad 	= productionLoadHandler.calculateLoad(plannedTimestepsGraph[hour]);
-			double realLoad 	= productionLoadHandler.calculateLoad(realTimestepsGraph[hour]);
+			double realLoad 	= productionLoadHandler.calculateSatisfiedLoad(realTimestepsGraph[hour]);
 
 			// if there is expected energy not supplied then count it as shedded load
 			if((realLoad - plannedLoad) >0)

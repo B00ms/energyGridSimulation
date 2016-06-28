@@ -52,6 +52,24 @@ public class ProductionLoadHandler {
         return sumLoad;
     }
 
+    /**
+     * Calculates the real satisfied load after the simulation run with the model
+     * @param graph
+     * @return
+     */
+    public double calculateSatisfiedLoad(Graph graph){
+        double sumLoad = 0;
+
+        for(int i = 0; i < graph.getNodeList().length; i++){
+            if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.CHARGING )
+                sumLoad += Math.abs(((Storage)graph.getNodeList()[i]).getFlow());
+            else if (graph.getNodeList()[i].getClass() == Consumer.class)
+                sumLoad += Math.abs(((Consumer)graph.getNodeList()[i]).getFlow());
+        }
+        return sumLoad;
+    }
+
+
     public double calculateRenewableProduction(Graph graph){
         double production = 0;
         for(int i = 0; i < graph.getNodeList().length; i++){

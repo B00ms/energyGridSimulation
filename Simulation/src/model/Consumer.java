@@ -5,6 +5,7 @@ import graph.Node;
 public class Consumer extends Node {
 	private double load;
 	private double loadError;
+	private double flow = 0;
 
 	public Consumer(double load, int nodeId) {
 		super(nodeId);
@@ -39,5 +40,17 @@ public class Consumer extends Node {
 
 	public boolean isRenew() {
 		return false;
+	}
+
+	public double getFlow(){
+		return flow;
+	}
+
+	/**
+	 * Please don't use this unless you're setting flow to equal flow set by the flow simulation.
+	 * @param flow
+	 */
+	public void setFlow(double flow){
+		flow = flow;
 	}
 }
