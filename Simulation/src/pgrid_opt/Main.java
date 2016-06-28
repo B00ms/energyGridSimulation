@@ -101,7 +101,7 @@ public class Main {
 				System.out.println("TimeStep: "+ currentTimeStep);
 
 				//Set failure state of conventional generators and calculates the real renewable production for a single hour.
-				realTimestepsGraph [currentTimeStep] = simulationMonteCarloDraws.randomizeGridState(plannedTimestepsGraph[currentTimeStep], currentTimeStep);
+				realTimestepsGraph [currentTimeStep] = simulationMonteCarloDraws.randomizeGridState(realTimestepsGraph[currentTimeStep], currentTimeStep);
 
 				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));
 				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
@@ -113,9 +113,9 @@ public class Main {
 				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
 
 				//Attempt to balance production and load  for a single hour.
-				realTimestepsGraph [currentTimeStep] = gridBalancer.checkGridEquilibrium(plannedTimestepsGraph[currentTimeStep], currentTimeStep);
+				realTimestepsGraph [currentTimeStep] = gridBalancer.checkGridEquilibrium(realTimestepsGraph[currentTimeStep], currentTimeStep);
 
-				mp.createModelInputFile(plannedTimestepsGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
+				mp.createModelInputFile(realTimestepsGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
 				try {
 
@@ -176,7 +176,7 @@ public class Main {
 			EENSConvergence = checkEENSConvergence(EENSTab, EENSConvergenceLimit);
 			numOfSim++; // go to next day
 		}
-		
+
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
