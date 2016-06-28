@@ -437,6 +437,15 @@ public class Graph implements Cloneable {
 
 			} else if(graph.getNodeList()[i].getClass() == Storage.class && ((Node)graph.getNodeList()[i]).getNodeId() == nodeId){
 				((Storage)graph.getNodeList()[i]).setFlow(flow);
+
+				// update the status of the storage node
+				if(flow<0){
+					((Storage)graph.getNodeList()[i]).setStatus(Storage.StorageStatus.CHARGING);
+				}else if(flow>0){
+					((Storage)graph.getNodeList()[i]).setStatus(Storage.StorageStatus.DISCHARGING);
+				}else{
+					((Storage)graph.getNodeList()[i]).setStatus(Storage.StorageStatus.NEUTRAL);
+				}
 			}
 		}
 

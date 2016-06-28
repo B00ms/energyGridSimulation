@@ -35,6 +35,10 @@ public class Storage extends Node {
 		setMinimumCharge(minimumCharge);
 	}
 
+	public void setStatus(StorageStatus status){
+		this.status = status;
+	}
+
 	public StorageStatus getStatus(){
 		return status;
 	}
