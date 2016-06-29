@@ -225,7 +225,7 @@ public class Main {
 				sumEENS += listEENS.get(i);
 			}
 
-			sumEENS = sumEENS / listEENS.size()-2;
+			sumEENS = sumEENS / listEENS.size()-1;
 
 			double convergence = Math.abs(sumEENS - listEENS.get(listEENS.size()-1));
 			System.err.println("Convergence: "+ convergence +", Threshold: "+ EENSConvergenceThreshold);
