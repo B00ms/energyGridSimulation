@@ -1,8 +1,7 @@
 package graph;
 
-import java.io.Serializable;
 
-public class Edge implements Comparable<Edge>, Serializable {
+public class Edge implements Comparable<Edge>{
 	private double weight;
 	private double capacity;
 	private double flow;

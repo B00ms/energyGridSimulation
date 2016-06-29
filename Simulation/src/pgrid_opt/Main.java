@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.rits.cloning.Cloner;
 import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 import filehandler.DataModelPrint;
@@ -53,28 +54,21 @@ public class Main {
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
 
-		// load simulation limit
-		int simLimit = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "simulation-runs");
-		int EENScum = 0;
-		List<Double> EENSTab = new ArrayList<Double>();
+		List<Double> EENSTab = new ArrayList<>();
 
 		// EENS stuff
 		boolean EENSConvergence = false;
 		double EENSConvergenceLimit = config.getConfigDoubleValue((CONFIGURATION_TYPE.GENERAL), "EENSConvergenceLimit");
 
+		Cloner cloner=new Cloner();
+
 		int numOfSim = 0;
 		while(!EENSConvergence){
-//		for (int numOfSim = 0; numOfSim < simLimit; numOfSim++) {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
 			Graph[] initialTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
-			Graph[] plannedTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
-			Graph[] realTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
 			initialTimestepsGraph = simulationState.creategraphs(graph, initialTimestepsGraph);
-
-
-
 
 			int currentTimeStep = 0;
 
@@ -86,10 +80,8 @@ public class Main {
 				System.exit(0);
 			}
 
-			plannedTimestepsGraph = SerializationUtils.clone(initialTimestepsGraph);
-//			plannedTimestepsGraph = SerializationUtils.deserialize(SerializationUtils.serialize(initialTimestepsGraph));
-
 			//Plan production based on expected load and storage charging during the night period.
+			Graph[] plannedTimestepsGraph = cloner.deepClone(initialTimestepsGraph);
 			plannedTimestepsGraph = productionLoadHandler.setExpectedLoadAndProduction(plannedTimestepsGraph);
 
 			for(int i = 0; i < 24; i++){
@@ -98,8 +90,7 @@ public class Main {
 				System.out.println("expectedLoad: " + testload + " expectedProd: " + testprod);
 			}
 
-			realTimestepsGraph = SerializationUtils.clone(plannedTimestepsGraph);
-//			realTimestepsGraph = SerializationUtils.deserialize(SerializationUtils.serialize(plannedTimestepsGraph));
+			Graph[] realTimestepsGraph = cloner.deepClone(plannedTimestepsGraph);
 
 			// set real load for consumers using Monte carlo draws for the entire day.
 			realTimestepsGraph = ProductionLoadHandler.setRealLoad(realTimestepsGraph);

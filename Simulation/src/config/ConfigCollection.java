@@ -1,12 +1,11 @@
 package config;
 
 import java.io.File;
-import java.io.Serializable;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-public class ConfigCollection implements Serializable {
+public class ConfigCollection {
 
 	private static final String OS = System.getProperty("os.name");
 	private Config conf;
