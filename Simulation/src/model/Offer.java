@@ -1,6 +1,8 @@
 package model;
 
-public class Offer implements Comparable<Offer>{
+import java.io.Serializable;
+
+public class Offer implements Comparable<Offer>, Serializable{
 
     private double production; //MWh
     private double price; //euro/MWh

@@ -4,7 +4,9 @@ import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 import graph.Node;
 
-public class Storage extends Node {
+import java.io.Serializable;
+
+public class Storage extends Node implements Serializable {
 	private double currentCharge;
 	private double maximumCharge;
 	private double minimumCharge;

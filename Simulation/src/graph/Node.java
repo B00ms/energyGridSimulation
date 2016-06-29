@@ -1,6 +1,8 @@
 package graph;
 
-public abstract class Node {
+import java.io.Serializable;
+
+public abstract class Node implements Serializable {
 	public abstract boolean isRenew();
 
 	private int nodeId;

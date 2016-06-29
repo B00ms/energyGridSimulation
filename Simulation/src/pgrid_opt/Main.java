@@ -16,6 +16,7 @@ import filehandler.OutputFileHandler;
 import filehandler.Parser;
 import graph.Graph;
 import model.*;
+import org.apache.commons.lang3.SerializationUtils;
 import simulation.GridBalancer;
 import simulation.ProductionLoadHandler;
 import simulation.SimulationMonteCarloDraws;
@@ -34,7 +35,6 @@ public class Main {
 	public static void main(String[] args) {
 
 		long starttime = System.nanoTime();
-		Graph[] initialTimestepsGraph = null;
 		Parser parser = new Parser();
 		Graph graph;
 
@@ -68,8 +68,14 @@ public class Main {
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
-			initialTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
+			Graph[] initialTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
+			Graph[] plannedTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
+			Graph[] realTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
 			initialTimestepsGraph = simulationState.creategraphs(graph, initialTimestepsGraph);
+
+
+
+
 			int currentTimeStep = 0;
 
 			String solutionPath = dirpath + "simRes" + numOfSim + "";
@@ -80,8 +86,11 @@ public class Main {
 				System.exit(0);
 			}
 
+			plannedTimestepsGraph = SerializationUtils.clone(initialTimestepsGraph);
+//			plannedTimestepsGraph = SerializationUtils.deserialize(SerializationUtils.serialize(initialTimestepsGraph));
+
 			//Plan production based on expected load and storage charging during the night period.
-			Graph[] plannedTimestepsGraph = productionLoadHandler.setExpectedLoadAndProduction(initialTimestepsGraph);
+			plannedTimestepsGraph = productionLoadHandler.setExpectedLoadAndProduction(plannedTimestepsGraph);
 
 			for(int i = 0; i < 24; i++){
 				double testload = productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
@@ -89,8 +98,11 @@ public class Main {
 				System.out.println("expectedLoad: " + testload + " expectedProd: " + testprod);
 			}
 
+			realTimestepsGraph = SerializationUtils.clone(plannedTimestepsGraph);
+//			realTimestepsGraph = SerializationUtils.deserialize(SerializationUtils.serialize(plannedTimestepsGraph));
+
 			// set real load for consumers using Monte carlo draws for the entire day.
-			Graph[] realTimestepsGraph = ProductionLoadHandler.setRealLoad(plannedTimestepsGraph);
+			realTimestepsGraph = ProductionLoadHandler.setRealLoad(realTimestepsGraph);
 
 			for(int i = 0; i < 24; i++){
 				double testload = productionLoadHandler.calculateLoad(realTimestepsGraph[i]);
@@ -113,10 +125,12 @@ public class Main {
 				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
 
 				//Attempt to balance production and load  for a single hour.
-				realTimestepsGraph [currentTimeStep] = gridBalancer.checkGridEquilibrium(realTimestepsGraph[currentTimeStep], currentTimeStep);
+				realTimestepsGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realTimestepsGraph[currentTimeStep], currentTimeStep);
 
 				mp.createModelInputFile(realTimestepsGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
+				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));
+				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
 				try {
 
 					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
@@ -186,16 +200,20 @@ public class Main {
 		int hour = 0;
 		double sheddedLoad = 0;
 
-		while (hour < realTimestepsGraph.length) {
-			double plannedProduction 	= productionLoadHandler.calculateProduction(plannedTimestepsGraph[hour]);
-			double realProduction 		= productionLoadHandler.calculateProduction(realTimestepsGraph[hour]);
+		for(int i = 0; i < 24; i++){
+			double testload = productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
+			double testprod = productionLoadHandler.calculateProduction(plannedTimestepsGraph[i]);
+			System.out.println("expectedLoad: " + testload + " expectedProd: " + testprod);
+		}
 
-			double plannedLoad 	= productionLoadHandler.calculateLoad(plannedTimestepsGraph[hour]);
-			double realLoad 	= productionLoadHandler.calculateSatisfiedLoad(realTimestepsGraph[hour]);
+//		while (hour < realTimestepsGraph.length) {
+		for(int i = 0; i < 24; i++){
+			double plannedLoad 	= productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
+			double realLoad 	= productionLoadHandler.calculateSatisfiedLoad(realTimestepsGraph[i]);
 
 			// if there is expected energy not supplied then count it as shedded load
-			if((realLoad - plannedLoad) >0)
-				sheddedLoad += (realLoad - plannedLoad);
+			if((plannedLoad - realLoad) >0)
+				sheddedLoad += (plannedLoad - realLoad);
 
 			hour++;
 		}

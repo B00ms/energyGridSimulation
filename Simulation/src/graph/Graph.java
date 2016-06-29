@@ -1,9 +1,6 @@
 package graph;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
@@ -15,7 +12,7 @@ import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 
 
-public class Graph implements Cloneable {
+public class Graph implements Cloneable, Serializable {
 	private int nnode; //Total Number of nodes in the graph
 	private int ngenerators; //Number of conventional generators
 	private int nconsumers; //Number of loads

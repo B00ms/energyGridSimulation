@@ -3,7 +3,9 @@ package model;
 import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 
-public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>{
+import java.io.Serializable;
+
+public class ConventionalGenerator extends Generator implements Comparable<ConventionalGenerator>, Serializable{
 
 
 	private int mttf;//mean time to failure
