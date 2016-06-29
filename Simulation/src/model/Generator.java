@@ -2,9 +2,7 @@ package model;
 
 import graph.Node;
 
-import java.io.Serializable;
-
-public class Generator extends Node implements Serializable {
+public class Generator extends Node {
 
 	protected double maxp; //maximum production
 	protected double minp; //minimum production

@@ -1,8 +1,6 @@
 package graph;
 
-import java.io.Serializable;
-
-public class InnerNode extends Node implements Serializable{
+public class InnerNode extends Node {
 
 	public InnerNode(int nodeId) {
 		super(nodeId);

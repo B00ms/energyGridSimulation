@@ -2,9 +2,8 @@ package model;
 
 import graph.Node;
 
-import java.io.Serializable;
 
-public class Consumer extends Node implements Serializable {
+public class Consumer extends Node {
 	private double load;
 	private double loadError;
 	private double flow = 0;

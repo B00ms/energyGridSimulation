@@ -12,7 +12,7 @@ import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 
 
-public class Graph implements Cloneable, Serializable {
+public class Graph implements Cloneable {
 	private int nnode; //Total Number of nodes in the graph
 	private int ngenerators; //Number of conventional generators
 	private int nconsumers; //Number of loads
