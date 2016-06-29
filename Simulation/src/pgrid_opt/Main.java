@@ -84,42 +84,22 @@ public class Main {
 			Graph[] expectedSimulationGraph = cloner.deepClone(initialTimestepsGraph);
 			expectedSimulationGraph = productionLoadHandler.setExpectedLoadAndProduction(expectedSimulationGraph);
 
-//			for(int i = 0; i < 24; i++){
-//				double testload = productionLoadHandler.calculateLoad(expectedSimulationGraph[i]);
-//				double testprod = productionLoadHandler.calculateProduction(expectedSimulationGraph[i]);
-//				System.out.println("expectedLoad: " + testload + " expectedProd: " + testprod);
-//			}
-
 			Graph[] realSimulationGraph = cloner.deepClone(expectedSimulationGraph);
 
 			// set real load for consumers using Monte carlo draws for the entire day.
 			realSimulationGraph = ProductionLoadHandler.setRealLoad(realSimulationGraph);
 
-//			for(int i = 0; i < 24; i++){
-//				double testload = productionLoadHandler.calculateLoad(realSimulationGraph[i]);
-//				double testprod = productionLoadHandler.calculateProduction(realSimulationGraph[i]);
-//				System.out.println("realLoad: " + testload + " realProd: " + testprod);
-//			}
 			while (currentTimeStep < realSimulationGraph .length) {
 				System.out.println("TimeStep: "+ currentTimeStep);
 
 				//Set failure state of conventional generators and calculates the real renewable production for a single hour.
 				realSimulationGraph [currentTimeStep] = simulationMonteCarloDraws.randomizeGridState(realSimulationGraph[currentTimeStep], currentTimeStep);
 
-//				System.out.println("load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-//				System.out.println("prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
-
 				//Plan real storage charging using excess of renewable production to charge past 50% max SoC.x
 				storageHandler.planStorageCharging(realSimulationGraph[currentTimeStep], currentTimeStep);
 
-//				System.out.println("load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-//				System.out.println("prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
-
 				//Attempt to balance production and load  for a single hour.
 				realSimulationGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realSimulationGraph[currentTimeStep], currentTimeStep);
-
-//				System.out.println("load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-//				System.out.println("prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 
 				// TODO: still have to check actual changes happening in createModelInputFile
 				Graph inputFileGraph = cloner.deepClone(realSimulationGraph[currentTimeStep]);
@@ -143,7 +123,7 @@ public class Main {
 					while ((line = reader.readLine()) != null) {
 						output.append(String.valueOf(line) + "\n");
 					}
-//					System.out.println(output);
+					System.out.println(output);
 
 					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
 					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
@@ -178,7 +158,6 @@ public class Main {
 				// calculate eens for hour
 				double hourlyEENS = calculateEENS(realSimulationGraph[currentTimeStep]);
 				dailyEENS += hourlyEENS;
-				System.err.println("hourlyEENS: "+ hourlyEENS);
 
 				currentTimeStep++;
 			}
@@ -208,7 +187,8 @@ public class Main {
 		double satisfiedLoad 	= productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph);
 		realLoad = realLoad/2;
 		// if there is expected energy not supplied then count it as shedded load
-		System.out.println("EENS: " + (realLoad-satisfiedLoad));
+		System.err.println("EENS: " + (realLoad-satisfiedLoad));
+		
 		if((realLoad - satisfiedLoad) > 0)
 			hourlyEENS += (realLoad - satisfiedLoad);
 
