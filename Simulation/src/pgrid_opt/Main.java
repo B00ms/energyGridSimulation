@@ -57,15 +57,16 @@ public class Main {
 		// EENS stuff
 		List<Double> listEENS = new ArrayList<Double>();
 		boolean EENSConvergence = false;
-		double EENSConvergenceLimit = config.getConfigDoubleValue((CONFIGURATION_TYPE.GENERAL), "EENSConvergenceLimit");
 
 		Cloner cloner=new Cloner();
 
 		int numOfSim = 0;
-		while((!EENSConvergence || numOfSim <= 50) || numOfSim == 0){
+
+		while((!EENSConvergence || numOfSim <= 50)){
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
+			double dailyEENS = 0;
 			Graph[] initialTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
 			initialTimestepsGraph = simulationState.creategraphs(graph, initialTimestepsGraph);
 
@@ -171,17 +172,20 @@ public class Main {
 						}
 					}
 				}
+
+				// calculate eens for hour
+				double hourlyEENS = calculateEENS(plannedTimestepsGraph[currentTimeStep], realTimestepsGraph[currentTimeStep]);
+				dailyEENS += hourlyEENS;
+				listEENS.add(dailyEENS);
+				System.err.println("dailyEENS: "+ dailyEENS);
+
 				currentTimeStep++;
 			}
 
 			// handle storage.txt output
 			outputFileHandler.writeStorageTxtFile(realTimestepsGraph, dirpath, solutionPath);
-
-			double dailyEENS = 0;
-			dailyEENS =  calculateEENS(plannedTimestepsGraph, realTimestepsGraph);
-			listEENS.add(dailyEENS);
-
-			EENSConvergence = checkEENSConvergence(listEENS, EENSConvergenceLimit);
+			
+			EENSConvergence = checkEENSConvergence(listEENS);
 			if(numOfSim == 0)
 				EENSConvergence = false;
 
@@ -195,46 +199,41 @@ public class Main {
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
 	}
 
-	public static Double calculateEENS(Graph[] plannedTimestepsGraph, Graph[] realTimestepsGraph){
-		double dailyEENS = 0;
+	public static Double calculateEENS(Graph expectedSimulationGraph, Graph realSimulationGraph){
+		double hourlyEENS = 0;
 
-		for(int i = 0; i < realTimestepsGraph.length; i++){
-			double testload = productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
-			double testprod = productionLoadHandler.calculateProduction(plannedTimestepsGraph[i]);
-			System.out.println("expectedLoad: " + testload + " expectedProd: " + testprod);
-		}
+		double expectedLoad 	= productionLoadHandler.calculateLoad(expectedSimulationGraph);
+		double realLoad 		= productionLoadHandler.calculateLoad(realSimulationGraph);
+		double satisfiedLoad 	= productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph);
 
-		for(int i = 0; i < realTimestepsGraph.length; i++){
-			double plannedLoad 	= productionLoadHandler.calculateLoad(plannedTimestepsGraph[i]);
-			double realLoad 	= productionLoadHandler.calculateSatisfiedLoad(realTimestepsGraph[i]);
+		// if there is expected energy not supplied then count it as shedded load
+		System.out.println("EENS: " + (realLoad- expectedLoad));
+		if((realLoad - satisfiedLoad) > 0)
+			hourlyEENS += (realLoad - satisfiedLoad);
 
-			// if there is expected energy not supplied then count it as shedded load
-			System.out.println("EENS: " + (realLoad- plannedLoad));
-			if((realLoad- plannedLoad ) > 0)
-				dailyEENS += (realLoad - plannedLoad);
-		}
-
-		return dailyEENS;
+		return hourlyEENS;
 	}
 
-	public static boolean checkEENSConvergence(List<Double> listEENS, double EENSConvergenceLimit){
+	public static boolean checkEENSConvergence(List<Double> listEENS){
+		double EENSConvergenceThreshold = config.getConfigDoubleValue((CONFIGURATION_TYPE.GENERAL), "EENSConvergenceThreshold");
 		double sumEENS = 0;
 		boolean EENSConvergence = false;
 
-		for(Double EENSd : listEENS)
-			sumEENS += EENSd;
+		if(listEENS.size() > 1){
+			for (int i =0; i < listEENS.size()-1; i++){
+				sumEENS += listEENS.get(i);
+			}
 
-		sumEENS = sumEENS / listEENS.size();
+			sumEENS = sumEENS / listEENS.size()-2;
 
-		double convergence = Math.abs(sumEENS - listEENS.get(listEENS.size()-1));
-
-		// stop the simulation when converged
-		if(convergence <= EENSConvergenceLimit){
-			EENSConvergence = true;
-		}
+			double convergence = Math.abs(sumEENS - listEENS.get(listEENS.size()-1));
+			System.err.println("Convergence: "+ convergence +", Threshold: "+ EENSConvergenceThreshold);
+			// stop the simulation when converged
+			if(convergence <= EENSConvergenceThreshold){
+				EENSConvergence = true;
+			}
+		}else{}
 
 		return EENSConvergence;
-//		calculate EENS
-//		return sheddedLoad;
 	}
 }
