@@ -127,6 +127,9 @@ public class Main {
 				//Attempt to balance production and load  for a single hour.
 				realTimestepsGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realTimestepsGraph[currentTimeStep], currentTimeStep);
 
+				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));
+				System.out.println("prod "+productionLoadHandler.calculateProduction(realTimestepsGraph[currentTimeStep]));
+
 				mp.createModelInputFile(realTimestepsGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
 				System.out.println("load "+productionLoadHandler.calculateLoad(realTimestepsGraph[currentTimeStep]));

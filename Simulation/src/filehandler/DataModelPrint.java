@@ -238,9 +238,9 @@ public class DataModelPrint {
 					if(g.getNodeList()[i].getClass() == Storage.class){
 						double cap = 0;
 
-						if (((Storage) g.getNodeList()[i]).getMinimumCharge() > ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
+						/*if (((Storage) g.getNodeList()[i]).getMinimumCharge() > ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
 							((Storage) g.getNodeList()[i]).charge(((Storage) g.getNodeList()[i]).getMinimumCharge());
-						}
+						}*/
 						Storage stor = (Storage) g.getNodeList()[i];
 						double val = (((Storage) g.getNodeList()[i]).getCurrentCharge()	- ((Storage) g.getNodeList()[i]).getMinimumCharge()) / delta * dischargeEfficiency;
 						//System.out.print(stor.getCurrentCharge() + " ");
@@ -276,9 +276,9 @@ public class DataModelPrint {
 						float eps = 0.001F;
 
 
-						if (((Storage) g.getNodeList()[i]).getMaximumCharge() < ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
+						/*if (((Storage) g.getNodeList()[i]).getMaximumCharge() < ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
 							((Storage) g.getNodeList()[i]).charge(((Storage) g.getNodeList()[i]).getMaximumCharge());
-						}
+						}*/
 
 //						double max = ((Storage) g.getNodeList()[i]).getMaximumCharge();
 //						double current = ((Storage) g.getNodeList()[i]).getCurrentCharge();
