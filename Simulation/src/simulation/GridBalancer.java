@@ -219,6 +219,8 @@ public class GridBalancer {
             System.out.println("Renewable prod: " + productionLoadHandler.calculateRenewableProduction(grid));
         }
 
+        realProduction = productionLoadHandler.calculateProduction(grid);
+        realLoad = productionLoadHandler.calculateLoad(grid);
         System.out.print("After balancing - ");
         System.out.println("Real production: " + realProduction + " Total load: " + realLoad);
         return grid;
