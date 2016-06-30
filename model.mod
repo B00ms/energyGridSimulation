@@ -39,6 +39,8 @@ param production {tgen} >= 0;
 param planned_production{tgen} >=0;
 param rewproduction {rgen};
 param flowfromstorage {storage};
+param flowfromstorageDay {storage} default 0;
+param flowfromstorageNight {storage} <=0 default 0;
 
 #phase angle constraint 
 var theta {nodes} >= -pi/2, <= pi/2;
@@ -69,40 +71,19 @@ subject to flowcons { i in inner } :
 
 # renewable production constraint
 subject to setRewProduction { i in rgen } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = rewproduction[i];
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= rewproduction[i];
 
 # traditional production constraint
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
 
-#(if current_hour >= start_charge_time || current_hour <= end_charge_time then 0)
-subject to storageFlowNight {n <> 1}:
-sum { j in nodes : capacity[i,j] <> 0} = flowfromstorage[i];
+subject to storageFlowNight { i in storage } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorageNight[i];
 
-subject to storageFlowDay { n <> 0 } :
-sum { j in nodes : capacity[i,j] <> 0} <= flowfromstorage[i];
+subject to storageFlowDay { i in storage  } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowfromstorageDay[i];
 
-
-
-#{ i in storage } :
-#sum { j in nodes : capacity[i,j] <> 0} = flowfromstorage[i];
-
-
-
-#look at this part
-# if later than  start_charge_time and earlier than end_charge_time, charge storage
-#for {{0}: current_hour >= start_charge_time || current_hour <= end_charge_time}{# IF condition THEN
-
-#not i in MAXREQ or n_min[i] > 0
-#	subject to storageFlow { i in storage } :
-#	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];	
-
-#} 
-#for {{0}: current_hour <= start_charge_time || current_hour >= end_charge_time} {# ELSE
-	#subject to storageFlow { i in storage } :
-	#sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowfromstorage[i];
-#}# ENDIF
 
 #The amount of energy send to a consumer should be lower or equal to the load of the consumer
 subject to loadfix {i in consumers} :

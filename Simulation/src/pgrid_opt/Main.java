@@ -83,6 +83,9 @@ public class Main {
 			//Plan production based on expected load and storage charging during the night period.
 			Graph[] expectedSimulationGraph = cloner.deepClone(initialTimestepsGraph);
 			expectedSimulationGraph = productionLoadHandler.setExpectedLoadAndProduction(expectedSimulationGraph);
+			System.out.println("Expected production and load (from input file and expected renewable production) ");
+			System.out.println("Expected production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
+			System.out.println("Expected load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
 
 			Graph[] realSimulationGraph = cloner.deepClone(expectedSimulationGraph);
 
@@ -90,6 +93,7 @@ public class Main {
 			realSimulationGraph = ProductionLoadHandler.setRealLoad(realSimulationGraph);
 
 			while (currentTimeStep < realSimulationGraph .length) {
+				System.out.println();
 				System.out.println("TimeStep: "+ currentTimeStep);
 
 				//Set failure state of conventional generators and calculates the real renewable production for a single hour.
@@ -98,23 +102,25 @@ public class Main {
 				//Plan real storage charging using excess of renewable production to charge past 50% max SoC.x
 				storageHandler.planStorageCharging(realSimulationGraph[currentTimeStep], currentTimeStep);
 
+				System.out.println("Real production and load (including storage charging during night, and failed generators and real renewable production)");
+				System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]));
+				System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
+
 				//Attempt to balance production and load  for a single hour.
 				realSimulationGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realSimulationGraph[currentTimeStep], currentTimeStep);
 
-				System.out.println("eq load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-				System.out.println("eq prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+				System.out.println("Real production and load after checkGridEquilibrium");
+				System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
+				System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
 
-				// TODO: still have to check actual changes happening in createModelInputFile
 				Graph inputFileGraph = cloner.deepClone(realSimulationGraph[currentTimeStep]);
 				mp.createModelInputFile(inputFileGraph, String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
-				System.out.println("input load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-				System.out.println("input prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 				try {
 
 					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
 					command = command + " --nopresol --output filename.out ";
-					System.out.println(command);
+					//System.out.println(command);
 
 					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
 					proc.waitFor();
@@ -126,14 +132,16 @@ public class Main {
 					while ((line = reader.readLine()) != null) {
 						output.append(String.valueOf(line) + "\n");
 					}
-					System.out.println(output);
+					System.out.print(output);
 
 					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
-					System.out.println("setFlowFromOutputFile load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-					System.out.println("setFlowFromOutputFile prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+
+					System.out.println("Actual production and load as defined by the flow simulation: ");
+					System.out.println("Production " + productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
+					System.out.println("Load "+ productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+
 					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
-					System.out.println("printGraph load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-					System.out.println("printGraph prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+
 					// write output to solution file
 					outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
 
@@ -165,9 +173,6 @@ public class Main {
 				double hourlyEENS = calculateEENS(realSimulationGraph[currentTimeStep]);
 				dailyEENS += hourlyEENS;
 
-
-				System.out.println("load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-				System.out.println("prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 				currentTimeStep++;
 			}
 
@@ -196,7 +201,7 @@ public class Main {
 		double satisfiedLoad 	= productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph);
 //		realLoad = realLoad/2;
 		// if there is expected energy not supplied then count it as shedded load
-		System.err.println("EENS: " + (realLoad-satisfiedLoad));
+		System.out.println("EENS: " + (realLoad-satisfiedLoad));
 
 		if((realLoad - satisfiedLoad) > 0)
 			hourlyEENS += (realLoad - satisfiedLoad);
@@ -217,7 +222,7 @@ public class Main {
 			sumEENS = sumEENS / listEENS.size()-1;
 
 			double convergence = Math.abs(sumEENS - listEENS.get(listEENS.size()-1));
-			System.err.println("Convergence: "+ convergence +", Threshold: "+ EENSConvergenceThreshold);
+			System.out.println("Convergence: "+ convergence +", Threshold: "+ EENSConvergenceThreshold);
 			// stop the simulation when converged
 			if(convergence <= EENSConvergenceThreshold){
 				EENSConvergence = true;

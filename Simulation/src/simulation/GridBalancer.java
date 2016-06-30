@@ -38,7 +38,7 @@ public class GridBalancer {
 
         boolean dischargeAllowed = true;
         // timestep >= 23 && timestep <= 4
-        if(timestep >= beginTime && timestep <= endTime){
+        if(timestep >= beginTime || timestep <= endTime){
             grid = storageHandler.chargeStorage(grid);
             dischargeAllowed = false;
         }
@@ -48,7 +48,7 @@ public class GridBalancer {
         realProduction = productionLoadHandler.calculateProduction(grid);
         // real load fix when real load is negative
         double deltaP = (realProduction - realLoad);
-        System.out.println("RealProduction: " + realProduction + " " + "realLoad: "+ realLoad);
+        //System.out.println("RealProduction: " + realProduction + " " + "realLoad: "+ realLoad);
 
         // Check if we need to increase current production
         if (deltaP < 0) {
@@ -196,7 +196,7 @@ public class GridBalancer {
             System.out.print("Grid is balanced ");
             return grid;
         }
-        System.out.println("Production after turning conventional generators off: " + realProduction);
+        //System.out.println("Production after turning conventional generators off: " + realProduction);
 
         // update nodeList
         grid.setNodeList(nodeList);
@@ -206,23 +206,22 @@ public class GridBalancer {
             realProduction = productionLoadHandler.calculateProduction(grid);
             realLoad = productionLoadHandler.calculateLoad(grid);
         }
-        System.out.println("Prod after charging storage:" + realProduction);
-        System.out.println("Load after charging storage:" + realLoad);
-        System.out.println("Renewable prod: " + productionLoadHandler.calculateRenewableProduction(grid));
+        //System.out.println("Prod after charging storage:" + realProduction);
+        //System.out.println("Load after charging storage:" + realLoad);
+        //System.out.println("Renewable prod: " + productionLoadHandler.calculateRenewableProduction(grid));
 
-        //TODO: curtailment decrease production
         if(realProduction - realLoad > 0){
-            grid = curtailRenewables(grid, realProduction, realLoad);
+            //grid = curtailRenewables(grid, realProduction, realLoad);
             realProduction = productionLoadHandler.calculateProduction(grid);
             realLoad = productionLoadHandler.calculateLoad(grid);
-            System.out.println("After cuirtailment Real production: " + productionLoadHandler.calculateProduction(grid) + " Total load: " + productionLoadHandler.calculateLoad(grid));
-            System.out.println("Renewable prod: " + productionLoadHandler.calculateRenewableProduction(grid));
+           // System.out.println("After cuirtailment Real production: " + productionLoadHandler.calculateProduction(grid) + " Total load: " + productionLoadHandler.calculateLoad(grid));
+            //System.out.println("Renewable prod: " + productionLoadHandler.calculateRenewableProduction(grid));
         }
 
         realProduction = productionLoadHandler.calculateProduction(grid);
         realLoad = productionLoadHandler.calculateLoad(grid);
-        System.out.print("After balancing - ");
-        System.out.println("Real production: " + realProduction + " Total load: " + realLoad);
+        //System.out.print("After balancing - ");
+        //System.out.println("Real production: " + realProduction + " Total load: " + realLoad);
         return grid;
     }
 

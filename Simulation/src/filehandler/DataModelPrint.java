@@ -231,17 +231,36 @@ public class DataModelPrint {
 				}
 			}
 			counter = 0;
-			writer.println("param flowfromstorage :=");
-			for (int i = 0; i < g.getNodeList().length; i++) {
-				if(g.getNodeList()[i].getClass() == Storage.class){
-					counter++;
 
-					if (counter != g.getNstorage()) {
-						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow());
-					} else {
-						writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow() + ";");
+
+			if(currentHour>= beginChargeTime || currentHour <= endChargeTime ){
+				writer.println("param flowfromstorageNight :=");
+				for (int i = 0; i < g.getNodeList().length; i++) {
+					if(g.getNodeList()[i].getClass() == Storage.class){
+						counter++;
+						double flow = ((Storage) g.getNodeList()[i]).getFlow();
+						if (counter != g.getNstorage()) {
+							writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow());
+						} else {
+							writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow() + ";");
+						}
 					}
 				}
+				writer.println("param flowfromstorageDay;");
+			}else{
+				writer.println("param flowfromstorageDay :=");
+				for (int i = 0; i < g.getNodeList().length; i++) {
+					if(g.getNodeList()[i].getClass() == Storage.class){
+						counter++;
+
+						if (counter != g.getNstorage()) {
+							writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow());
+						} else {
+							writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow() + ";");
+						}
+					}
+				}
+				writer.println("param flowfromstorageNight;");
 			}
 			counter = 0;
 			if (g.getNstorage() != 0) {

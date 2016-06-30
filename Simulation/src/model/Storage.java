@@ -82,13 +82,10 @@ public class Storage extends Node implements Serializable {
 	 * @param charge The amount of energy the grid wants to get rid of.
 	 * @return the amount of flow on the line when charging.
 	 */
-	public double charge(double charge) {
+	public double charge(double flowComingIn) {
 		status = StorageStatus.CHARGING;
-		double newSoC = currentCharge + (charge * chargeEfficiency);
-		double flowComingIn = charge;
-		double tempCurrentcharge;
-		flowStorage = charge;
-		currentCharge = newSoC;
+		double newSoC = currentCharge + (flowComingIn * chargeEfficiency);
+		flowStorage = flowComingIn;
 		flowLimit = (chMax / chargeEfficiency);
 
 		if (newSoC > maximumCharge){
@@ -99,9 +96,9 @@ public class Storage extends Node implements Serializable {
 		}
 
 		if(flowComingIn > flowLimit){
-			newSoC = currentCharge + (flowLimit * chargeEfficiency);
+			newSoC = currentCharge + flowLimit;
 			currentCharge = newSoC;
-			flowStorage = flowComingIn;
+			flowStorage = flowLimit;
 		}
 		flowStorage = flowStorage * -1; //Make flow negative because the edge goes Storage->innnerNode.
 		return flowStorage;
