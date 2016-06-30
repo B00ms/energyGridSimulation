@@ -101,12 +101,15 @@ public class Main {
 				//Attempt to balance production and load  for a single hour.
 				realSimulationGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realSimulationGraph[currentTimeStep], currentTimeStep);
 
+				System.out.println("eq load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
+				System.out.println("eq prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+
 				// TODO: still have to check actual changes happening in createModelInputFile
 				Graph inputFileGraph = cloner.deepClone(realSimulationGraph[currentTimeStep]);
 				mp.createModelInputFile(inputFileGraph, String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
-//				System.out.println("load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-//				System.out.println("prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+				System.out.println("input load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
+				System.out.println("input prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 				try {
 
 					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
@@ -123,11 +126,14 @@ public class Main {
 					while ((line = reader.readLine()) != null) {
 						output.append(String.valueOf(line) + "\n");
 					}
-					System.out.println(output);
+//					System.out.println(output);
 
 					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
+					System.out.println("setFlowFromOutputFile load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
+					System.out.println("setFlowFromOutputFile prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
-
+					System.out.println("printGraph load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
+					System.out.println("printGraph prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 					// write output to solution file
 					outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
 
@@ -159,6 +165,9 @@ public class Main {
 				double hourlyEENS = calculateEENS(realSimulationGraph[currentTimeStep]);
 				dailyEENS += hourlyEENS;
 
+
+				System.out.println("load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
+				System.out.println("prod "+productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 				currentTimeStep++;
 			}
 
@@ -185,10 +194,10 @@ public class Main {
 
 		double realLoad 		= productionLoadHandler.calculateLoad(realSimulationGraph);
 		double satisfiedLoad 	= productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph);
-		realLoad = realLoad/2;
+//		realLoad = realLoad/2;
 		// if there is expected energy not supplied then count it as shedded load
 		System.err.println("EENS: " + (realLoad-satisfiedLoad));
-		
+
 		if((realLoad - satisfiedLoad) > 0)
 			hourlyEENS += (realLoad - satisfiedLoad);
 
