@@ -14,17 +14,19 @@ public class Storage extends Node implements Serializable {
 	private double dischargeEfficiency;
 	private double flowStorage = 0;
 	private double flowLimit = 0;
+	private double chMax;
 	private ConfigCollection config = new ConfigCollection();
 	public enum StorageStatus {CHARGING, DISCHARGING, NEUTRAL};
 	private StorageStatus status;
 
 
-	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId) {
+	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId, double chMax) {
 		super(nodeId);
 		this.currentCharge = currentCharge;
 		this.maximumCharge = maximumCharge;
 		this.minimumCharge = minimumCharge;
-		flowLimit = (maximumCharge - currentCharge) / config.getConfigDoubleValue(CONFIGURATION_TYPE.GENERAL, "durationOfEachStep");
+		this.chMax = chMax;
+		flowLimit = 0;
 		status = StorageStatus.NEUTRAL;
 
 		chargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
@@ -81,6 +83,7 @@ public class Storage extends Node implements Serializable {
 		double tempCurrentcharge;
 		flowStorage = charge;
 		currentCharge = newSoC;
+		flowLimit = (chMax / chargeEfficiency);
 
 		if (newSoC > maximumCharge){
 			newSoC = maximumCharge;
@@ -105,6 +108,7 @@ public class Storage extends Node implements Serializable {
 	 */
 	public double discharge(double charge){
 		status = StorageStatus.DISCHARGING;
+		flowLimit = (chMax * dischargeEfficiency);
 		double dischargedEnergy = charge/dischargeEfficiency; //Amount of discharge to put 'charge' amount of energy back into the grid
 		double outgoingFlow = dischargedEnergy * dischargeEfficiency; //Actual flow we put into the network, should equal charge
 		double newSoC = currentCharge - dischargedEnergy;
