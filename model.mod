@@ -77,10 +77,10 @@ subject to genproduction { i in tgen } :
 
 
 #(if current_hour >= start_charge_time || current_hour <= end_charge_time then 0)
-subject to storageFlowNight {j in nodes : capacity[i,j] <> 0, n <> 0}:
+subject to storageFlowNight {i in storage, j in nodes : capacity[i,j] <> 0, n <> 0}:
 sum { j in nodes : capacity[i,j] <> 0} = flowfromstorage[i];
 
-subject to storageFlowDay { j in nodes : capacity[i,j] <> 0, n <> 1} :
+subject to storageFlowDay {i in storage, j in nodes : capacity[i,j] <> 0, n <> 1} :
 sum { j in nodes : capacity[i,j] <> 0} <= flowfromstorage[i];
 
 
