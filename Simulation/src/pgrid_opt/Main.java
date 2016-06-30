@@ -17,7 +17,6 @@ import filehandler.OutputFileHandler;
 import filehandler.Parser;
 import graph.Graph;
 import model.*;
-import org.apache.commons.lang3.SerializationUtils;
 import simulation.GridBalancer;
 import simulation.ProductionLoadHandler;
 import simulation.SimulationMonteCarloDraws;
@@ -39,6 +38,7 @@ public class Main {
 		Parser parser = new Parser();
 		Graph graph;
 
+		String test = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file");
 		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 
 		// load general config
@@ -62,7 +62,7 @@ public class Main {
 
 		int numOfSim = 0;
 
-		while((!EENSConvergence || numOfSim <= 50)){
+		while((!EENSConvergence || numOfSim <= 1)){
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
@@ -126,7 +126,7 @@ public class Main {
 					while ((line = reader.readLine()) != null) {
 						output.append(String.valueOf(line) + "\n");
 					}
-//					System.out.println(output);
+					System.out.println(output);
 
 					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
 					System.out.println("setFlowFromOutputFile load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));

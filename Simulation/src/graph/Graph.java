@@ -164,7 +164,8 @@ public class Graph implements Cloneable {
 				Storage storage = new Storage(((Storage)getNodeList()[i]).getCurrentCharge(),
 											((Storage)getNodeList()[i]).getMaximumCharge(),
 											((Storage)getNodeList()[i]).getMinimumCharge(),
-											(getNodeList()[i]).getNodeId());
+											(getNodeList()[i]).getNodeId(),
+											((Storage)getNodeList()[i]).getChMax());
 
 				tempNodeList[i] = storage;
 
@@ -406,7 +407,7 @@ public class Graph implements Cloneable {
 				int nodeTwoId = lineScanner.nextInt();
 				double flow = Double.parseDouble(lineScanner.next());
 
-				graph = setRenewableAndStorageState(graph, nodeOneId, flow);
+				graph = setFlowState(graph, nodeOneId, flow);
 
 				for (int i = 0; i < graph.getEdges().length; i++){
 					if (graph.getEdges()[i].getEndVertexes()[0] == nodeOneId && graph.getEdges()[i].getEndVertexes()[1] == nodeTwoId){
@@ -426,7 +427,7 @@ public class Graph implements Cloneable {
 	 * Because renewable and storage production is decided during the flow simulation we have to set their states.
 	 * @return Graph where production of renewable and storage set to values computed during flow simulation
 	 */
-	private Graph setRenewableAndStorageState(Graph graph, int nodeId, double flow){
+	private Graph setFlowState(Graph graph, int nodeId, double flow){
 
 		for(int i = 0; i < graph.getNodeList().length; i++){
 			if(graph.getNodeList()[i].getClass() == RenewableGenerator.class && ((Node)graph.getNodeList()[i]).getNodeId() == nodeId){

@@ -142,7 +142,7 @@ public class Parser {
 				double currentCharge = scanner.nextDouble();
 				double maximumCharge = scanner.nextDouble();
 				double minimumCharge = scanner.nextDouble();
-				double chMax = scanner.nextDouble();
+				int chMax = scanner.nextInt();
 				Storage storage =  new Storage(currentCharge, maximumCharge, minimumCharge, nodeId,  chMax);
 				nodeList.add(storage);
 				numberOfStorage++;

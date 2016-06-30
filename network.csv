@@ -224,12 +224,12 @@ Storage,208,27,131,27,19
 Storage,209,27,131,27,19
 Storage,210,27,131,27,19
 Storage,211,27,131,27,19
-Storage,212,75,375,75,56 
+Storage,212,75,375,79,56
 Storage,213,75,375,75,56
-Storage,214,75,375,75,56 
-Storage,215,75,375,75,56 
-Storage,216,75,375,75,56 
-Storage,217,75,375,75,56 
+Storage,214,75,375,75,56
+Storage,215,75,375,75,56
+Storage,216,75,375,75,56
+Storage,217,75,375,75,56
 
 #Network
 #nodeId,nodeId,Reactance,capacity

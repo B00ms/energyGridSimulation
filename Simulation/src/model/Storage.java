@@ -14,13 +14,15 @@ public class Storage extends Node implements Serializable {
 	private double dischargeEfficiency;
 	private double flowStorage = 0;
 	private double flowLimit = 0;
-	private double chMax;
+	private int chMax;
+
+
 	private ConfigCollection config = new ConfigCollection();
 	public enum StorageStatus {CHARGING, DISCHARGING, NEUTRAL};
 	private StorageStatus status;
 
 
-	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId, double chMax) {
+	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId, int chMax) {
 		super(nodeId);
 		this.currentCharge = currentCharge;
 		this.maximumCharge = maximumCharge;
@@ -57,6 +59,10 @@ public class Storage extends Node implements Serializable {
 
 	public double getFlow(){
 		return flowStorage;
+	}
+
+	public int getChMax() {
+		return chMax;
 	}
 
 	/**
