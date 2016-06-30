@@ -126,7 +126,7 @@ public class Main {
 					while ((line = reader.readLine()) != null) {
 						output.append(String.valueOf(line) + "\n");
 					}
-//					System.out.println(output);
+					System.out.println(output);
 
 					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
 					System.out.println("setFlowFromOutputFile load "+productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));

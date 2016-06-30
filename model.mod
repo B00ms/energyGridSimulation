@@ -14,6 +14,7 @@ param outname;
 param current_hour;
 param start_charge_time;
 param end_charge_time;
+param n;
 
 #initialize variables 
 set nodes := 0..n_tot;
@@ -74,17 +75,34 @@ subject to setRewProduction { i in rgen } :
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
-# if later than  start_charge_time and earlier than end_charge_time, charge storage
-for {{0}: current_hour >= start_charge_time || current_hour <= end_charge_time}{# IF condition THEN
-	subject to storageFlow { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];	
-} 
-for {{0}: current_hour <= start_charge_time || current_hour >= end_charge_time} {# ELSE
-	#subject to storageFlow { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowfromstorage[i];
-}# ENDIF
 
-		
+#(if current_hour >= start_charge_time || current_hour <= end_charge_time then 0)
+subject to storageFlowNight {n <> 1}:
+sum { j in nodes : capacity[i,j] <> 0} = flowfromstorage[i];
+
+subject to storageFlowDay { n <> 0 } :
+sum { j in nodes : capacity[i,j] <> 0} <= flowfromstorage[i];
+
+
+
+#{ i in storage } :
+#sum { j in nodes : capacity[i,j] <> 0} = flowfromstorage[i];
+
+
+
+#look at this part
+# if later than  start_charge_time and earlier than end_charge_time, charge storage
+#for {{0}: current_hour >= start_charge_time || current_hour <= end_charge_time}{# IF condition THEN
+
+#not i in MAXREQ or n_min[i] > 0
+#	subject to storageFlow { i in storage } :
+#	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];	
+
+#} 
+#for {{0}: current_hour <= start_charge_time || current_hour >= end_charge_time} {# ELSE
+	#subject to storageFlow { i in storage } :
+	#sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowfromstorage[i];
+#}# ENDIF
 
 #The amount of energy send to a consumer should be lower or equal to the load of the consumer
 subject to loadfix {i in consumers} :
