@@ -97,7 +97,7 @@ subject to loadMinValue {i in consumers} :
 subject to prodloadeq :
 	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0}
 		((theta[i]-theta[j])/weight[i,j])*m_factor, =
-		sum { i in consumers, j in nodes : capacity[j,i] <> 0}
+	sum { i in consumers, j in nodes : capacity[j,i] <> 0}
 		((theta[j]-theta[i])/weight[j,i])*m_factor;
 	
 
