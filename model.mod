@@ -77,11 +77,11 @@ subject to genproduction { i in tgen } :
 
 
 #(if current_hour >= start_charge_time || current_hour <= end_charge_time then 0)
-subject to storageFlowNight {i in storage, j in nodes : capacity[i,j] <> 0, n <> 0}:
-sum { j in nodes : capacity[i,j] <> 0} = flowfromstorage[i];
+subject to storageFlowNight {i in storage}:
+sum { j in nodes : capacity[i,j] <> 0} = flowfromstorage[i], n <>0;
 
-subject to storageFlowDay {i in storage, j in nodes : capacity[i,j] <> 0, n <> 1} :
-sum { j in nodes : capacity[i,j] <> 0} <= flowfromstorage[i];
+subject to storageFlowDay {i in storage} :
+sum { j in nodes : capacity[i,j] <> 0} <= flowfromstorage[i], n <>1;
 
 
 
@@ -116,7 +116,7 @@ subject to loadMinValue {i in consumers} :
 subject to prodloadeq :
 	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0}
 		((theta[i]-theta[j])/weight[i,j])*m_factor, =
-		sum { i in consumers, j in nodes : capacity[j,i] <> 0}
+	sum { i in consumers, j in nodes : capacity[j,i] <> 0}
 		((theta[j]-theta[i])/weight[j,i])*m_factor;
 	
 
