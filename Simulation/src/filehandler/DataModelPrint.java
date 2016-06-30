@@ -47,8 +47,19 @@ public class DataModelPrint {
 		float delta = g.getDelta();
 //		int current_hour = Integer.getInteger(outname);
 
-		String beginChargeTime = config.getConfigStringValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
-		String endChargeTime = config.getConfigStringValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
+		int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+		int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
+
+		// outname is always equal to current hour
+		int n = 0;
+		int currentHour = Integer.valueOf(outname);
+		if(currentHour>= beginChargeTime || currentHour <= endChargeTime ){
+			n = 1;
+		}else{
+			n = 0;
+		}
+
+
 		try {
 			PrintWriter writer = new PrintWriter(filename, "UTF-8");
 			writer.println("param n_tgen := " + (g.getNGenerators() - 1) + ";");
@@ -64,9 +75,10 @@ public class DataModelPrint {
 			writer.println("param cost_curt := " + g.getCostCurtailment() + ";");
 			writer.println("param cost_sl := " + g.getCostSheddedLoad() + ";");
 			writer.println("param outname := " + outname + ";");
-			writer.println("param current_hour := " + outname + ";");
+			writer.println("param current_hour := " + currentHour + ";");
 			writer.println("param start_charge_time := " + beginChargeTime + ";");
 			writer.println("param end_charge_time := " + endChargeTime + ";");
+			writer.println("param n := " + n + ";");
 
 			writer.println("param weight :=");
 
