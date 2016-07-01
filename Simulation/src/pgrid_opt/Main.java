@@ -62,7 +62,7 @@ public class Main {
 
 		int numOfSim = 0;
 
-		while((!EENSConvergence || numOfSim <= 1)){
+		while((!EENSConvergence && numOfSim <= 100)){
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
@@ -137,8 +137,8 @@ public class Main {
 					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
 
 					System.out.println("Actual production and load as defined by the flow simulation: ");
-					System.out.println("Production " + productionLoadHandler.calculateLoad(realSimulationGraph[currentTimeStep]));
-					System.out.println("Load "+ productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+					System.out.println("Actual Production " + productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph[currentTimeStep]));
+					System.out.println("Actual Load "+ productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 
 					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
 
@@ -205,6 +205,9 @@ public class Main {
 
 		if((realLoad - satisfiedLoad) > 0)
 			hourlyEENS += (realLoad - satisfiedLoad);
+
+		if(hourlyEENS < 0)
+			hourlyEENS = 0;
 
 		return hourlyEENS;
 	}

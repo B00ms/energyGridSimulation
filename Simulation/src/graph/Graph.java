@@ -408,9 +408,11 @@ public class Graph implements Cloneable {
 				double flow = Double.parseDouble(lineScanner.next());
 
 				graph = setFlowState(graph, nodeOneId, flow);
+				graph = setFlowState(graph, nodeTwoId, flow);
 
 				for (int i = 0; i < graph.getEdges().length; i++){
-					if (graph.getEdges()[i].getEndVertexes()[0] == nodeOneId && graph.getEdges()[i].getEndVertexes()[1] == nodeTwoId){
+					if (graph.getEdges()[i].getEndVertexes()[0] == nodeOneId && graph.getEdges()[i].getEndVertexes()[1] == nodeTwoId
+						|| graph.getEdges()[i].getEndVertexes()[0] == nodeTwoId && graph.getEdges()[i].getEndVertexes()[1] == nodeOneId){
 						graph.getEdges()[i].setFlow(flow);
 						break;
 					}

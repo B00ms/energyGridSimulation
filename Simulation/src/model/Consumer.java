@@ -52,6 +52,6 @@ public class Consumer extends Node {
 	 * @param flow
 	 */
 	public void setFlow(double flow){
-		flow = flow;
+		this.flow = flow;
 	}
 }
