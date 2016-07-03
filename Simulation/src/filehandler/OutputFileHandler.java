@@ -21,7 +21,7 @@ public class OutputFileHandler {
      * @param solutionPath new location for files
      * @param timeStep current timestep
      */
-    public static void writeModelOutputFiles(String dirpath, String solutionPath, int timeStep){
+    public void writeModelOutputFiles(String dirpath, String solutionPath, int timeStep){
         try {
             if (new File(dirpath + "/sol" + timeStep + ".txt").exists())
                 Files.move(Paths.get(dirpath + "/sol" + timeStep + ".txt"),
@@ -34,6 +34,7 @@ public class OutputFileHandler {
             if (new File(dirpath + "/update.txt").exists())
                 Files.copy(Paths.get(dirpath + "/update.txt"), Paths.get(solutionPath + "/update" + timeStep + ".txt"),
                         StandardCopyOption.REPLACE_EXISTING);
+            
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(0);

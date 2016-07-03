@@ -282,7 +282,7 @@ public class Graph implements Cloneable {
 	 * Outputs the graph in .DGS format.
 	 * @param graphNumber
 	 */
-	public void printGraph(int graphNumber, int numOfSim){
+	public void printGraph(int graphNumber, int numOfSim, double hourlyEENS){
 		String outputPath = "../graphstate/simulation"+numOfSim+"/";
 		String fileName = "graphstate"+graphNumber+".dgs";
 		try {
@@ -303,6 +303,7 @@ public class Graph implements Cloneable {
 			bufferedWriter.write("cg  \"ui.quality\":true"); bufferedWriter.newLine();
 			bufferedWriter.write("cg  \"ui.antialias\":true"); bufferedWriter.newLine();
 			bufferedWriter.write("cg  \"ui.stylesheet\":\"url(mySheet.css)\""); bufferedWriter.newLine();
+			bufferedWriter.write("cg  \"EENS\":\"" + hourlyEENS +"\""); bufferedWriter.newLine();
 
 			for (int i = 0; i < nodelist.length; i++){
 				Node node = nodelist[i];
@@ -417,7 +418,9 @@ public class Graph implements Cloneable {
 						break;
 					}
 				}
+				lineScanner.close();
 			}
+			scanner.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(0);
@@ -449,7 +452,6 @@ public class Graph implements Cloneable {
 				((Consumer)graph.getNodeList()[i]).setFlow(flow);
 			}
 		}
-
 		return graph;
 	}
 }

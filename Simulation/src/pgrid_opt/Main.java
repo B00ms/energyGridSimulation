@@ -62,7 +62,7 @@ public class Main {
 
 		int numOfSim = 0;
 
-		while((!EENSConvergence && numOfSim <= 100)){
+		while((!EENSConvergence && numOfSim <= 1000)){
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
@@ -121,9 +121,10 @@ public class Main {
 					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
 					command = command + " --nopresol --output filename.out ";
 					//System.out.println(command);
-
-					proc = Runtime.getRuntime().exec(command, null, new File(dirpath));
+					File file = new File(dirpath);
+					proc = Runtime.getRuntime().exec(command, null, file);
 					proc.waitFor();
+					file = null;
 
 					StringBuffer output = new StringBuffer();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); // Using the new input file, we apply the model to solve the cost function given the new state of the grid.
@@ -133,6 +134,11 @@ public class Main {
 						output.append(String.valueOf(line) + "\n");
 					}
 					System.out.print(output);
+					proc.getOutputStream().close();
+					proc.getInputStream().close();
+					proc.getErrorStream().close();
+					proc.destroy();
+					reader.close();
 
 					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
 
@@ -140,14 +146,11 @@ public class Main {
 					System.out.println("Actual Production " + productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph[currentTimeStep]));
 					System.out.println("Actual Load "+ productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 
-					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim);
-
 					// write output to solution file
 					outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
 
 					if (graph.getNstorage() > 0) {
-						realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt",
-								realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
+						realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
 
 						if (currentTimeStep < 23)
 							realSimulationGraph[currentTimeStep + 1] = simulationState.updateStorages(realSimulationGraph[currentTimeStep],
@@ -173,11 +176,13 @@ public class Main {
 				double hourlyEENS = calculateEENS(realSimulationGraph[currentTimeStep]);
 				dailyEENS += hourlyEENS;
 
+				realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim, hourlyEENS);
+
 				currentTimeStep++;
 			}
 
 			// handle storage.txt output
-			outputFileHandler.writeStorageTxtFile(realSimulationGraph, dirpath, solutionPath);
+			//outputFileHandler.writeStorageTxtFile(realSimulationGraph, dirpath, solutionPath);
 
 			listEENS.add(dailyEENS);
 			EENSConvergence = checkEENSConvergence(listEENS);

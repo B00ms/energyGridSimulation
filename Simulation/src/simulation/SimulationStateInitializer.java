@@ -80,8 +80,6 @@ public class SimulationStateInitializer {
 				for (int j = 0; j < this.g.getNGenerators(); j++) {
 					if(g.getNodeList()[j].getClass() == ConventionalGenerator.class){
 						if ((((ConventionalGenerator) g.getNodeList()[j]).getType()).equals("H")){
-//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMaxP(0.0F);
-//							((ConventionalGenerator) gDay[i].getNodeList()[j]).setMinP(0.0F);
 							((ConventionalGenerator) gDay[i].getNodeList()[j]).setGeneratorDisabled(true);
 
 						}

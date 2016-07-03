@@ -6,7 +6,7 @@ import graph.Node;
 
 import java.io.Serializable;
 
-public class Storage extends Node implements Serializable {
+public class Storage extends Node {
 	private double currentCharge;
 	private double maximumCharge;
 	private double minimumCharge;

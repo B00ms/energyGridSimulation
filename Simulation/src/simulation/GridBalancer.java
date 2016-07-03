@@ -30,7 +30,6 @@ public class GridBalancer {
         double totalCurrentProduction = 0;
         double sumLoads = 0;
         double realLoad = 0;
-        double renewableProduction = productionLoadHandler.calculateRenewableProduction(grid);
         double realProduction = 0; //TODO: check that real production is correctly adjusted when production changes.
 
         int beginTime = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
@@ -71,7 +70,6 @@ public class GridBalancer {
 
             for (int i = 0; i < offers.size(); i++) {
                 Offer offer = offers.get(i);
-                double offeredProduction = offer.getProduction();
                 if (deltaP < 0 && offer.getAvailable()) {
                     ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
                     double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()
