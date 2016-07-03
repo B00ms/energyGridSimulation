@@ -62,13 +62,13 @@ public class Main {
 
 		int numOfSim = 0;
 
-		while((!EENSConvergence && numOfSim <= 1000)){
+		while((!EENSConvergence && numOfSim <= 0)){
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
 			double dailyEENS = 0;
-			Graph[] initialTimestepsGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
-			initialTimestepsGraph = simulationState.creategraphs(graph, initialTimestepsGraph);
+			Graph[] expectedSimulationGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
+			expectedSimulationGraph = simulationState.creategraphs(graph, expectedSimulationGraph);
 
 			int currentTimeStep = 0;
 
@@ -81,11 +81,11 @@ public class Main {
 			}
 
 			//Plan production based on expected load and storage charging during the night period.
-			Graph[] expectedSimulationGraph = cloner.deepClone(initialTimestepsGraph);
+			//Graph[] expectedSimulationGraph = cloner.deepClone(initialTimestepsGraph);
 			expectedSimulationGraph = productionLoadHandler.setExpectedLoadAndProduction(expectedSimulationGraph);
-			System.out.println("Expected production and load (from input file and expected renewable production) ");
-			System.out.println("Expected production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
-			System.out.println("Expected load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
+			//System.out.println("Expected production and load (from input file and expected renewable production) ");
+			//System.out.println("Expected production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
+			//System.out.println("Expected load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
 
 			Graph[] realSimulationGraph = cloner.deepClone(expectedSimulationGraph);
 
@@ -102,18 +102,19 @@ public class Main {
 				//Plan real storage charging using excess of renewable production to charge past 50% max SoC.x
 				storageHandler.planStorageCharging(realSimulationGraph[currentTimeStep], currentTimeStep);
 
-				System.out.println("Real production and load (including storage charging during night, and failed generators and real renewable production)");
-				System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]));
-				System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
+				//System.out.println("Real production and load (including storage charging during night, and failed generators and real renewable production)");
+				//System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]));
+				//System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
 
 				//Attempt to balance production and load  for a single hour.
 				realSimulationGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realSimulationGraph[currentTimeStep], currentTimeStep);
 
-				System.out.println("Real production and load after checkGridEquilibrium");
-				System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
-				System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
+				//System.out.println("Real production and load after checkGridEquilibrium");
+				//System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
+				//System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
 
-				Graph inputFileGraph = cloner.deepClone(realSimulationGraph[currentTimeStep]);
+				//Graph inputFileGraph = cloner.deepClone(realSimulationGraph[currentTimeStep]);
+				Graph inputFileGraph = realSimulationGraph[currentTimeStep];
 				mp.createModelInputFile(inputFileGraph, String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
 				try {
@@ -142,9 +143,9 @@ public class Main {
 
 					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
 
-					System.out.println("Actual production and load as defined by the flow simulation: ");
-					System.out.println("Actual Production " + productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph[currentTimeStep]));
-					System.out.println("Actual Load "+ productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+					//System.out.println("Actual production and load as defined by the flow simulation: ");
+					//System.out.println("Actual Production " + productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph[currentTimeStep]));
+					//System.out.println("Actual Load "+ productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
 
 					// write output to solution file
 					outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
