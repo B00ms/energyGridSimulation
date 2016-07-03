@@ -268,7 +268,7 @@ public class DataModelPrint {
 					if(g.getNodeList()[i].getClass() == Storage.class){
 						double cap = 0;
 						double val = (((Storage) g.getNodeList()[i]).getCurrentCharge()	- ((Storage) g.getNodeList()[i]).getMinimumCharge()) / delta * dischargeEfficiency;
-						
+
 						for (int j = 0; j < g.getNNode(); j++) {
 							if (g.getEdges()[j].getCapacity() != 0.0F) {
 								cap = g.getEdges()[j].getCapacity();

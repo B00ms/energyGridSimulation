@@ -61,6 +61,19 @@ public class Parser {
 		double storageChargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
 		double storageDischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
 
+		int hydromttf = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttf");
+		int hydromttr = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttr");
+
+
+		int mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
+		int mttr = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttr");
+		double maxProductionIncrease = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "maxProductionIncrease");
+		double dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
+		double dayAheadLimitMin =  config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
+
+
+		double chargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
+		double dischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
 
 		while(scanner.hasNext()){
 
@@ -98,7 +111,13 @@ public class Parser {
 				double coef = scanner.nextDouble();
 				production = minProduction;
 
-				ConventionalGenerator convGenerator = new ConventionalGenerator(minProduction, maxProduction, coef, realType, production, nodeId);
+				ConventionalGenerator convGenerator = null;
+				if(realType != GENERATOR_TYPE.HYDRO){
+					convGenerator = new ConventionalGenerator(minProduction, maxProduction, coef, realType, production, nodeId, mttf, mttr, maxProductionIncrease, dayAheadLimitMax, dayAheadLimitMin);
+				} else {
+					convGenerator = new ConventionalGenerator(minProduction, maxProduction, coef, realType, production, nodeId, mttf, mttr, maxProductionIncrease, dayAheadLimitMax, dayAheadLimitMin);
+				}
+
 				generatorList.add(convGenerator); //Using a different array for conventional generators because we want to sort it.
 				numberOfConventionalGenerators++;
 				break;
@@ -143,7 +162,7 @@ public class Parser {
 				double maximumCharge = scanner.nextDouble();
 				double minimumCharge = scanner.nextDouble();
 				int chMax = scanner.nextInt();
-				Storage storage =  new Storage(currentCharge, maximumCharge, minimumCharge, nodeId,  chMax);
+				Storage storage =  new Storage(currentCharge, maximumCharge, minimumCharge, nodeId,  chMax, chargeEfficiency, dischargeEfficiency);
 				nodeList.add(storage);
 				numberOfStorage++;
 				break;

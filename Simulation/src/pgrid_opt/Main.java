@@ -34,11 +34,10 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		long starttime = System.nanoTime();
+ 		long starttime = System.nanoTime();
 		Parser parser = new Parser();
 		Graph graph;
 
-		String test = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file");
 		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 
 		// load general config
@@ -125,7 +124,6 @@ public class Main {
 					File file = new File(dirpath);
 					proc = Runtime.getRuntime().exec(command, null, file);
 					proc.waitFor();
-					file = null;
 
 					StringBuffer output = new StringBuffer();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); // Using the new input file, we apply the model to solve the cost function given the new state of the grid.

@@ -17,7 +17,7 @@ public class Storage extends Node {
 	private int chMax;
 
 
-	private ConfigCollection config = new ConfigCollection();
+	private ConfigCollection config;
 	public enum StorageStatus {CHARGING, DISCHARGING, NEUTRAL};
 	private StorageStatus status;
 
@@ -30,11 +30,11 @@ public class Storage extends Node {
 		this.chMax = chMax;
 		flowLimit = 0;
 		status = StorageStatus.NEUTRAL;
-
+		config = new ConfigCollection();
 		chargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
 		dischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
 	}
-	
+
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId, int chMax, double chargeEfficiency, double dischargeEfficiency ) {
 		super(nodeId);
 		this.currentCharge = currentCharge;

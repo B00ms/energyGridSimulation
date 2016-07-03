@@ -136,7 +136,7 @@ public class Graph implements Cloneable {
 
 		for (int i = 0; i < g.getNodeList().length; i++) {
 
-			if(getNodeList()[i].getClass() == (ConventionalGenerator.class))
+			if(nodelist[i].getClass() == (ConventionalGenerator.class))
 			{
 				ConventionalGenerator conventionalGenerator = new ConventionalGenerator(((ConventionalGenerator) nodelist[i]).getMinP(),
 																					((ConventionalGenerator) nodelist[i]).getMaxP(),
@@ -156,7 +156,7 @@ public class Graph implements Cloneable {
 				conventionalGenerator.setOfferIncreaseProduction(((ConventionalGenerator) nodelist[i]).getIncreaseProductionOffers());
 				conventionalGenerator.setOfferDecreaseProduction(((ConventionalGenerator) nodelist[i]).getDecreaseProductionOffers());
 				tempNodeList[i] = conventionalGenerator;
-			} else if(getNodeList()[i].getClass() == RenewableGenerator.class){
+			} else if(nodelist[i].getClass() == RenewableGenerator.class){
 
 				RenewableGenerator renewableGenerator = new RenewableGenerator(((RenewableGenerator) nodelist[i]).getMaxP(),
 																	((RenewableGenerator)nodelist[i]).getMinP(),
@@ -165,25 +165,25 @@ public class Graph implements Cloneable {
 																	(nodelist[i]).getNodeId());
 				tempNodeList[i] = renewableGenerator;
 
-			} else if (getNodeList()[i].getClass() == Storage.class){
+			} else if (nodelist[i].getClass() == Storage.class){
 
-				Storage storage = new Storage(((Storage)getNodeList()[i]).getCurrentCharge(),
-											((Storage)getNodeList()[i]).getMaximumCharge(),
-											((Storage)getNodeList()[i]).getMinimumCharge(),
-											(getNodeList()[i]).getNodeId(),
-											((Storage)getNodeList()[i]).getChMax(),
-											((Storage)getNodeList()[i]).getChargeEfficiency(),
-											((Storage)getNodeList()[i]).getDischargeEfficiency());
+				Storage storage = new Storage(((Storage)nodelist[i]).getCurrentCharge(),
+											((Storage)nodelist[i]).getMaximumCharge(),
+											((Storage)nodelist[i]).getMinimumCharge(),
+											(nodelist[i]).getNodeId(),
+											((Storage)nodelist[i]).getChMax(),
+											((Storage)nodelist[i]).getChargeEfficiency(),
+											((Storage)nodelist[i]).getDischargeEfficiency());
 
 				tempNodeList[i] = storage;
 
-			} else if (getNodeList()[i].getClass() == InnerNode.class){
+			} else if (nodelist[i].getClass() == InnerNode.class){
 				int nodeId = (nodelist[i]).getNodeId();
 				InnerNode innerNode = new InnerNode(nodeId);
 				tempNodeList[i] = innerNode;
 
-			}else if (getNodeList()[i].getClass() == Consumer.class){
-				Consumer consumer = new Consumer(((Consumer)getNodeList()[i]).getLoad(), (getNodeList()[i]).getNodeId());
+			}else if (nodelist[i].getClass() == Consumer.class){
+				Consumer consumer = new Consumer(((Consumer)nodelist[i]).getLoad(), (nodelist[i]).getNodeId());
 				tempNodeList[i] = consumer;
 			}
 		}
@@ -442,24 +442,27 @@ public class Graph implements Cloneable {
 	 */
 	private Graph setFlowState(Graph graph, int nodeId, double flow){
 
-		for(int i = 0; i < graph.getNodeList().length; i++){
-			if(graph.getNodeList()[i].getClass() == RenewableGenerator.class && ((Node)graph.getNodeList()[i]).getNodeId() == nodeId){
+		Node[] nodeList = graph.getNodeList();
+		for(int i = 0; i < nodeList.length; i++){
+			Class<? extends Node> nodeClass = nodeList[i].getClass();
+			if(nodeClass == RenewableGenerator.class && (nodeList[i]).getNodeId() == nodeId){
 				((RenewableGenerator)graph.getNodeList()[i]).setProduction(flow);
-			} else if(graph.getNodeList()[i].getClass() == Storage.class && ((Node)graph.getNodeList()[i]).getNodeId() == nodeId){
+			} else if(nodeClass == Storage.class && (nodeList[i]).getNodeId() == nodeId){
 				((Storage)graph.getNodeList()[i]).setFlow(flow);
 				// update the status of the storage node
 				if(flow<0){
-					((Storage)graph.getNodeList()[i]).setStatus(Storage.StorageStatus.CHARGING);
+					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.CHARGING);
 				}else if(flow>0){
-					((Storage)graph.getNodeList()[i]).setStatus(Storage.StorageStatus.DISCHARGING);
+					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.DISCHARGING);
 				}else{
-					((Storage)graph.getNodeList()[i]).setStatus(Storage.StorageStatus.NEUTRAL);
+					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.NEUTRAL);
 				}
 			}
-			else if(graph.getNodeList()[i].getClass() == Consumer.class && ((Node)graph.getNodeList()[i]).getNodeId() == nodeId){
-				((Consumer)graph.getNodeList()[i]).setFlow(flow);
+			else if(nodeClass == Consumer.class && nodeList[i].getNodeId() == nodeId){
+				((Consumer)nodeList[i]).setFlow(flow);
 			}
 		}
+		graph.setNodeList(nodeList);
 		return graph;
 	}
 }

@@ -10,7 +10,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 	private int mttr;//mean time to repair
 	private boolean generatorFailure = false; //Indicates if the generator is working normally or if it has failed
 	private boolean disabled = false; //Indicates if the generator is disabled
-	private ConfigCollection config = new ConfigCollection();
+	private ConfigCollection config;
 
 	private double maxProductionIncrease;
 	private double dayAheadLimitMax;
@@ -21,7 +21,7 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 
 	public ConventionalGenerator(double minProduction, double maxProduction, double coef, GENERATOR_TYPE type, double production, int nodeId) {
 		super(minProduction, maxProduction, coef, type, production, nodeId);
-
+		config = new ConfigCollection();
 		// if conv generator is a hydro planet custom mttf
 		if(type == GENERATOR_TYPE.HYDRO){
 			this.mttf = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttf");
@@ -36,12 +36,12 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
 		dayAheadLimitMin =  config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
 	}
-	
+
 	public ConventionalGenerator(double minProduction, double maxProduction, double coef, GENERATOR_TYPE type, double production, int nodeId, int mttf, int mttr, double maxProductionIncrease, double dayAheadLimitMax, double dayAheadLimitMin) {
 		super(minProduction, maxProduction, coef, type, production, nodeId);
 		this.mttf = mttf;
 		this.mttr = mttr;
-		this.maxProductionIncrease = maxProductionIncrease; 
+		this.maxProductionIncrease = maxProductionIncrease;
 		this.dayAheadLimitMax = dayAheadLimitMax;
 		this.dayAheadLimitMin = dayAheadLimitMin;
 	}

@@ -1,8 +1,14 @@
 package simulation;
 
 
+import com.rits.cloning.Cloner;
+
+import config.ConfigCollection;
+import config.ConfigCollection.CONFIGURATION_TYPE;
 import filehandler.Parser;
+import graph.Edge;
 import graph.Graph;
+import graph.Node;
 import model.Consumer;
 import model.ConventionalGenerator;
 import model.RenewableGenerator;
@@ -14,6 +20,9 @@ import model.Storage;
 public class SimulationStateInitializer {
 	private Graph g;
 	private Graph[] gDay;
+
+	private Cloner cloner = new Cloner();
+	private static ConfigCollection config = new ConfigCollection();
 
 	private Float[] loads;
 	Parser parser = new Parser();
@@ -32,7 +41,9 @@ public class SimulationStateInitializer {
 		this.loads = parser.parseExpectedHourlyLoad();
 
 		for (int i = 0; i < this.gDay.length; i++) {
-			this.gDay[i] = g.clone();
+			//this.gDay[i] = g.clone();
+			//this.gDay[i] = cloner.deepClone(g);
+			this.gDay[i] = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 		}
 
 		calculateLoads();
