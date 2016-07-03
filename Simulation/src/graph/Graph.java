@@ -143,7 +143,13 @@ public class Graph implements Cloneable {
 																					((ConventionalGenerator) nodelist[i]).getCoef(),
 																					((ConventionalGenerator) nodelist[i]).getType(),
 																					((ConventionalGenerator) nodelist[i]).getProduction(),
-																					(nodelist[i]).getNodeId());
+																					(nodelist[i]).getNodeId(),
+																					((ConventionalGenerator) nodelist[i]).getMTTF(),
+																					((ConventionalGenerator) nodelist[i]).getMTTR(),
+																					((ConventionalGenerator) nodelist[i]).getDayAheadMaxProduction(),
+																					((ConventionalGenerator) nodelist[i]).getDayAheadLimitMax(),
+																					((ConventionalGenerator) nodelist[i]).getDayAheadLimitMin());
+
 
 				conventionalGenerator.setMTTF(((ConventionalGenerator) nodelist[i]).getMTTF());
 				conventionalGenerator.setMTTR(((ConventionalGenerator) nodelist[i]).getMTTR());

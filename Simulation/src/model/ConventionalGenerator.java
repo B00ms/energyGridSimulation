@@ -36,6 +36,15 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 		dayAheadLimitMax = config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMax");
 		dayAheadLimitMin =  config.getConfigDoubleValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "dayAheadLimitMin");
 	}
+	
+	public ConventionalGenerator(double minProduction, double maxProduction, double coef, GENERATOR_TYPE type, double production, int nodeId, int mttf, int mttr, double maxProductionIncrease, double dayAheadLimitMax, double dayAheadLimitMin) {
+		super(minProduction, maxProduction, coef, type, production, nodeId);
+		this.mttf = mttf;
+		this.mttr = mttr;
+		this.maxProductionIncrease = maxProductionIncrease; 
+		this.dayAheadLimitMax = dayAheadLimitMax;
+		this.dayAheadLimitMin = dayAheadLimitMin;
+	}
 
 	public boolean getGeneratorFailure() {
 		return generatorFailure;
@@ -178,6 +187,14 @@ public class ConventionalGenerator extends Generator implements Comparable<Conve
 
 	public Offer[] getDecreaseProductionOffers(){
 		return this.listOfferDecreaseProduction;
+	}
+
+	public double getDayAheadLimitMax() {
+		return dayAheadLimitMax;
+	}
+
+	public double getDayAheadLimitMin() {
+		return dayAheadLimitMin;
 	}
 
 	public void disableProduction(){
