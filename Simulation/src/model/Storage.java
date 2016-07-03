@@ -34,6 +34,19 @@ public class Storage extends Node {
 		chargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
 		dischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
 	}
+	
+	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId, int chMax, double chargeEfficiency, double dischargeEfficiency ) {
+		super(nodeId);
+		this.currentCharge = currentCharge;
+		this.maximumCharge = maximumCharge;
+		this.minimumCharge = minimumCharge;
+		this.chMax = chMax;
+		flowLimit = 0;
+		status = StorageStatus.NEUTRAL;
+
+		this.chargeEfficiency = chargeEfficiency;
+		this.dischargeEfficiency = dischargeEfficiency;
+	}
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge) {
 		charge(currentCharge);

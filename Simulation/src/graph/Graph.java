@@ -171,7 +171,9 @@ public class Graph implements Cloneable {
 											((Storage)getNodeList()[i]).getMaximumCharge(),
 											((Storage)getNodeList()[i]).getMinimumCharge(),
 											(getNodeList()[i]).getNodeId(),
-											((Storage)getNodeList()[i]).getChMax());
+											((Storage)getNodeList()[i]).getChMax(),
+											((Storage)getNodeList()[i]).getChargeEfficiency(),
+											((Storage)getNodeList()[i]).getDischargeEfficiency());
 
 				tempNodeList[i] = storage;
 
