@@ -41,7 +41,8 @@ public class Main {
 		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 
 		// load general config
-		String model = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file");
+		String modelDay = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file-day");
+		String modelNight = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file-night");
 		String dirpath = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
 
 		// load glpsol config
@@ -49,6 +50,10 @@ public class Main {
 		String outpath2 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "outpath2");
 		String solpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath1");
 		String solpath2 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath2");
+
+		// used to determine which model file to use
+		int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+		int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
 
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
@@ -118,8 +123,19 @@ public class Main {
 
 				try {
 
-					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
+					String command;
+
+					// check for storage charge times to determine which model to use
+					if(currentTimeStep >= beginChargeTime || currentTimeStep <= endChargeTime ) {
+						// during night use night model file constraints
+						command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + modelDay;
+					}else{
+						// during day time use day model file constraints
+						command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + modelNight;
+					}
+
 					command = command + " --nopresol --output filename.out ";
+
 					//System.out.println(command);
 					File file = new File(dirpath);
 					proc = Runtime.getRuntime().exec(command, null, file);
