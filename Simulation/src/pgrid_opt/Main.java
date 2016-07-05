@@ -41,8 +41,11 @@ public class Main {
 		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
 
 		// load general config
-		String model = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "model-file");
+		String modelNight = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "modelnight-file");
+		String modelDay = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "modelday-file");
 		String dirpath = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
+        int beginTime = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+        int endTime = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.STORAGE, "endChargeTime");
 
 		// load glpsol config
 		String outpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "outpath1");
@@ -117,6 +120,12 @@ public class Main {
 				mp.createModelInputFile(inputFileGraph, String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
 				try {
+					String model = "";
+					if(currentTimeStep >= beginTime || currentTimeStep<= endTime){
+						model = modelNight;
+					}else{
+						model = modelDay;
+					}
 
 					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
 					command = command + " --nopresol --output filename.out ";
@@ -151,7 +160,7 @@ public class Main {
 					if (graph.getNstorage() > 0) {
 						realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
 
-						if (currentTimeStep < 23)
+						if (currentTimeStep < realSimulationGraph.length-1)
 							realSimulationGraph[currentTimeStep + 1] = simulationState.updateStorages(realSimulationGraph[currentTimeStep],
 								realSimulationGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
 					}

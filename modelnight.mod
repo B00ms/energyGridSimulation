@@ -39,8 +39,6 @@ param production {tgen} >= 0;
 param planned_production{tgen} >=0;
 param rewproduction {rgen};
 param flowfromstorage {storage};
-param flowfromstorageDay {storage} default 0;
-param flowfromstorageNight {storage} <=0 default 0;
 
 #phase angle constraint 
 var theta {nodes} >= -pi/2, <= pi/2;
@@ -78,11 +76,8 @@ subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
 
-subject to storageFlowNight { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorageNight[i];
-
-subject to storageFlowDay { i in storage  } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowfromstorageDay[i];
+subject to flowfromstorageNight { i in storage } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];
 
 
 #The amount of energy send to a consumer should be lower or equal to the load of the consumer

@@ -36,7 +36,6 @@ public class GridBalancer {
         int endTime = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.STORAGE, "endChargeTime");
 
         boolean dischargeAllowed = true;
-        // timestep >= 23 && timestep <= 4
         if(timestep >= beginTime || timestep <= endTime){
             grid = storageHandler.chargeStorage(grid);
             dischargeAllowed = false;
@@ -200,9 +199,9 @@ public class GridBalancer {
         grid.setNodeList(nodeList);
 
         if(dischargeAllowed){
-            grid = storageHandler.chargeOrDischargeStorage(grid);
-            realProduction = productionLoadHandler.calculateProduction(grid);
-            realLoad = productionLoadHandler.calculateLoad(grid);
+            //grid = storageHandler.chargeOrDischargeStorage(grid);
+            //realProduction = productionLoadHandler.calculateProduction(grid);
+            //realLoad = productionLoadHandler.calculateLoad(grid);
         }
         //System.out.println("Prod after charging storage:" + realProduction);
         //System.out.println("Load after charging storage:" + realLoad);
@@ -210,14 +209,14 @@ public class GridBalancer {
 
         if(realProduction - realLoad > 0){
             //grid = curtailRenewables(grid, realProduction, realLoad);
-            realProduction = productionLoadHandler.calculateProduction(grid);
-            realLoad = productionLoadHandler.calculateLoad(grid);
+            //realProduction = productionLoadHandler.calculateProduction(grid);
+            //realLoad = productionLoadHandler.calculateLoad(grid);
            // System.out.println("After cuirtailment Real production: " + productionLoadHandler.calculateProduction(grid) + " Total load: " + productionLoadHandler.calculateLoad(grid));
             //System.out.println("Renewable prod: " + productionLoadHandler.calculateRenewableProduction(grid));
         }
 
-        realProduction = productionLoadHandler.calculateProduction(grid);
-        realLoad = productionLoadHandler.calculateLoad(grid);
+        //realProduction = productionLoadHandler.calculateProduction(grid);
+        //realLoad = productionLoadHandler.calculateLoad(grid);
         //System.out.print("After balancing - ");
         //System.out.println("Real production: " + realProduction + " Total load: " + realLoad);
         return grid;

@@ -48,7 +48,8 @@ public class Consumer extends Node {
 	}
 
 	/**
-	 * Please don't use this unless you're setting flow to equal flow set by the flow simulation.
+	 * Please don't use this unless you're setting flow equal to the flow set by the linear program.
+	 * This is so stupid.
 	 * @param flow
 	 */
 	public void setFlow(double flow){

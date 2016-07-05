@@ -56,7 +56,7 @@ public class StorageHandler {
 		    double conventionalProduction = plh.calculateProduction(graph);
 		    double realLoad = plh.calculateLoad(graph);
 
-		    double remainRenewableProd = (realLoad - conventionalProduction) + renewableProduction;
+		    double remainRenewableProd = renewableProduction - (realLoad - conventionalProduction);
 
 	    	for(int i=0; i < graph.getNodeList().length; i++){
 	    		if(graph.getNodeList()[i].getClass() == Storage.class){

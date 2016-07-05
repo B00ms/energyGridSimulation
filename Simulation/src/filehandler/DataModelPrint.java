@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
+import org.apache.commons.lang3.text.StrBuilder;
+
 import graph.Graph;
 import model.*;
 import config.ConfigCollection;
@@ -59,28 +61,30 @@ public class DataModelPrint {
 			n = 0;
 		}
 
+		StringBuilder strBuilder = new StringBuilder();
 
 		try {
 			PrintWriter writer = new PrintWriter(filename, "UTF-8");
-			writer.println("param n_tgen := " + (g.getNGenerators() - 1) + ";");
-			writer.println("param n_rgen := " + g.getNrGenerators() + ";");
-			writer.println("param n_cons := " + g.getNConsumers() + ";");
-			writer.println("param n_inner := " + (g.getNNode() - 1
-					- (g.getNGenerators() - 1 + g.getNrGenerators() + g.getNConsumers()) - g.getNstorage()) + ";");
-			writer.println("param n_tot := " + (g.getNNode() - 1) + ";");
-			writer.println("param m_factor := 100;");
-			writer.println("param pi := 3.1415;");
-			writer.println("param n_storage := " + g.getNstorage() + ";");
-			writer.println("param totload :=" + g.getLoadmax() + ";");
-			writer.println("param cost_curt := " + g.getCostCurtailment() + ";");
-			writer.println("param cost_sl := " + g.getCostSheddedLoad() + ";");
-			writer.println("param outname := " + outname + ";");
-			writer.println("param current_hour := " + currentHour + ";");
-			writer.println("param start_charge_time := " + beginChargeTime + ";");
-			writer.println("param end_charge_time := " + endChargeTime + ";");
-			writer.println("param n := " + n + ";");
+			strBuilder.append("param n_tgen := " + (g.getNGenerators() - 1) + ";\n");
+			strBuilder.append("param n_rgen := " + g.getNrGenerators() + ";\n");
+			strBuilder.append("param n_cons := " + g.getNConsumers() + ";\n");
+			strBuilder.append("param n_inner := " + (g.getNNode() - 1
+					- (g.getNGenerators() - 1 + g.getNrGenerators() + g.getNConsumers()) - g.getNstorage()) + ";\n");
+			strBuilder.append("param n_tot := " + (g.getNNode() - 1) + ";\n");
+			strBuilder.append("param m_factor := 100;\n");
+			strBuilder.append("param pi := 3.1415;\n");
+			strBuilder.append("param n_storage := " + g.getNstorage() + ";\n");
+			strBuilder.append("param totload :=" + g.getLoadmax() + ";\n");
+			strBuilder.append("param cost_curt := " + g.getCostCurtailment() + ";\n");
+			strBuilder.append("param cost_sl := " + g.getCostSheddedLoad() + ";\n");
+			strBuilder.append("param outname := " + outname + ";\n");
+			strBuilder.append("param current_hour := " + currentHour + ";\n");
+			strBuilder.append("param start_charge_time := " + beginChargeTime + ";\n");
+			strBuilder.append("param end_charge_time := " + endChargeTime + ";\n");
+			strBuilder.append("param n := " + n + ";\n");
 
-			writer.println("param weight :=");
+			strBuilder.append("param weight :=\n");
+			//writer.print(strBuilder.toString());
 
 			float[][] edgesPrintArray = new float[g.getNNode()][g.getNNode()];
 			for (int e = 0; e < g.getEdges().length; e++){
@@ -91,17 +95,17 @@ public class DataModelPrint {
 
 				for (int i = 0; i < edgesPrintArray.length; i++) {
 					for (int j = 0; j < edgesPrintArray.length; j++) {
-						writer.print("[" + i + "," + j + "] " + edgesPrintArray[i][j] + " ");
+						strBuilder.append("[" + i + "," + j + "] " + edgesPrintArray[i][j] + " ");
 					}
 
 				if (i == g.getNNode() - 1)
-					writer.println(";");
+					strBuilder.append(";\n");
 
 				else
-					writer.println();
+					strBuilder.append("\n");
 				}
 
-			writer.println("param capacity :=");
+				strBuilder.append("param capacity :=\n");
 
 			edgesPrintArray = new float[g.getNNode()][g.getNNode()];
 			for (int e = 0; e < g.getEdges().length; e++){
@@ -113,157 +117,128 @@ public class DataModelPrint {
 
 			for (int i = 0; i < edgesPrintArray.length; i++) {
 				for (int j = 0; j < edgesPrintArray.length; j++) {
-					writer.print("[" + i + "," + j + "] " + edgesPrintArray[i][j] + " ");
+					strBuilder.append("[" + i + "," + j + "] " + edgesPrintArray[i][j] + " ");
 				}
 				if (i == g.getNNode() - 1)
-					writer.println(";");
+					strBuilder.append(";\n");
 				else
-					writer.println();
+					strBuilder.append("\n");
 			}
 
 			int counter = 0;
-			writer.println("param costs :=");
+			strBuilder.append("param costs :=\n");
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == ConventionalGenerator.class){
 					counter++;
 					if (counter == g.getNGenerators())
-						writer.println(i + " " + (float)((Generator) g.getNodeList()[i]).getCoef() + ";");
+						strBuilder.append(i + " " + (float)((Generator) g.getNodeList()[i]).getCoef() + ";\n");
 					else
-						writer.println(i + " " + (float)((Generator) g.getNodeList()[i]).getCoef());
+						strBuilder.append(i + " " + (float)((Generator) g.getNodeList()[i]).getCoef()+"\n");
 
 					}
 			}
 
 			counter = 0;
-			writer.println("param mintprod :=");
+			strBuilder.append("param mintprod :=\n");
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == ConventionalGenerator.class){
 					counter++;
 					if (counter != g.getNGenerators())
-						writer.println(i + " " + (float)((Generator) g.getNodeList()[i]).getMinP());
+						strBuilder.append(i + " " + (float)((Generator) g.getNodeList()[i]).getMinP()+"\n");
 					else
-						writer.println(i + " " + (float)((Generator) g.getNodeList()[i]).getMinP() + ";");
+						strBuilder.append(i + " " + (float)((Generator) g.getNodeList()[i]).getMinP() + ";\n");
 					}
 			}
 
 			counter = 0;
-			writer.println("param maxtprod :=");
+			strBuilder.append("param maxtprod :=\n");
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == ConventionalGenerator.class){
 					counter++;
 					if (counter != g.getNGenerators())
-						writer.println(i + " " + (float)((Generator) g.getNodeList()[i]).getMaxP());
+						strBuilder.append(i + " " + (float)((Generator) g.getNodeList()[i]).getMaxP()+"\n");
 					else
-						writer.println(i + " " + (float)((Generator) g.getNodeList()[i]).getMaxP() + ";");
+						strBuilder.append(i + " " + (float)((Generator) g.getNodeList()[i]).getMaxP() + ";\n");
 				}
 			}
 			counter = 0;
 			if (g.getNrGenerators() != 0) {
-				writer.println("param rprodmax :=");
+				strBuilder.append("param rprodmax :=\n");
 				for (int i = 0; i < g.getNodeList().length; i++) {
 					if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 						counter++;
 						if( counter != g.getNrGenerators())
-							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMaxP());
+							strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMaxP()+"\n");
 						else
-							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMaxP() + ";");
+							strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMaxP() + ";\n");
 					}
 				}
 
 			}
 			counter = 0;
 			if (g.getNrGenerators() != 0) {
-				writer.println("param rprodmin :=");
+				strBuilder.append("param rprodmin :=\n");
 				for (int i = 0; i < g.getNodeList().length; i++) {
 						if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 							counter++;
 							if(counter != g.getNrGenerators())
-								writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMinP());
+								strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMinP()+"\n");
 							else
-								writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMinP() + ";");
+								strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getMinP() + ";\n");
 					}
 				}
 			}
 			counter = 0;
 			if (g.getNrGenerators() != 0) {
-				writer.println("param rcost :=");
+				strBuilder.append("param rcost :=\n");
 				for (int i = 0; i < g.getNodeList().length; i++) {
 					if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 						counter++;
 						if(counter != g.getNrGenerators())
-							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getCoef());
+							strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getCoef()+"\n");
 						else
-							writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getCoef() + ";");
+							strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getCoef() + ";\n");
 					}
 				}
 			}
 			counter = 0;
-			writer.println("param loads :=");
+			strBuilder.append("param loads :=\n");
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == Consumer.class){
 					counter++;
 					if (counter != g.getNConsumers())
-						writer.println(i + " " + (float)((Consumer) g.getNodeList()[i]).getLoad());
+						strBuilder.append(i + " " + (float)((Consumer) g.getNodeList()[i]).getLoad()+"\n");
 					else
-						writer.println(i + " " + (float)((Consumer) g.getNodeList()[i]).getLoad() + ";");
+						strBuilder.append(i + " " + (float)((Consumer) g.getNodeList()[i]).getLoad() + ";\n");
 				}
 			}
 			counter = 0;
-			writer.println("param production :=");
+			strBuilder.append("param production :=\n");
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == ConventionalGenerator.class){
 					counter++;
 					if (counter != g.getNGenerators())
-						writer.println(((ConventionalGenerator) g.getNodeList()[i]).getNodeId() + " " + (float)((ConventionalGenerator) g.getNodeList()[i]).getProduction());
+						strBuilder.append(((ConventionalGenerator) g.getNodeList()[i]).getNodeId() + " " + (float)((ConventionalGenerator) g.getNodeList()[i]).getProduction()+"\n");
 					else
-						writer.println(((ConventionalGenerator) g.getNodeList()[i]).getNodeId() + " " + (float)((ConventionalGenerator) g.getNodeList()[i]).getProduction() + ";");
+						strBuilder.append(((ConventionalGenerator) g.getNodeList()[i]).getNodeId() + " " + (float)((ConventionalGenerator) g.getNodeList()[i]).getProduction() + ";\n");
 				}
 			}
 			counter = 0;
-			writer.println("param rewproduction :=");
+			strBuilder.append("param rewproduction :=\n");
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 					counter++;
 					if (counter != g.getNrGenerators())
-						writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction());
+						strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction()+"\n");
 					else
-						writer.println(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction() + ";");
+						strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction() + ";\n");
 				}
 			}
-			counter = 0;
+			printStorageFlow(currentHour, beginChargeTime, endChargeTime, strBuilder, g);
 
-
-			if(currentHour>= beginChargeTime || currentHour <= endChargeTime ){
-				writer.println("param flowfromstorageNight :=");
-				for (int i = 0; i < g.getNodeList().length; i++) {
-					if(g.getNodeList()[i].getClass() == Storage.class){
-						counter++;
-						if (counter != g.getNstorage()) {
-							writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow());
-						} else {
-							writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow() + ";");
-						}
-					}
-				}
-				writer.println("param flowfromstorageDay;");
-			}else{
-				writer.println("param flowfromstorageDay :=");
-				for (int i = 0; i < g.getNodeList().length; i++) {
-					if(g.getNodeList()[i].getClass() == Storage.class){
-						counter++;
-
-						if (counter != g.getNstorage()) {
-							writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow());
-						} else {
-							writer.println(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow() + ";");
-						}
-					}
-				}
-				writer.println("param flowfromstorageNight;");
-			}
-			counter = 0;
+			/*counter = 0;
 			if (g.getNstorage() != 0) {
-				writer.println("param storagemax :=");
+				strBuilder.append("param storagemax :=\n");
 				for (int i = 0; i < g.getNodeList().length; i++) {
 					if(g.getNodeList()[i].getClass() == Storage.class){
 						double cap = 0;
@@ -278,34 +253,25 @@ public class DataModelPrint {
 						counter++;
 						if (cap * dischargeEfficiency < val) {
 							if (counter != g.getNstorage())
-								writer.println(i + " " + cap * dischargeEfficiency);
+								strBuilder.append(i + " " + cap * dischargeEfficiency+"\n");
 							else
-								writer.println(i + " " + cap * dischargeEfficiency + ";");
+								strBuilder.append(i + " " + cap * dischargeEfficiency + ";\n");
 
 						} else if (counter != g.getNstorage()) {
-							writer.println(i + " " + val);
+							strBuilder.append(i + " " + val+"\n");
 						} else
-							writer.println(i + " " + val + ";");
+							strBuilder.append(i + " " + val + ";\n");
 
 					}
 				}
 			}
 			counter = 0;
 			if (g.getNstorage() != 0) {
-				writer.println("param storagemin :=");
+				strBuilder.append("param storagemin :=\n");
 				for (int i = 0; i < g.getNodeList().length; i++) {
 					if(g.getNodeList()[i].getClass() == Storage.class){
 						double cap = 0;
 						float eps = 0.001F;
-
-
-						/*if (((Storage) g.getNodeList()[i]).getMaximumCharge() < ((Storage) g.getNodeList()[i]).getCurrentCharge()) {
-							((Storage) g.getNodeList()[i]).charge(((Storage) g.getNodeList()[i]).getMaximumCharge());
-						}*/
-
-//						double max = ((Storage) g.getNodeList()[i]).getMaximumCharge();
-//						double current = ((Storage) g.getNodeList()[i]).getCurrentCharge();
-						// chargeEfficiency is (dis)charge efficiency
 						double val = (((Storage) g.getNodeList()[i]).getMaximumCharge() - ((Storage) g.getNodeList()[i]).getCurrentCharge()) / delta / chargeEfficiency;
 
 						for (int j = g.getNGenerators() + g.getNConsumers(); j < g.getNNode() - (g.getNstorage() + g.getNrGenerators()); j++) {
@@ -318,26 +284,105 @@ public class DataModelPrint {
 						counter++;
 						if (cap / chargeEfficiency < val) {
 							if (counter != g.getNstorage())
-								writer.println(i + " -" + cap / chargeEfficiency);
+								strBuilder.append(i + " -" + cap / chargeEfficiency+"\n");
 							else
-								writer.println(i + " -" + cap / chargeEfficiency + ";");
+								strBuilder.append(i + " -" + cap / chargeEfficiency + ";\n");
 
 						} else if (counter != g.getNstorage()) {
 							//writer.println(i + " -" + val);
-							writer.println(i +  val);
+							strBuilder.append(i +  val+"\n");
 						} else
-							writer.println(i + val + ";");
+							strBuilder.append(i + val + ";\n");
 							//writer.println(i + " -" + val + ";");
 					}
 				}
-			}
-			writer.println("end;");
+			}*/
+			strBuilder.append("end;\n");
+			writer.print(strBuilder.toString());
 			writer.flush();
 			writer.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void printStorageFlow(int currentHour, int beginChargeTime, int endChargeTime, StringBuilder strBuilder, Graph g) {
+		// TODO Auto-generated method stub
+		int counter = 0;
+		if(currentHour >= beginChargeTime || currentHour <= endChargeTime){
+			strBuilder.append("param flowfromstorage :=\n");
+			for (int i = 0; i < g.getNodeList().length; i++) {
+				if(g.getNodeList()[i].getClass() == Storage.class){
+					counter++;
+					if (counter != g.getNstorage()) {
+						strBuilder.append(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow()+"\n");
+					} else {
+						strBuilder.append(i + " " + (float)((Storage) g.getNodeList()[i]).getFlow() + ";\n");
+					}
+				}
+			}
+		}else {
+			printChargeLimit(strBuilder, g);
+			printDischargeLimit(strBuilder, g);
+		}
+
+	}
+
+	private void printChargeLimit(StringBuilder strBuilder, Graph g) {
+		int counter = 0;
+		strBuilder.append("param flowmaxcharge :=\n");
+		for (int i = 0; i < g.getNodeList().length; i++) {
+			if(g.getNodeList()[i].getClass() == Storage.class){
+				counter++;
+				Storage storage = (Storage) g.getNodeList()[i];
+				double flowLimit = storage.getFlowLimit();
+				double currentCharge = storage.getCurrentCharge();
+				double maxSoC = storage.getMaximumCharge();
+				if(currentCharge + (flowLimit * storage.getChargeEfficiency()) <= maxSoC) {
+					if (counter != g.getNstorage()) {
+						strBuilder.append(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowLimit()*-1+"\n");
+					} else {
+						strBuilder.append(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowLimit()*-1 + ";\n");
+					}
+				} else {
+					flowLimit = maxSoC - currentCharge;
+					if (counter != g.getNstorage()) {
+						strBuilder.append(i + " " + (float)flowLimit*-1 +"\n");
+					}else {
+						strBuilder.append(i + " " + (float)flowLimit*-1 + ";\n");
+					}
+				}
+			}
+		}
+	}
+
+	private void printDischargeLimit(StringBuilder strBuilder, Graph g) {
+		int counter = 0;
+		strBuilder.append("param flowmaxdischarge :=\n");
+		for (int i = 0; i < g.getNodeList().length; i++) {
+			if(g.getNodeList()[i].getClass() == Storage.class){
+				counter++;
+				Storage storage = (Storage) g.getNodeList()[i];
+				double flowLimit = storage.getFlowLimit();
+				double currentCharge = storage.getCurrentCharge();
+				double minSoC = storage.getMinimumCharge();
+				if(currentCharge - (flowLimit * storage.getChargeEfficiency()) >= minSoC) {
+					if (counter != g.getNstorage()) {
+						strBuilder.append(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowLimit()+"\n");
+					} else {
+						strBuilder.append(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowLimit() + ";\n");
+					}
+				} else{
+					flowLimit = minSoC - currentCharge;
+					if (counter != g.getNstorage()) {
+						strBuilder.append(i + " " + (float)flowLimit+"\n");
+					}else {
+						strBuilder.append(i + " " + (float)flowLimit + ";\n");
+					}
+				}
+			}
 		}
 	}
 }

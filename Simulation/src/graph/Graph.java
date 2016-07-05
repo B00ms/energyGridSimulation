@@ -452,8 +452,10 @@ public class Graph implements Cloneable {
 				// update the status of the storage node
 				if(flow<0){
 					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.CHARGING);
+					//((Storage)nodeList[i]).charge(flow);
 				}else if(flow>0){
 					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.DISCHARGING);
+					//((Storage)nodeList[i]).discharge(flow);
 				}else{
 					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.NEUTRAL);
 				}

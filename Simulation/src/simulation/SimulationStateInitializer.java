@@ -61,18 +61,23 @@ public class SimulationStateInitializer {
 	public Graph updateStorages(Graph oldg, Graph newg) {
 		for (int i = 0; i < oldg.getNodeList().length; i++) {
 			if(oldg.getNodeList()[i].getClass() == Storage.class) {
-				float chargeEfficiency = oldg.getChargeEfficiency();
+				Storage storage = (Storage) oldg.getNodeList()[i];
+				newg.getNodeList()[i] = cloner.deepClone(storage);
+
+				/*float chargeEfficiency = oldg.getChargeEfficiency();
 				float dischargeEfficiency = oldg.getDischargeEfficiency();
 				float delta = oldg.getDelta();
 				double av = ((Storage) oldg.getNodeList()[i]).getCurrentCharge();
-				float flow = 0.0F;
+				double flow = ((Storage) oldg.getNodeList()[i]).getFlow();
 				for (int j = 0; j < oldg.getNNode(); j++) {
 					flow += oldg.getEdges()[j].getFlow();
 				}
+
+
 				if (flow >= 0.0F)
 					((Storage) newg.getNodeList()[i]).charge(av - flow / dischargeEfficiency * delta);
 				else
-					((Storage) newg.getNodeList()[i]).charge(av - flow * chargeEfficiency * delta);
+					((Storage) newg.getNodeList()[i]).charge(av - flow * chargeEfficiency * delta);*/
 			}
 		}
 		return newg;
