@@ -77,7 +77,7 @@ subject to genproduction { i in tgen } :
 
 
 subject to flowfromstorageNight { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i];
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i]; 
 
 
 #The amount of energy send to a consumer should be lower or equal to the load of the consumer
