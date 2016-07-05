@@ -53,6 +53,10 @@ public class Main {
 		String solpath1 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath1");
 		String solpath2 = config.getConfigStringValue(CONFIGURATION_TYPE.GLPSOL, "solpath2");
 
+		// used to determine which model file to use
+		int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
+		int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
+
 		DataModelPrint mp = new DataModelPrint();
 		Process proc = null;
 
@@ -127,8 +131,19 @@ public class Main {
 						model = modelDay;
 					}
 
-					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
+					String command;
+
+					// check for storage charge times to determine which model to use
+					if(currentTimeStep >= beginChargeTime || currentTimeStep <= endChargeTime ) {
+						// during night use night model file constraints
+						command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + modelDay;
+					}else{
+						// during day time use day model file constraints
+						command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + modelNight;
+					}
+
 					command = command + " --nopresol --output filename.out ";
+
 					//System.out.println(command);
 					File file = new File(dirpath);
 					proc = Runtime.getRuntime().exec(command, null, file);
@@ -181,7 +196,7 @@ public class Main {
 				}
 
 				// calculate eens for hour
-				double hourlyEENS = calculateEENS(realSimulationGraph[currentTimeStep]);
+				double hourlyEENS = calculateHourlyEENS(realSimulationGraph[currentTimeStep]);
 				dailyEENS += hourlyEENS;
 
 				realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim, hourlyEENS);
@@ -203,11 +218,13 @@ public class Main {
 
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
+		double realEENS = calculateRealEENS(listEENS);
 
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
+		System.out.println("Real EENS: "+ realEENS);
 	}
 
-	public static Double calculateEENS(Graph realSimulationGraph){
+	public static Double calculateHourlyEENS(Graph realSimulationGraph){
 		double hourlyEENS = 0;
 
 		double realLoad 		= productionLoadHandler.calculateLoad(realSimulationGraph);
@@ -225,9 +242,26 @@ public class Main {
 		return hourlyEENS;
 	}
 
+	public static Double calculateRealEENS(List<Double> listEENS){
+		double sumEENS = 0;
+		double realEENS = 0;
+
+		if(listEENS.size() > 0) {
+
+			for (int i = 0; i < listEENS.size(); i++) {
+				sumEENS += listEENS.get(i);
+			}
+
+			realEENS = sumEENS / listEENS.size();
+		}
+
+		return realEENS;
+	}
+
 	public static boolean checkEENSConvergence(List<Double> listEENS){
 		double EENSConvergenceThreshold = config.getConfigDoubleValue((CONFIGURATION_TYPE.GENERAL), "EENSConvergenceThreshold");
 		double sumEENS = 0;
+		double avgEENS = 0;
 		boolean EENSConvergence = false;
 
 		if(listEENS.size() > 1){
@@ -235,9 +269,9 @@ public class Main {
 				sumEENS += listEENS.get(i);
 			}
 
-			sumEENS = sumEENS / listEENS.size()-1;
+			avgEENS = sumEENS / listEENS.size()-1;
 
-			double convergence = Math.abs(sumEENS - listEENS.get(listEENS.size()-1));
+			double convergence = Math.abs(avgEENS - listEENS.get(listEENS.size()-1));
 			System.out.println("Convergence: "+ convergence +", Threshold: "+ EENSConvergenceThreshold);
 			// stop the simulation when converged
 			if(convergence <= EENSConvergenceThreshold){
