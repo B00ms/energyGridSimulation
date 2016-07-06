@@ -444,12 +444,12 @@ public class Parser {
 
 		scanner.useDelimiter(System.getProperty("line.separator"));
 		while (goon) {
-			Scanner s = new Scanner(scanner.next());
-			int i = s.nextInt();
-			int j = s.nextInt();
-			g.getEdges()[j].setFlow(Float.parseFloat(s.next()));
+			Scanner linescanner = new Scanner(scanner.next());
+			int i = linescanner.nextInt();
+			int j = linescanner.nextInt();
+			g.getEdges()[j].setFlow(Float.parseFloat(linescanner.next()));
 			goon = scanner.hasNext();
-			s.close();
+			linescanner.close();
 		}
 		scanner.close();
 		return g;

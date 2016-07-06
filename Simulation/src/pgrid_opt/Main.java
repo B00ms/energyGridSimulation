@@ -68,7 +68,7 @@ public class Main {
 
 		int numOfSim = 0;
 
-		while((!EENSConvergence && numOfSim <= 1000)){
+		while((!EENSConvergence && numOfSim <= 0)){
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
@@ -120,8 +120,7 @@ public class Main {
 				//System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
 
 				//Graph inputFileGraph = cloner.deepClone(realSimulationGraph[currentTimeStep]);
-				Graph inputFileGraph = realSimulationGraph[currentTimeStep];
-				mp.createModelInputFile(inputFileGraph, String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
+				mp.createModelInputFile(realSimulationGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
 
 				try {
 					String model = "";

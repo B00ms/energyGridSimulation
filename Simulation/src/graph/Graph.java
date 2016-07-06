@@ -167,7 +167,7 @@ public class Graph implements Cloneable {
 
 			} else if (nodelist[i].getClass() == Storage.class){
 
-				Storage storage = new Storage(((Storage)nodelist[i]).getCurrentCharge(),
+				Storage storage = new Storage(((Storage)nodelist[i]).getCurrentSoC(),
 											((Storage)nodelist[i]).getMaximumCharge(),
 											((Storage)nodelist[i]).getMinimumCharge(),
 											(nodelist[i]).getNodeId(),
@@ -364,7 +364,7 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"ui.label\":" + "\"" + storageNode.getNodeId() +"\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"ui.class\":" + "\"" + storageNode.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
 
-					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"currentCharge\":" + "\"" + storageNode.getCurrentCharge() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"currentCharge\":" + "\"" + storageNode.getCurrentSoC() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"maxCharge\":" + "\"" + storageNode.getMaximumCharge() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"minCharge\":" + "\"" + storageNode.getMinimumCharge() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"chargeEfficiency\":" + "\"" + storageNode.getChargeEfficiency() + "\""); bufferedWriter.newLine();

@@ -7,9 +7,9 @@ import graph.Node;
 import java.io.Serializable;
 
 public class Storage extends Node {
-	private double currentCharge;
-	private double maximumCharge;
-	private double minimumCharge;
+	private double currentSoC;
+	private double maximumSoC;
+	private double minimumSoC;
 	private double chargeEfficiency;
 	private double dischargeEfficiency;
 	private double flowStorage = 0;
@@ -24,9 +24,9 @@ public class Storage extends Node {
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId, int chMax) {
 		super(nodeId);
-		this.currentCharge = currentCharge;
-		this.maximumCharge = maximumCharge;
-		this.minimumCharge = minimumCharge;
+		this.currentSoC = currentCharge;
+		this.maximumSoC = maximumCharge;
+		this.minimumSoC = minimumCharge;
 		this.chMax = chMax;
 		flowLimit = 0;
 		status = StorageStatus.NEUTRAL;
@@ -37,9 +37,9 @@ public class Storage extends Node {
 
 	public Storage(double currentCharge, double maximumCharge, double minimumCharge, int nodeId, int chMax, double chargeEfficiency, double dischargeEfficiency ) {
 		super(nodeId);
-		this.currentCharge = currentCharge;
-		this.maximumCharge = maximumCharge;
-		this.minimumCharge = minimumCharge;
+		this.currentSoC = currentCharge;
+		this.maximumSoC = maximumCharge;
+		this.minimumSoC = minimumCharge;
 		this.chMax = chMax;
 		flowLimit = 0;
 		status = StorageStatus.NEUTRAL;
@@ -86,8 +86,12 @@ public class Storage extends Node {
 		flowStorage = flow;
 	}
 
-	public double getCurrentCharge() {
-		return currentCharge;
+	public double getCurrentSoC() {
+		return currentSoC;
+	}
+
+	public void setCurrentSoC(double SoC){
+		this.currentSoC = SoC;
 	}
 
 	/**
@@ -97,24 +101,24 @@ public class Storage extends Node {
 	 */
 	public double charge(double flowComingIn) {
 		status = StorageStatus.CHARGING;
-		double newSoC = currentCharge + (flowComingIn * chargeEfficiency);
+		double newSoC = currentSoC + (flowComingIn * chargeEfficiency);
 		flowLimit = (chMax / chargeEfficiency);
 
-		if (newSoC > maximumCharge){
-			newSoC = maximumCharge;
-			flowComingIn = maximumCharge * chargeEfficiency;
+		if (newSoC > maximumSoC){
+			newSoC = maximumSoC;
+			flowComingIn = maximumSoC * chargeEfficiency;
 		}
 
 		if(flowComingIn > flowLimit){
-			newSoC = currentCharge + flowLimit;
+			newSoC = currentSoC + flowLimit;
 			flowComingIn = flowLimit;
 		}
-		if(newSoC <= maximumCharge && flowComingIn <= flowLimit){
-			currentCharge = newSoC;
+		if(newSoC <= maximumSoC && flowComingIn <= flowLimit){
+			currentSoC = newSoC;
 			flowStorage = flowComingIn * -1; //Make flow negative because the edge goes Storage->innnerNode.
 		}
 		System.out.print("flow storage: " + flowStorage);
-		System.out.println("SoC storage: " + currentCharge);
+		System.out.println("SoC storage: " + currentSoC);
 		return flowStorage;
 	}
 
@@ -128,35 +132,35 @@ public class Storage extends Node {
 		flowLimit = (chMax * dischargeEfficiency);
 		double dischargedEnergy = charge/dischargeEfficiency; //Amount of discharge to put 'charge' amount of energy back into the grid
 		double outgoingFlow = dischargedEnergy * dischargeEfficiency; //Actual flow we put into the network, should equal charge
-		double newSoC = currentCharge - dischargedEnergy;
+		double newSoC = currentSoC - dischargedEnergy;
 		double tempCurrentCharge = newSoC;
-		currentCharge = newSoC;
+		currentSoC = newSoC;
 		flowStorage = charge;
 
-		if(newSoC < minimumCharge){
-			double minSoC = minimumCharge;
+		if(newSoC < minimumSoC){
+			double minSoC = minimumSoC;
 			outgoingFlow = minSoC * dischargeEfficiency;
 			tempCurrentCharge  = minSoC;
 			flowStorage = outgoingFlow;
 		}
 
 		if(outgoingFlow > flowLimit){
-			double minSoC = currentCharge - flowLimit;
+			double minSoC = currentSoC - flowLimit;
 			outgoingFlow = flowLimit;
 			tempCurrentCharge = minSoC;
 			flowStorage = outgoingFlow;
 		}
 
-		currentCharge = tempCurrentCharge;
+		currentSoC = tempCurrentCharge;
 		return flowStorage;
 	}
 
 	public double getMaximumCharge() {
-		return maximumCharge;
+		return maximumSoC;
 	}
 
 	public void setMaximumCharge(double capacity) {
-		this.maximumCharge = capacity;
+		this.maximumSoC = capacity;
 	}
 
 	public boolean isRenew() {
@@ -164,11 +168,11 @@ public class Storage extends Node {
 	}
 
 	public double getMinimumCharge() {
-		return minimumCharge;
+		return minimumSoC;
 	}
 
 	public void setMinimumCharge(double mincap) {
-		minimumCharge = mincap;
+		minimumSoC = mincap;
 	}
 
 	public double getChargeEfficiency() {
