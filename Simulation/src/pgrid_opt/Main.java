@@ -63,7 +63,7 @@ public class Main {
 
 		int numOfSim = 0;
 
-		while((!EENSConvergence && numOfSim <= 0)){
+		while((!EENSConvergence && numOfSim <= 1000)){
 			System.out.println("Simulation: " + numOfSim);
 			SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
