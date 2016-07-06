@@ -32,8 +32,11 @@ public class StorageHandler {
 					if(graph.getNodeList()[i].getClass() == Storage.class){
 						Storage storage = (Storage) graph.getNodeList()[i];
 						//We calculate 50% of max charge then divide by efficiency which will give us the amount we need to charge to 50% of max charge
-						double chargeTarget = (storage.getMaximumCharge() * 0.5 / storage.getChargeEfficiency()) - storage.getCurrentCharge() / storage.getChargeEfficiency();
+						double chargeTarget = (storage.getMaximumCharge() * 0.5 / storage.getChargeEfficiency()) - storage.getCurrentSoC() / storage.getChargeEfficiency();
+						double oldSoC = storage.getCurrentSoC();
 						storage.charge(chargeTarget);
+						//Set the  SoC to what it was before because when planning we don't actually charge the storage.
+						storage.setCurrentSoC(oldSoC);
 						graph.getNodeList()[i] = storage;
 					}
 				}
@@ -65,7 +68,9 @@ public class StorageHandler {
 	    			if(remainRenewableProd > 0){
 	    			Storage storage = (Storage)graph.getNodeList()[i];
 	    			//Set storage to charge and substract the flow from charging from renewable production.
+	    			double oldSoC = storage.getCurrentSoC();
     				remainRenewableProd -= Math.abs(storage.charge(remainRenewableProd));
+    				storage.setCurrentSoC(oldSoC);
     				graph.getNodeList()[i] = storage;
 	    			} else
 	    				break;
@@ -88,8 +93,9 @@ public class StorageHandler {
 
         for(int i = 0; i < graph.getNodeList().length; i++){
             if(graph.getNodeList()[i].getClass() == Storage.class){
-                if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentCharge()){
-                    sumLoads += ((Storage)graph.getNodeList()[i]).charge(((Storage) graph.getNodeList()[i]).getMaximumCharge() * 0.5);
+            	Storage storage = (Storage)graph.getNodeList()[i];
+                if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentSoC()){
+                    sumLoads += ((Storage)graph.getNodeList()[i]).charge(Math.abs(((Storage) graph.getNodeList()[i]).getFlow()));
                 }
             }
         }

@@ -1,5 +1,6 @@
 package filehandler;
 
+import java.awt.FlowLayout;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -444,12 +445,25 @@ public class Parser {
 
 		scanner.useDelimiter(System.getProperty("line.separator"));
 		while (goon) {
-			Scanner s = new Scanner(scanner.next());
-			int i = s.nextInt();
-			int j = s.nextInt();
-			g.getEdges()[j].setFlow(Float.parseFloat(s.next()));
+			Scanner linescanner = new Scanner(scanner.next());
+			int i = linescanner.nextInt();
+			int j = linescanner.nextInt();
+			double flow = Float.parseFloat(linescanner.next());
+			g.getEdges()[j].setFlow(flow);
+			for(int y = 0; y < g.getNodeList().length; y++){
+				if(g.getNodeList()[y].getClass() == Storage.class){
+					Storage storage = (Storage) g.getNodeList()[y];
+					if(flow > 0)
+						storage.discharge(Math.abs(flow));
+					 else
+						storage.charge(Math.abs(flow));
+
+					g.getNodeList()[y] = storage;
+				}
+			}
+
 			goon = scanner.hasNext();
-			s.close();
+			linescanner.close();
 		}
 		scanner.close();
 		return g;

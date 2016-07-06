@@ -62,6 +62,8 @@ public class SimulationStateInitializer {
 		for (int i = 0; i < oldg.getNodeList().length; i++) {
 			if(oldg.getNodeList()[i].getClass() == Storage.class) {
 				Storage storage = (Storage) oldg.getNodeList()[i];
+
+
 				newg.getNodeList()[i] = cloner.deepClone(storage);
 
 				/*float chargeEfficiency = oldg.getChargeEfficiency();

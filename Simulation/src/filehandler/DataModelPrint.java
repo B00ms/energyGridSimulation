@@ -26,7 +26,7 @@ public class DataModelPrint {
 			for (int i = gdays[0].getNNode() - gdays[0].getNstorage(); i < gdays[0].getNNode(); i++) {
 				writer.print(i + " ");
 				for (int j = 0; j < gdays.length; j++) {
-					writer.print(((Storage) gdays[j].getNodeList()[i]).getCurrentCharge() + " ");
+					writer.print(((Storage) gdays[j].getNodeList()[i]).getCurrentSoC() + " ");
 				}
 				writer.println();
 				writer.flush();
@@ -338,7 +338,7 @@ public class DataModelPrint {
 				counter++;
 				Storage storage = (Storage) g.getNodeList()[i];
 				double flowLimit = storage.getFlowLimit();
-				double currentCharge = storage.getCurrentCharge();
+				double currentCharge = storage.getCurrentSoC();
 				double maxSoC = storage.getMaximumCharge();
 				if(currentCharge + (flowLimit * storage.getChargeEfficiency()) <= maxSoC) {
 					if (counter != g.getNstorage()) {
@@ -366,7 +366,7 @@ public class DataModelPrint {
 				counter++;
 				Storage storage = (Storage) g.getNodeList()[i];
 				double flowLimit = storage.getFlowLimit();
-				double currentCharge = storage.getCurrentCharge();
+				double currentCharge = storage.getCurrentSoC();
 				double minSoC = storage.getMinimumCharge();
 				if(currentCharge - (flowLimit * storage.getChargeEfficiency()) >= minSoC) {
 					if (counter != g.getNstorage()) {

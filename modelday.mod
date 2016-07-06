@@ -78,10 +78,12 @@ subject to genproduction { i in tgen } :
 
 
 subject to flowfromstorageCharging { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, >= abs(flowmaxcharge[i]);
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, >= flowmaxcharge[i];
 	
+
+
 subject to flowfromstorageDischarging { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= abs(flowmaxdischarge[i]);
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowmaxdischarge[i];
 	
 
 
