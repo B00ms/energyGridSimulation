@@ -24,6 +24,7 @@ public class Main {
 	private static ConfigCollection config = new ConfigCollection();
 	private static ProductionLoadHandler productionLoadHandler = new ProductionLoadHandler();
 	private static StorageHandler storageHandler = new StorageHandler();
+	private static EENSHandler eensHandler = new EENSHandler();
 	private static SimulationMonteCarloDraws simulationMonteCarloDraws = new SimulationMonteCarloDraws();
 	private static GridBalancer gridBalancer = new GridBalancer();
 	private static OutputFileHandler outputFileHandler = new OutputFileHandler();
@@ -180,7 +181,7 @@ public class Main {
 				}
 
 				// calculate eens for hour
-				double hourlyEENS = EENSHandler.calculateHourlyEENS(realSimulationGraph[currentTimeStep]);
+				double hourlyEENS = eensHandler.calculateHourlyEENS(realSimulationGraph[currentTimeStep]);
 				dailyEENS += hourlyEENS;
 
 				realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim, hourlyEENS);
@@ -192,7 +193,7 @@ public class Main {
 			//outputFileHandler.writeStorageTxtFile(realSimulationGraph, dirpath, solutionPath);
 
 			listEENS.add(dailyEENS);
-			EENSConvergence = EENSHandler.checkEENSConvergence(listEENS, EENSConvergenceThreshold);
+			EENSConvergence = eensHandler.checkEENSConvergence(listEENS, EENSConvergenceThreshold);
 			if(numOfSim == 0)
 				EENSConvergence = false;
 
