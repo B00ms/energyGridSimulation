@@ -28,6 +28,21 @@ public class EENSHandler {
         return hourlyEENS;
     }
 
+    public Double calculateHourlySheddedLoad(Graph realSimulationGraph){
+        double hourlySL = 0;
+
+        double realLoad 		= productionLoadHandler.calculateLoad(realSimulationGraph);
+        double satisfiedLoad 	= productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph);
+
+        // if there is expected energy not supplied then count it as shedded load
+        System.out.println("EENS: " + (realLoad-satisfiedLoad));
+
+        if((realLoad - satisfiedLoad) < 0)
+            hourlySL += Math.abs((realLoad - satisfiedLoad));
+
+        return hourlySL;
+    }
+
     public static Double calculateRealEENS(List<Double> listEENS){
         double sumEENS = 0;
         double realEENS = 0;
