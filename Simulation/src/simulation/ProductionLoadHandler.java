@@ -69,6 +69,14 @@ public class ProductionLoadHandler {
         return sumLoad;
     }
 
+    public double calculateConventionalProduction(Graph graph){
+        double production = 0;
+        for(int i = 0; i < graph.getNodeList().length; i++){
+            if (graph.getNodeList()[i].getClass() == ConventionalGenerator.class)
+                production += ((ConventionalGenerator)graph.getNodeList()[i]).getProduction();
+        }
+        return production;
+    }
 
     public double calculateRenewableProduction(Graph graph){
         double production = 0;

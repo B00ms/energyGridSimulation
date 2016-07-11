@@ -41,6 +41,8 @@ public class StorageHandler {
 					}
 				}
 				plannedTimestepsGraph[hour] = graph;
+
+                // TODO: check SOC for the next hour at start is same as hour just calculated
 			}
 			hour++;
 		}
