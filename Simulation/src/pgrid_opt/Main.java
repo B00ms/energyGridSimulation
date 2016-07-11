@@ -192,6 +192,7 @@ public class Main {
 			//outputFileHandler.writeStorageTxtFile(realSimulationGraph, dirpath, solutionPath);
 
 			listEENS.add(dailyEENS);
+			System.out.println("Daily EENS: " + dailyEENS);
 			EENSConvergence = eensHandler.checkEENSConvergence(listEENS, EENSConvergenceThreshold);
 			if(numOfSim == 0)
 				EENSConvergence = false;

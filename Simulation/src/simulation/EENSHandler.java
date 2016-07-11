@@ -10,20 +10,20 @@ public class EENSHandler {
 
     private ProductionLoadHandler productionLoadHandler = new ProductionLoadHandler();
 
-    public Double calculateHourlyEENS(Graph realSimulationGraph){
+    public double calculateHourlyEENS(Graph realSimulationGraph){
         double hourlyEENS = 0;
 
         double realLoad 		= productionLoadHandler.calculateLoad(realSimulationGraph);
         double satisfiedLoad 	= productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph);
-
-        // if there is expected energy not supplied then count it as shedded load
-        System.out.println("EENS: " + (realLoad-satisfiedLoad));
 
         if((realLoad - satisfiedLoad) > 0)
             hourlyEENS += (realLoad - satisfiedLoad);
 
         if(hourlyEENS < 0)
             hourlyEENS = 0;
+
+        //if there is expected energy not supplied then count it as shedded load
+        System.out.println("hourly EENS: " + (hourlyEENS));
 
         return hourlyEENS;
     }
@@ -54,7 +54,9 @@ public class EENSHandler {
                 sumEENS += listEENS.get(i);
             }
 
-            avgEENS = sumEENS / listEENS.size()-1;
+            avgEENS = sumEENS / (listEENS.size()-1);
+            System.out.println("sum EENS: " + sumEENS + " " + "average EENS: " + avgEENS + "Amount of days: " + String.valueOf(listEENS.size()-1));
+            System.out.println("average - amount of days" + (avgEENS - listEENS.get(listEENS.size()-1)));
 
             double convergence = Math.abs(avgEENS - listEENS.get(listEENS.size()-1));
             System.out.println("Convergence: "+ convergence +", Threshold: "+ EENSConvergenceThreshold);
@@ -62,7 +64,7 @@ public class EENSHandler {
             if(convergence <= EENSConvergenceThreshold){
                 EENSConvergence = true;
             }
-        }else{}
+        }
 
         return EENSConvergence;
     }

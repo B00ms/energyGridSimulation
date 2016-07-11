@@ -117,8 +117,8 @@ public class Storage extends Node {
 			currentSoC = newSoC;
 			flowStorage = flowComingIn * -1; //Make flow negative because the edge goes Storage->innnerNode.
 		}
-		System.out.print("flow storage: " + flowStorage);
-		System.out.println("SoC storage: " + currentSoC);
+		//System.out.print("flow storage: " + flowStorage+" ");
+		//System.out.println("SoC storage: " + currentSoC);
 		return flowStorage;
 	}
 
