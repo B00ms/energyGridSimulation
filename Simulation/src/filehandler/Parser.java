@@ -251,14 +251,13 @@ public class Parser {
 		return graph;
 	}
 
-	public Float[] parseExpectedHourlyLoad(){
+	/**
+	 * Reads a expected hourly load CSV file and returns its contents in a Float[]
+	 * @param path
+	 * @return
+	 */
+	public Float[] parseExpectedHourlyLoad(String path){
 
-		/*Config generalConf = conf.getConfig("conventionalGenerator");
-		Config loadConfig = generalConf.getConfig("load-curves");*/
-
-		//TODO: later on we have to change this to be dynamic because we want to run for 4 different seasons.
-		/*String path = loadConfig.getString("summer");*/
-		String path = config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "summer");
 		List<Float> expectedHourlyLoad = new ArrayList<>();
 
 		Scanner scanner;

@@ -290,12 +290,13 @@ public class Graph implements Cloneable {
 	 * Outputs the graph in .DGS format.
 	 * @param graphNumber
 	 */
-	public void printGraph(int graphNumber, int numOfSim, double hourlyEENS){
-		String outputPath = "../graphstate/simulation"+numOfSim+"/";
+	public void printGraph(int graphNumber, int numOfSim, double hourlyEENS, String season){
+		String outputPath = "../graphstate/"+season+"/simulation"+numOfSim+"/";
+		//outputPath = "../graphstate/simulation"+numOfSim+"/";
 		String fileName = "graphstate"+graphNumber+".dgs";
 		try {
 			File file = new File(outputPath);
-			file.mkdir();
+			file.mkdirs();
 
 			file = new File(outputPath+fileName);
 

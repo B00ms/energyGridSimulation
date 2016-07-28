@@ -126,7 +126,7 @@ public class ProductionLoadHandler {
      * @param graphs
      * @return Array of graphs for each hour where production and load has been set.
      */
-    public Graph[] setExpectedLoadAndProduction(Graph[] graphs) {
+    public Graph[] setExpectedLoadAndProduction(Graph[] graphs, int month) {
 
     	StorageHandler storageHandler = new StorageHandler();
 
@@ -138,7 +138,7 @@ public class ProductionLoadHandler {
 
         for(int hour=0; hour < graphs.length; hour++){
         	//Set expected renewable production
-            plannedProduction[hour] = simulationMonteCarloDraws.randomizeRenewableGenerator(plannedProduction[hour], hour); //set renewable production.
+            plannedProduction[hour] = simulationMonteCarloDraws.randomizeRenewableGenerator(plannedProduction[hour], hour, month); //set renewable production.
 
             // calculate and set expected conventional generator production
             plannedProduction[hour] = planExpectedProductionConvGen(plannedProduction, hour);

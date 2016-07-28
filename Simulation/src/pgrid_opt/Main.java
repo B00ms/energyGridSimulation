@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import com.rits.cloning.Cloner;
@@ -62,144 +64,171 @@ public class Main {
 		Cloner cloner=new Cloner();
 
 		int numOfSim = 0;
+		HashMap<String, String> seasons = new HashMap<>();
+		seasons.put("spring", config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "spring"));
+		seasons.put("summer", config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "summer"));
+		seasons.put("fall", config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "fall"));
+		seasons.put("winter", config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "winter"));
 
-		while((!EENSConvergence && numOfSim <= 1000)){
-			System.out.println("Simulation: " + numOfSim);
-			SimulationStateInitializer simulationState = new SimulationStateInitializer();
+		Iterator<String> iterator = seasons.keySet().iterator();
 
-			double dailyEENS = 0;
-			Graph[] expectedSimulationGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
-			expectedSimulationGraph = simulationState.creategraphs(graph, expectedSimulationGraph);
+		while(iterator.hasNext()){
+			String season = (String) iterator.next();
+			Float[]expectedHourlyLoad = parser.parseExpectedHourlyLoad(seasons.get(season));
 
-			int currentTimeStep = 0;
+			int month;
 
-			String solutionPath = dirpath + "simRes" + numOfSim + "";
-			try {
-				Files.createDirectories(Paths.get(solutionPath)); // create a new directory to safe the output in
-			} catch (IOException e1) {
-				e1.printStackTrace();
-				System.exit(0);
-			}
+			if(season.equals("spring"))
+				month = 4; //April
+			else if(season.equals("summer"))
+				month = 7; //July
+			else if(season.equals("fall"))
+				month = 10; //October
+			else if(season.equals("winter"))
+				month = 12; //December
+			else
+				month = 1;
 
-			//Plan production based on expected load and storage charging during the night period.
-			//Graph[] expectedSimulationGraph = cloner.deepClone(initialTimestepsGraph);
-			expectedSimulationGraph = productionLoadHandler.setExpectedLoadAndProduction(expectedSimulationGraph);
-			//System.out.println("Expected production and load (from input file and expected renewable production) ");
-			//System.out.println("Expected production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
-			//System.out.println("Expected load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
 
-			Graph[] realSimulationGraph = cloner.deepClone(expectedSimulationGraph);
+			while((!EENSConvergence && numOfSim <= 1000)){
+				System.out.println("Simulation: " + numOfSim);
+				SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
-			// set real load for consumers using Monte carlo draws for the entire day.
-			realSimulationGraph = ProductionLoadHandler.setRealLoad(realSimulationGraph);
+				double dailyEENS = 0;
+				Graph[] expectedSimulationGraph = new Graph[config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "numberOfTimeSteps")];
+				expectedSimulationGraph = simulationState.creategraphs(graph, expectedSimulationGraph, expectedHourlyLoad);
 
-			while (currentTimeStep < realSimulationGraph .length) {
-				System.out.println();
-				System.out.println("TimeStep: "+ currentTimeStep);
+				int currentTimeStep = 0;
 
-				//Set failure state of conventional generators and calculates the real renewable production for a single hour.
-				realSimulationGraph [currentTimeStep] = simulationMonteCarloDraws.randomizeGridState(realSimulationGraph[currentTimeStep], currentTimeStep);
-
-				//Plan real storage charging using excess of renewable production to charge past 50% max SoC.x
-				storageHandler.planStorageCharging(realSimulationGraph[currentTimeStep], currentTimeStep);
-
-				//System.out.println("Real production and load (including storage charging during night, and failed generators and real renewable production)");
-				//System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]));
-				//System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
-
-				//Attempt to balance production and load  for a single hour.
-				realSimulationGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realSimulationGraph[currentTimeStep], currentTimeStep);
-
-				//System.out.println("Real production and load after checkGridEquilibrium");
-				//System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
-				//System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
-
-				//Graph inputFileGraph = cloner.deepClone(realSimulationGraph[currentTimeStep]);
-				mp.createModelInputFile(realSimulationGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
-
+				String solutionPath = dirpath +season  + "/simRes" + numOfSim + "";
 				try {
-					String model = "";
-					if(currentTimeStep >= beginTime || currentTimeStep<= endTime){
-						model = modelNight;
-					}else{
-						model = modelDay;
-					}
-
-					String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
-					command = command + " --nopresol --output filename.out ";
-
-					//System.out.println(command);
-					File file = new File(dirpath);
-					proc = Runtime.getRuntime().exec(command, null, file);
-					proc.waitFor();
-
-					StringBuffer output = new StringBuffer();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); // Using the new input file, we apply the model to solve the cost function given the new state of the grid.
-					String line = "";
-
-					while ((line = reader.readLine()) != null) {
-						output.append(String.valueOf(line) + "\n");
-					}
-					System.out.print(output);
-					proc.getOutputStream().close();
-					proc.getInputStream().close();
-					proc.getErrorStream().close();
-					proc.destroy();
-					reader.close();
-
-					realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
-
-					//System.out.println("Actual production and load as defined by the flow simulation: ");
-					//System.out.println("Actual Production " + productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph[currentTimeStep]));
-					//System.out.println("Actual Load "+ productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
-
-					// write output to solution file
-					outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
-
-					if (graph.getNstorage() > 0) {
-						realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
-
-						if (currentTimeStep < realSimulationGraph.length-1)
-							realSimulationGraph[currentTimeStep + 1] = simulationState.updateStorages(realSimulationGraph[currentTimeStep],
-								realSimulationGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
-					}
-				} catch (IOException | InterruptedException e) {
-					e.printStackTrace();
+					Files.createDirectories(Paths.get(solutionPath)); // create a new directory to safe the output in
+				} catch (IOException e1) {
+					e1.printStackTrace();
 					System.exit(0);
 				}
 
-				// set state of graph for the next hour to the state of the current graph (failure)
-				if(currentTimeStep >0 && currentTimeStep < realSimulationGraph.length-1){
-					for (int n = 0; n < realSimulationGraph[currentTimeStep].getNodeList().length; n++) {
-						if (realSimulationGraph[currentTimeStep].getNodeList()[n].getClass() == ConventionalGenerator.class){
-							// cascade generator failure to the next hour.
-							ConventionalGenerator cgen = (ConventionalGenerator)realSimulationGraph[currentTimeStep].getNodeList()[n];
-							((ConventionalGenerator) realSimulationGraph[currentTimeStep+1].getNodeList()[n]).setGeneratorFailure(cgen.getGeneratorFailure());
+				//Plan production based on expected load and storage charging during the night period.
+				//Graph[] expectedSimulationGraph = cloner.deepClone(initialTimestepsGraph);
+				expectedSimulationGraph = productionLoadHandler.setExpectedLoadAndProduction(expectedSimulationGraph, month);
+				//System.out.println("Expected production and load (from input file and expected renewable production) ");
+				//System.out.println("Expected production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
+				//System.out.println("Expected load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
+
+				Graph[] realSimulationGraph = cloner.deepClone(expectedSimulationGraph);
+
+				// set real load for consumers using Monte carlo draws for the entire day.
+				realSimulationGraph = ProductionLoadHandler.setRealLoad(realSimulationGraph);
+
+				while (currentTimeStep < realSimulationGraph .length) {
+					System.out.println();
+					System.out.println("TimeStep: "+ currentTimeStep);
+
+					//Set failure state of conventional generators and calculates the real renewable production for a single hour.
+					realSimulationGraph [currentTimeStep] = simulationMonteCarloDraws.randomizeGridState(realSimulationGraph[currentTimeStep], currentTimeStep, month);
+
+					//Plan real storage charging using excess of renewable production to charge past 50% max SoC.x
+					storageHandler.planStorageCharging(realSimulationGraph[currentTimeStep], currentTimeStep);
+
+					//System.out.println("Real production and load (including storage charging during night, and failed generators and real renewable production)");
+					//System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]));
+					//System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
+
+					//Attempt to balance production and load  for a single hour.
+					realSimulationGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realSimulationGraph[currentTimeStep], currentTimeStep);
+
+					//System.out.println("Real production and load after checkGridEquilibrium");
+					//System.out.println("Real production: " + productionLoadHandler.calculateProduction(expectedSimulationGraph[currentTimeStep]) + " ");
+					//System.out.println("Real load: " + productionLoadHandler.calculateLoad(expectedSimulationGraph[currentTimeStep]));
+
+					//Graph inputFileGraph = cloner.deepClone(realSimulationGraph[currentTimeStep]);
+					mp.createModelInputFile(realSimulationGraph[currentTimeStep], String.valueOf(dirpath) + outpath1 + currentTimeStep + outpath2, Integer.toString(currentTimeStep)); // This creates a new input file.
+
+					try {
+						String model = "";
+						if(currentTimeStep >= beginTime || currentTimeStep<= endTime){
+							model = modelNight;
+						}else{
+							model = modelDay;
+						}
+
+						String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
+						command = command + " --nopresol --output filename.out ";
+
+						//System.out.println(command);
+						File file = new File(dirpath);
+						proc = Runtime.getRuntime().exec(command, null, file);
+						proc.waitFor();
+
+						StringBuffer output = new StringBuffer();
+						BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); // Using the new input file, we apply the model to solve the cost function given the new state of the grid.
+						String line = "";
+
+						while ((line = reader.readLine()) != null) {
+							output.append(String.valueOf(line) + "\n");
+						}
+						System.out.print(output);
+						proc.getOutputStream().close();
+						proc.getInputStream().close();
+						proc.getErrorStream().close();
+						proc.destroy();
+						reader.close();
+
+						realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
+
+						//System.out.println("Actual production and load as defined by the flow simulation: ");
+						//System.out.println("Actual Production " + productionLoadHandler.calculateSatisfiedLoad(realSimulationGraph[currentTimeStep]));
+						//System.out.println("Actual Load "+ productionLoadHandler.calculateProduction(realSimulationGraph[currentTimeStep]));
+
+						// write output to solution file
+						outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
+
+						if (graph.getNstorage() > 0) {
+							realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
+
+							if (currentTimeStep < realSimulationGraph.length-1)
+								realSimulationGraph[currentTimeStep + 1] = simulationState.updateStorages(realSimulationGraph[currentTimeStep],
+									realSimulationGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
+						}
+					} catch (IOException | InterruptedException e) {
+						e.printStackTrace();
+						System.exit(0);
+					}
+
+					// set state of graph for the next hour to the state of the current graph (failure)
+					if(currentTimeStep >0 && currentTimeStep < realSimulationGraph.length-1){
+						for (int n = 0; n < realSimulationGraph[currentTimeStep].getNodeList().length; n++) {
+							if (realSimulationGraph[currentTimeStep].getNodeList()[n].getClass() == ConventionalGenerator.class){
+								// cascade generator failure to the next hour.
+								ConventionalGenerator cgen = (ConventionalGenerator)realSimulationGraph[currentTimeStep].getNodeList()[n];
+								((ConventionalGenerator) realSimulationGraph[currentTimeStep+1].getNodeList()[n]).setGeneratorFailure(cgen.getGeneratorFailure());
+							}
 						}
 					}
+
+					// calculate eens for hour
+					double hourlyEENS = eensHandler.calculateHourlyEENS(realSimulationGraph[currentTimeStep]);
+					dailyEENS += hourlyEENS;
+
+					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim, hourlyEENS, season);
+
+					currentTimeStep++;
 				}
 
-				// calculate eens for hour
-				double hourlyEENS = eensHandler.calculateHourlyEENS(realSimulationGraph[currentTimeStep]);
-				dailyEENS += hourlyEENS;
+				// handle storage.txt output
+				//outputFileHandler.writeStorageTxtFile(realSimulationGraph, dirpath, solutionPath);
 
-				realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim, hourlyEENS);
+				listEENS.add(dailyEENS);
+				System.out.println("Daily EENS: " + dailyEENS);
+				EENSConvergence = eensHandler.checkEENSConvergence(listEENS, EENSConvergenceThreshold);
+				if(numOfSim == 0)
+					EENSConvergence = false;
 
-				currentTimeStep++;
+				numOfSim++; // go to next day
 			}
-
-			// handle storage.txt output
-			//outputFileHandler.writeStorageTxtFile(realSimulationGraph, dirpath, solutionPath);
-
-			listEENS.add(dailyEENS);
-			System.out.println("Daily EENS: " + dailyEENS);
-			EENSConvergence = eensHandler.checkEENSConvergence(listEENS, EENSConvergenceThreshold);
-			if(numOfSim == 0)
-				EENSConvergence = false;
-
-			numOfSim++; // go to next day
+			numOfSim = 0;
+			EENSConvergence = false;
 		}
-
 
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;

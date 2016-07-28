@@ -33,12 +33,13 @@ public class SimulationStateInitializer {
 	 * @param gDay	timestep
 	 * @return	list of graph for each timestep
 	 */
-	public Graph[] creategraphs(Graph g, Graph[] gDay) {
+	public Graph[] creategraphs(Graph g, Graph[] gDay, Float[] loads) {
 		this.g = g;
 		this.gDay = gDay;
 
 		// parse expected hourly load from input file
-		this.loads = parser.parseExpectedHourlyLoad();
+		//this.loads = parser.parseExpectedHourlyLoad();
+		this.loads = loads;
 
 		for (int i = 0; i < this.gDay.length; i++) {
 			//this.gDay[i] = g.clone();

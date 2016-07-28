@@ -25,12 +25,12 @@ public class SimulationMonteCarloDraws {
      * Set the failure state of generators and calculates the production of renewable production.
      * @return Graphs of which the state has been changed using Monte Carlo draws
      */
-    public Graph randomizeGridState(Graph graph, int currentTimeStep) {
+    public Graph randomizeGridState(Graph graph, int currentTimeStep, int month) {
         // randomize conventional generator data
         graph = randomizeConventionalGenerator(graph);
 
         // randomize renewable generators
-        graph = randomizeRenewableGenerator(graph, currentTimeStep);
+        graph = randomizeRenewableGenerator(graph, currentTimeStep, month);
 
         return graph;
     }
@@ -104,7 +104,7 @@ public class SimulationMonteCarloDraws {
      * @param currentTimeStep used for solar data generation
      * @return The graph in which renewable production has been set.
      */
-    public Graph randomizeRenewableGenerator(Graph graph, int currentTimeStep) {
+    public Graph randomizeRenewableGenerator(Graph graph, int currentTimeStep, int month) {
         MontoCarloHelper monteCarloHelper = new MontoCarloHelper();
 
         for (int j = 0; j < graph.getNodeList().length - 1; j++) {
@@ -140,7 +140,7 @@ public class SimulationMonteCarloDraws {
                         double eccentricityCorrFactor = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "eccentricity");
                         double langitude = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "langitude"); ;
                         double longitude = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "longitude"); ;
-                        int month = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "month"); ;
+                        //int month = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "month"); ;
                         int year = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "year"); ;
 
                         GregorianCalendar calendar = new GregorianCalendar(year, month, 14, currentTimeStep, 0);
@@ -153,7 +153,7 @@ public class SimulationMonteCarloDraws {
                         // We want to find the maximum Extraterrestial irradiance of the day.
                         double extratIrradianceMax = 0;
                         for (int i = 0; i < 24; i++) {
-                            GregorianCalendar cal = new GregorianCalendar(2016, month, 14, i, 0);
+                            GregorianCalendar cal = new GregorianCalendar(year, month, 14, i, 0);
                             AzimuthZenithAngle azimuthZenithAgnle = Grena3.calculateSolarPosition(cal, langitude, longitude,
                                     deltaT);
                             double zenithAngle = azimuthZenithAgnle.getZenithAngle();
