@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -39,6 +40,7 @@ public class Parser {
 
 		try {
 			scanner = new Scanner(Paths.get(path));
+			scanner.useLocale(Locale.US);
 			scanner.useDelimiter(",|\\n");
 		}catch (IOException e){
 			e.printStackTrace();
@@ -267,7 +269,7 @@ public class Parser {
 			}else{
 				scanner = new Scanner(Paths.get(path));
 			}
-
+			scanner.useLocale(Locale.US);
 			scanner.useDelimiter(",|\\n");
 
 			while(scanner.hasNext()){
@@ -437,6 +439,7 @@ public class Parser {
 		Scanner scanner;
 		try {
 			scanner = new Scanner(Paths.get(path, new String[0]));
+			scanner.useLocale(Locale.US);
 		} catch (IOException e1) {
 			System.out.println("ERROR: wrong sol data input file path");
 			return null;
@@ -445,6 +448,7 @@ public class Parser {
 		scanner.useDelimiter(System.getProperty("line.separator"));
 		while (goon) {
 			Scanner linescanner = new Scanner(scanner.next());
+			scanner.useLocale(Locale.US);
 			int i = linescanner.nextInt();
 			int j = linescanner.nextInt();
 			double flow = Float.parseFloat(linescanner.next());

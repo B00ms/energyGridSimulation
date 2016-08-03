@@ -46,7 +46,7 @@ public class ConfigCollection {
 		conventionalGenerator 	= conf.getConfig("conventionalGenerator");
 		hydroelectricGenerator 	= conf.getConfig("hydroelectricGenerator");
 		loadCurves 				= conf.getConfig("conventionalGenerator").getConfig("load-curves");
-		
+
 		oilOffer 				= conf.getConfig("conventionalGenerator").getConfig("oilOffer");
 		coalOffer   			= conf.getConfig("conventionalGenerator").getConfig("coalOffer");
 		nuclearOffer			= conf.getConfig("conventionalGenerator").getConfig("nuclearOffer");
@@ -56,7 +56,7 @@ public class ConfigCollection {
 		solarGenerator 			= conf.getConfig("solarGenerator");
 		storage 				= conf.getConfig("Storage");
 		glpsol 					= conf.getConfig("glpsol-config");
-		
+
 	}
 
 	public String getOS(){

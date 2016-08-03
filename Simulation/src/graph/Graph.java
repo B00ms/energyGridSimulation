@@ -2,6 +2,7 @@ package graph;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.Locale;
 import java.util.Scanner;
 
 import model.Consumer;
@@ -401,6 +402,7 @@ public class Graph implements Cloneable {
 		try {
 			scanner = new Scanner(Paths.get(path));
 			scanner.useDelimiter(",");
+			scanner.useLocale(Locale.US);
 
 			Scanner lineScanner;
 
@@ -408,6 +410,7 @@ public class Graph implements Cloneable {
 				String line = scanner.nextLine();
 				lineScanner = new Scanner(line);
 				lineScanner.useDelimiter(",|\n");
+				lineScanner.useLocale(Locale.US);
 				if (line.isEmpty()){
 					lineScanner.close();
 					break;
