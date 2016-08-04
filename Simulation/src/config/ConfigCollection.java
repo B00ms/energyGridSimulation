@@ -29,7 +29,7 @@ public class ConfigCollection {
 	private boolean osxCheck;
 
 	public enum CONFIGURATION_TYPE { GENERAL, MONTE_CARLO, CONVENTIONAL_GENERATOR, HYDROELECTRIC_GENERATOR,
-			LOAD_CURVES, OIL_OFFER, COAL_OFFER, NUCLEAR_OFFER, HYRDO_OFFER, PRODUCTION, WIND_GENERATOR, SOLAR_GENERATOR, STORAGE, GLPSOL};
+			LOAD_CURVES, OIL_OFFER, COAL_OFFER, NUCLEAR_OFFER, HYRDO_OFFER, PRODUCTION, WIND_GENERATOR, SOLAR_GENERATOR, STORAGE, GLPSOL, CLEANUPHOURLY};
 
 
 	public ConfigCollection(){
@@ -218,5 +218,17 @@ public class ConfigCollection {
 
 		return confValue;
 
+	}
+
+
+	public Boolean getConfigBooleanValue(CONFIGURATION_TYPE configType, String configurationKeyWord ){
+		boolean confValue = false;
+		switch (configType) {
+			case CLEANUPHOURLY:
+				confValue = generalConfig.getBoolean(configurationKeyWord);
+				break;
+		}
+
+		return confValue;
 	}
 }

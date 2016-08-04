@@ -19,6 +19,7 @@ import filehandler.OutputFileHandler;
 import filehandler.Parser;
 import graph.Graph;
 import model.*;
+import org.apache.commons.io.FileUtils;
 import simulation.*;
 
 public class Main {
@@ -38,6 +39,9 @@ public class Main {
 		Graph graph;
 
 		graph = parser.parseData(config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "input-file"));
+
+		// set cleanup parameters
+		boolean cleanupHourlyOutput = config.getConfigBooleanValue(CONFIGURATION_TYPE.CLEANUPHOURLY, "cleanupHourlyOutput");
 
 		// load general config
 		String modelNight = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "modelnight-file");
@@ -72,6 +76,7 @@ public class Main {
 
 		Iterator<String> iterator = seasons.keySet().iterator();
 
+		// run simulation for each season
 		while(iterator.hasNext()){
 			String season = (String) iterator.next();
 			Float[]expectedHourlyLoad = parser.parseExpectedHourlyLoad(seasons.get(season));
@@ -120,6 +125,8 @@ public class Main {
 				// set real load for consumers using Monte carlo draws for the entire day.
 				realSimulationGraph = ProductionLoadHandler.setRealLoad(realSimulationGraph);
 
+
+
 				while (currentTimeStep < realSimulationGraph .length) {
 					System.out.println();
 					System.out.println("TimeStep: "+ currentTimeStep);
@@ -162,12 +169,21 @@ public class Main {
 
 						StringBuffer output = new StringBuffer();
 						BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream())); // Using the new input file, we apply the model to solve the cost function given the new state of the grid.
+						BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 						String line = "";
 
 						while ((line = reader.readLine()) != null) {
+							System.out.println(line);
 							output.append(String.valueOf(line) + "\n");
 						}
-						System.out.print(output);
+
+						// read any errors from the attempted command
+						System.out.println("Here is the standard error of the command (if any):\n");
+						while ((line = stdError.readLine()) != null) {
+							System.out.println(line);
+						}
+
+//						System.out.print(output);
 						proc.getOutputStream().close();
 						proc.getInputStream().close();
 						proc.getErrorStream().close();
@@ -224,6 +240,26 @@ public class Main {
 				if(numOfSim == 0)
 					EENSConvergence = false;
 
+
+				// create output file format for Laura
+				String compressedDailyOutputFilename = "grid_"+numOfSim+".txt";
+				String compressedDailySocFilename = "soc_"+numOfSim+".txt";
+				String hourlyOutputPath = dirpath +season  + "/simRes" + numOfSim + "";
+				String dailyOutputPath = dirpath +season  + "/";
+
+				outputFileHandler.compressOutputFiles(hourlyOutputPath, dailyOutputPath, compressedDailyOutputFilename, graph.getEdges().length);
+				outputFileHandler.compressSocFiles(hourlyOutputPath, dailyOutputPath, compressedDailySocFilename, graph.getNstorage());
+
+				if(cleanupHourlyOutput){
+					// remove simRes folders
+					try {
+						File hourlyOutputFolder = new File(solutionPath);
+						FileUtils.deleteDirectory(hourlyOutputFolder);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
 				numOfSim++; // go to next day
 			}
 			numOfSim = 0;
@@ -238,4 +274,18 @@ public class Main {
 		System.out.println("Real EENS: "+ realEENS);
 	}
 
+
+	public static void deleteFolder(File folder) {
+		File[] files = folder.listFiles();
+		if(files!=null) { //some JVMs return null for empty dirs
+			for(File f: files) {
+				if(f.isDirectory()) {
+					deleteFolder(f);
+				} else {
+					f.delete();
+				}
+			}
+		}
+		folder.delete();
+	}
 }
