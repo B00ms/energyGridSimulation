@@ -284,29 +284,46 @@ public class OutputFileHandler {
     public void outputDailyEENS(String daily_path, double dailyEens){
 
         try {
-            PrintWriter writer = new PrintWriter(daily_path + "/daily_eens.txt", "UTF-8");
+
+            File file =new File(daily_path + "/daily_eens.txt");
+            if(!file.exists()){
+                file.createNewFile();
+            }
+
+            FileWriter fw = new FileWriter(file,true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter writer = new PrintWriter(bw);
             writer.println(dailyEens);
-            writer.flush();
             writer.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
     }
 
     public void outputRealEENS(String daily_path, double realEens) {
         try {
-            PrintWriter writer = new PrintWriter(daily_path + "/real_eens.txt", "UTF-8");
+
+            File file =new File(daily_path + "/real_eens.txt");
+            if(!file.exists()){
+                file.createNewFile();
+            }
+
+            FileWriter fw = new FileWriter(file,true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter writer = new PrintWriter(bw);
             writer.println(realEens);
-            writer.flush();
             writer.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
