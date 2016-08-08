@@ -76,6 +76,14 @@ public class Main {
 
 		Iterator<String> iterator = seasons.keySet().iterator();
 
+		// cleanup old output files
+		try {
+			File outputFolder = new File(dirpath);
+			FileUtils.deleteDirectory(outputFolder);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		// run simulation for each season
 		while(iterator.hasNext()){
 			String season = (String) iterator.next();
@@ -124,7 +132,6 @@ public class Main {
 
 				// set real load for consumers using Monte carlo draws for the entire day.
 				realSimulationGraph = ProductionLoadHandler.setRealLoad(realSimulationGraph);
-
 
 
 				while (currentTimeStep < realSimulationGraph .length) {
@@ -226,13 +233,12 @@ public class Main {
 					double hourlyEENS = eensHandler.calculateHourlyEENS(realSimulationGraph[currentTimeStep]);
 					dailyEENS += hourlyEENS;
 
+
+
 					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim, hourlyEENS, season);
 
 					currentTimeStep++;
 				}
-
-				// handle storage.txt output
-				//outputFileHandler.writeStorageTxtFile(realSimulationGraph, dirpath, solutionPath);
 
 				listEENS.add(dailyEENS);
 				System.out.println("Daily EENS: " + dailyEENS);
@@ -242,17 +248,21 @@ public class Main {
 
 
 				// create output file format for Laura
-				String compressedDailyOutputFilename = "grid_"+numOfSim+".txt";
+				String compressedDailyOutputFilename = "line_"+numOfSim+".txt";
 				String compressedDailySocFilename = "soc_"+numOfSim+".txt";
-				String hourlyOutputPath = dirpath +season  + "/simRes" + numOfSim + "";
-				String dailyOutputPath = dirpath +season  + "/";
+				String hourlyOutputPath = dirpath + season  + "/simRes" + numOfSim + "";
+				String dailyOutputPath = dirpath + season  + "/";
 
 				outputFileHandler.compressOutputFiles(hourlyOutputPath, dailyOutputPath, compressedDailyOutputFilename, graph.getEdges().length);
 				outputFileHandler.compressSocFiles(hourlyOutputPath, dailyOutputPath, compressedDailySocFilename, graph.getNstorage());
+				outputFileHandler.outputDailyEENS(dailyOutputPath, dailyEENS);
+
+//				outputFileHandler.compressProductionLoad(dailyOutputPath, realSimulationGraph, expectedSimulationGraph);
 
 				if(cleanupHourlyOutput){
 					// remove simRes folders
 					try {
+
 						File hourlyOutputFolder = new File(solutionPath);
 						FileUtils.deleteDirectory(hourlyOutputFolder);
 					} catch (IOException e) {
@@ -264,14 +274,20 @@ public class Main {
 			}
 			numOfSim = 0;
 			EENSConvergence = false;
+
+			double realEENS = EENSHandler.calculateRealEENS(listEENS);
+			String dailyOutputPath = dirpath + season  + "/";
+			outputFileHandler.outputRealEENS(dailyOutputPath, realEENS);
+			System.out.println("Real EENS: "+ realEENS);
+
+			// go to next season
 		}
 
 		long endtime = System.nanoTime();
 		long duration = endtime - starttime;
-		double realEENS = EENSHandler.calculateRealEENS(listEENS);
 
 		System.out.println("Time used:" + duration / 1000000 + " millisecond");
-		System.out.println("Real EENS: "+ realEENS);
+
 	}
 
 

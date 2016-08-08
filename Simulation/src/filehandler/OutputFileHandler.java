@@ -68,30 +68,6 @@ public class OutputFileHandler {
         }
     }
 
-    public void writeOutputDescFile(String path){
-
-        String filename = "grid_desc.txt";
-        try {
-            PrintWriter writer = new PrintWriter(path+"/"+filename, "UTF-8");
-//            writer.print("#,#,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23");
-            writer.print("#,#,hourly flow");
-            writer.println();
-
-            writer.print("#,#,hourly centrality");
-            writer.println();
-
-            writer.print("#,#,hourly %");
-            writer.println();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
     public void compressOutputFiles(String hourly_path, String daily_path, String filename, int edge_count){
 
         OutputFileValues outputValues = this.parseOutputFiles(hourly_path, edge_count);
@@ -100,7 +76,7 @@ public class OutputFileHandler {
             PrintWriter writer = new PrintWriter(daily_path+"/"+filename, "UTF-8");
 
             // write flows
-            writer.println("## "+edge_count+": #,#,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23");
+            writer.println("# flows: "+edge_count+", 26");
             for(int i=0; i < edge_count; i++){
                 int node = outputValues.getListNode().get(i);
                 int innernode = outputValues.getListInnerNode().get(i);
@@ -116,7 +92,25 @@ public class OutputFileHandler {
             }
 
             writer.println();
-            writer.println("## "+edge_count+": #,#,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23");
+            writer.println("# utilization idx: "+edge_count+", 26");
+            // write percentage
+            for(int i=0; i < edge_count; i++){
+                int node = outputValues.getListNode().get(i);
+                int innernode = outputValues.getListInnerNode().get(i);
+                writer.print(node+","+innernode);
+
+                List<Float> flowList = outputValues.getListUtilization().get(i);
+                for(int j = 0; j < flowList.size(); j++){
+                    float list_val = flowList.get(j);
+                    writer.print(","+list_val);
+                }
+                writer.println();
+                writer.flush();
+            }
+
+            writer.println();
+//            writer.println("## "+edge_count+": #,#,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23");
+            writer.println("# centrality idx: "+edge_count+", 26");
             // write centrality index
             for(int i=0; i < edge_count; i++){
                 int node = outputValues.getListNode().get(i);
@@ -132,24 +126,8 @@ public class OutputFileHandler {
                 writer.flush();
             }
 
-            writer.println();
-            writer.println("## "+edge_count+": #,#,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23");
-            // write percentage
-            for(int i=0; i < edge_count; i++){
-                int node = outputValues.getListNode().get(i);
-                int innernode = outputValues.getListInnerNode().get(i);
-                writer.print(node+","+innernode);
 
-                List<Float> flowList = outputValues.getListPercentage().get(i);
-                for(int j = 0; j < flowList.size(); j++){
-                    float list_val = flowList.get(j);
-                    writer.print(","+list_val);
-                }
-                writer.println();
-                writer.flush();
-            }
-
-            // write SoC
+            writer.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -164,7 +142,7 @@ public class OutputFileHandler {
         try {
             PrintWriter writer = new PrintWriter(daily_path + "/" + filename, "UTF-8");
 
-            writer.println("## "+nstorage+": #,#,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23");
+            writer.println("# SoC: "+nstorage+", 26");
             // write soc
             for(int i=0; i < nstorage; i++){
                 int node = storageSoC.getListNode().get(i);
@@ -179,6 +157,8 @@ public class OutputFileHandler {
                 writer.println();
                 writer.flush();
             }
+
+            writer.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -218,12 +198,12 @@ public class OutputFileHandler {
                         }
 
                         float flow = linescanner.nextFloat();
+                        float utilization_index = linescanner.nextFloat();
                         float cent_index = linescanner.nextFloat();
-                        float percentage = linescanner.nextFloat();
 
                         outputValues.addFlowToList(j, flow);
+                        outputValues.addUtilizationToList(j, utilization_index);
                         outputValues.addCentralityToList(j, cent_index);
-                        outputValues.addPercentageToList(j, percentage);
 
                         linescanner.close();
                         j++;
@@ -283,4 +263,53 @@ public class OutputFileHandler {
 
         return socValues;
     }
+
+
+
+    /**
+     *
+     */
+    public void compressProductionLoad(String daily_path, Graph[] realSimulationGraph, Graph[] expectedSimulationGraph){
+
+
+        // print scheduled production
+
+        // print expected production
+
+        // print expected production
+
+
+    }
+
+    public void outputDailyEENS(String daily_path, double dailyEens){
+
+        try {
+            PrintWriter writer = new PrintWriter(daily_path + "/daily_eens.txt", "UTF-8");
+            writer.println(dailyEens);
+            writer.flush();
+            writer.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void outputRealEENS(String daily_path, double realEens) {
+        try {
+            PrintWriter writer = new PrintWriter(daily_path + "/real_eens.txt", "UTF-8");
+            writer.println(realEens);
+            writer.flush();
+            writer.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }
