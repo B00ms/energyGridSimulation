@@ -10,7 +10,7 @@ public class OutputFileValues {
 
     private List<List<Float>> listFlow;
     private List<List<Float>> listCentrality;
-    private List<List<Float>> listPercentage;
+    private List<List<Float>> listUtilization;
 
     public OutputFileValues(int nodecount){
         this.listNode = new ArrayList(nodecount);
@@ -18,12 +18,12 @@ public class OutputFileValues {
 
         this.listFlow = new ArrayList<List<Float>>(nodecount);
         this.listCentrality = new ArrayList<List<Float>>(nodecount);
-        this.listPercentage = new ArrayList<List<Float>>(nodecount);
+        this.listUtilization = new ArrayList<List<Float>>(nodecount);
 
         for (int i = 0; i < nodecount; i++){
             listFlow.add(i, new ArrayList<>());
             listCentrality.add(i, new ArrayList<>());
-            listPercentage.add(i, new ArrayList<>());
+            listUtilization.add(i, new ArrayList<>());
         }
     }
 
@@ -43,8 +43,8 @@ public class OutputFileValues {
         this.listCentrality.get(line).add(cent);
     }
 
-    public void addPercentageToList(int line, float perc){
-        this.listPercentage.get(line).add(perc);
+    public void addUtilizationToList(int line, float perc){
+        this.listUtilization.get(line).add(perc);
     }
 
 
@@ -64,8 +64,8 @@ public class OutputFileValues {
         return this.listCentrality;
     }
 
-    public List<List<Float>> getListPercentage(){
-        return this.listPercentage;
+    public List<List<Float>> getListUtilization(){
+        return this.listUtilization;
     }
 
 
