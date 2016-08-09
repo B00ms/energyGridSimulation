@@ -369,6 +369,7 @@ public class DataModelPrint {
 				double currentCharge = storage.getCurrentSoC();
 				double minSoC = storage.getMinimumCharge();
 				if(currentCharge - (flowLimit * storage.getChargeEfficiency()) >= minSoC) {
+					//System.out.println((float)((Storage) g.getNodeList()[i]).getFlowLimit()+"\n");
 					if (counter != g.getNstorage()) {
 						strBuilder.append(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowLimit()+"\n");
 					} else {
@@ -376,6 +377,7 @@ public class DataModelPrint {
 					}
 				} else{
 					flowLimit = minSoC - currentCharge;
+					//System.out.println(flowLimit);
 					if (counter != g.getNstorage()) {
 						strBuilder.append(i + " " + (float)flowLimit+"\n");
 					}else {

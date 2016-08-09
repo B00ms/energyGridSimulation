@@ -134,7 +134,7 @@ public class Storage extends Node {
 		double outgoingFlow = dischargedEnergy * dischargeEfficiency; //Actual flow we put into the network, should equal charge
 		double newSoC = currentSoC - dischargedEnergy;
 		double tempCurrentCharge = newSoC;
-		currentSoC = newSoC;
+		//currentSoC = newSoC;
 		flowStorage = charge;
 
 		if(newSoC < minimumSoC){
