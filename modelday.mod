@@ -72,6 +72,10 @@ subject to flowcons { i in inner } :
 subject to setRewProduction { i in rgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= rewproduction[i];
 
+# renewable production constraint
+subject to minRewProduction { i in rgen } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, >= 0;
+
 # traditional production constraint
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
@@ -80,12 +84,9 @@ subject to genproduction { i in tgen } :
 subject to flowfromstorageCharging { i in storage } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, >= flowmaxcharge[i];
 	
-
-
 subject to flowfromstorageDischarging { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowmaxdischarge[i];
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= abs(flowmaxdischarge[i]);
 	
-
 
 #The amount of energy send to a consumer should be lower or equal to the load of the consumer
 subject to loadfix {i in consumers} :
