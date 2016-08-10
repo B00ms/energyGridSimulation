@@ -192,7 +192,7 @@ public class Main {
 						if (graph.getNstorage() > 0) {
 
 							if (model == modelDay)
-								//realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
+								realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
 
 							if (currentTimeStep < realSimulationGraph.length-1)
 								realSimulationGraph[currentTimeStep + 1] = simulationState.updateStorages(realSimulationGraph[currentTimeStep],

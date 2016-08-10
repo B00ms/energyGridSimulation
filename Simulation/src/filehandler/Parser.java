@@ -458,7 +458,7 @@ public class Parser {
 					Storage storage = (Storage) g.getNodeList()[y];
 					if(flow > 0)
 						storage.discharge(Math.abs(flow));
-					 else
+					 else if (storage.getCurrentSoC() < storage.getMaximumCharge())
 						storage.charge(Math.abs(flow));
 
 					g.getNodeList()[y] = storage;
