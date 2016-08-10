@@ -452,14 +452,14 @@ public class Graph implements Cloneable {
 			if(nodeClass == RenewableGenerator.class && (nodeList[i]).getNodeId() == nodeId){
 				((RenewableGenerator)graph.getNodeList()[i]).setProduction(flow);
 			} else if(nodeClass == Storage.class && (nodeList[i]).getNodeId() == nodeId){
-				//((Storage)graph.getNodeList()[i]).setFlow(flow);
+				((Storage)graph.getNodeList()[i]).setFlow(flow);
 				// update the status of the storage node
 				if(flow<0){
-					//((Storage)nodeList[i]).setStatus(Storage.StorageStatus.CHARGING);
+					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.CHARGING);
 				}else if(flow>0){
-					//((Storage)nodeList[i]).setStatus(Storage.StorageStatus.DISCHARGING);
+					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.DISCHARGING);
 				}else{
-					//((Storage)nodeList[i]).setStatus(Storage.StorageStatus.NEUTRAL);
+					((Storage)nodeList[i]).setStatus(Storage.StorageStatus.NEUTRAL);
 				}
 			}
 			else if(nodeClass == Consumer.class && nodeList[i].getNodeId() == nodeId){
