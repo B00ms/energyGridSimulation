@@ -49,8 +49,7 @@ public class StorageHandler {
 	return plannedTimestepsGraph;
 	}
 
-	public Graph planStorageCharging(Graph graph, int timestep){
-		//TODO: use the excess renewable production to charge storage beyong 50% pmax.
+	public Graph planStorageCharging(Graph graph, int timestep, boolean executePlan){
 	    int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
 	    int endChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "endChargeTime");
 
@@ -62,6 +61,8 @@ public class StorageHandler {
 		    double realLoad = plh.calculateLoad(graph);
 
 		    double remainRenewableProd = renewableProduction - (realLoad - conventionalProduction);
+		    System.out.println(remainRenewableProd);
+
 
 	    	for(int i=0; i < graph.getNodeList().length; i++){
 	    		if(graph.getNodeList()[i].getClass() == Storage.class){
@@ -70,7 +71,8 @@ public class StorageHandler {
 	    			//Set storage to charge and substract the flow from charging from renewable production.
 	    			double oldSoC = storage.getCurrentSoC();
     				remainRenewableProd -= Math.abs(storage.charge(remainRenewableProd));
-    				storage.setCurrentSoC(oldSoC);
+    				if (executePlan == false)
+    					storage.setCurrentSoC(oldSoC);
     				graph.getNodeList()[i] = storage;
 	    			} else
 	    				break;
@@ -95,6 +97,7 @@ public class StorageHandler {
             if(graph.getNodeList()[i].getClass() == Storage.class){
             	Storage storage = (Storage)graph.getNodeList()[i];
                 if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentSoC()){
+                	double test = ((Storage) graph.getNodeList()[i]).getFlow();
                     sumLoads += ((Storage)graph.getNodeList()[i]).charge(Math.abs(((Storage) graph.getNodeList()[i]).getFlow()));
                 }
             }

@@ -139,7 +139,7 @@ public class Main {
 					realSimulationGraph [currentTimeStep] = simulationMonteCarloDraws.randomizeGridState(realSimulationGraph[currentTimeStep], currentTimeStep, month);
 
 					//Plan real storage charging using excess of renewable production to charge past 50% max SoC.x
-					storageHandler.planStorageCharging(realSimulationGraph[currentTimeStep], currentTimeStep);
+					storageHandler.planStorageCharging(realSimulationGraph[currentTimeStep], currentTimeStep, false);
 
 					//Attempt to balance production and load  for a single hour.
 					realSimulationGraph[currentTimeStep] = gridBalancer.checkGridEquilibrium(realSimulationGraph[currentTimeStep], currentTimeStep);
@@ -186,19 +186,23 @@ public class Main {
 						proc.destroy();
 						reader.close();
 
+						//Update flow for consumers and renewable generators
 						realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
 
-
-						// write output to solution file
-						outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
-
 						if (graph.getNstorage() > 0) {
-							realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
+
+							if (model == modelDay)
+								realSimulationGraph[currentTimeStep] = parser.parseUpdates(String.valueOf(dirpath) + "update.txt", realSimulationGraph[currentTimeStep]); // Keeps track of the new state for storages.
 
 							if (currentTimeStep < realSimulationGraph.length-1)
 								realSimulationGraph[currentTimeStep + 1] = simulationState.updateStorages(realSimulationGraph[currentTimeStep],
 									realSimulationGraph[currentTimeStep + 1]); // Apply the new state of the storage for the next time step.
 						}
+
+
+						// write output to solution file
+						outputFileHandler.writeModelOutputFiles(dirpath, solutionPath, currentTimeStep);
+
 					} catch (IOException | InterruptedException e) {
 						e.printStackTrace();
 						System.exit(0);

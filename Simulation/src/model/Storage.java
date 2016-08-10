@@ -110,12 +110,17 @@ public class Storage extends Node {
 		}
 
 		if(flowComingIn > flowLimit){
-			newSoC = currentSoC + flowLimit;
+			newSoC = currentSoC + (flowLimit*chargeEfficiency);
 			flowComingIn = flowLimit;
 		}
 		if(newSoC <= maximumSoC && flowComingIn <= flowLimit){
 			currentSoC = newSoC;
 			flowStorage = flowComingIn * -1; //Make flow negative because the edge goes Storage->innnerNode.
+		} else{
+			currentSoC = maximumSoC;
+			flowComingIn = (maximumSoC - currentSoC) / chargeEfficiency;
+			flowComingIn = flowComingIn * -1;
+			flowStorage = flowComingIn;
 		}
 		//System.out.print("flow storage: " + flowStorage+" ");
 		//System.out.println("SoC storage: " + currentSoC);

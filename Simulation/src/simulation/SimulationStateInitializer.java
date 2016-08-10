@@ -54,7 +54,7 @@ public class SimulationStateInitializer {
 	}
 
 	/**
-	 * Update storage nodes
+	 * Copies the state of storage to the new graph.
 	 * @param oldg
 	 * @param newg
 	 * @return

@@ -37,7 +37,8 @@ public class GridBalancer {
 
         boolean dischargeAllowed = true;
         if(timestep >= beginTime || timestep <= endTime){
-            grid = storageHandler.chargeStorage(grid);
+            //grid = storageHandler.chargeStorage(grid);
+            grid = storageHandler.planStorageCharging(grid, timestep, true);
             dischargeAllowed = false;
         }
         realLoad = productionLoadHandler.calculateLoad(grid);

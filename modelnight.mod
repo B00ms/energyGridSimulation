@@ -70,6 +70,10 @@ subject to flowcons { i in inner } :
 # renewable production constraint
 subject to setRewProduction { i in rgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= rewproduction[i];
+	
+# renewable production constraint
+subject to minRewProduction { i in rgen } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, >= 0;
 
 # traditional production constraint
 subject to genproduction { i in tgen } :
