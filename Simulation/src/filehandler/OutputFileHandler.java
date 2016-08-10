@@ -329,4 +329,11 @@ public class OutputFileHandler {
 
     }
 
+//    public void outputSoC(String daily_path, String filename, Graph[] graph){
+//
+////        graph[1].
+//
+//
+//    }
+
 }

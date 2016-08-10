@@ -245,6 +245,7 @@ public class Main {
 
 				outputFileHandler.compressOutputFiles(hourlyOutputPath, dailyOutputPath, compressedDailyOutputFilename, graph.getEdges().length);
 				outputFileHandler.compressSocFiles(hourlyOutputPath, dailyOutputPath, compressedDailySocFilename, graph.getNstorage());
+//				outputFileHandler.outputSoC(dailyOutputPath, compressedDailySocFilename, graph);
 				outputFileHandler.outputDailyEENS(dailyOutputPath, dailyEENS);
 
 //				outputFileHandler.compressProductionLoad(dailyOutputPath, realSimulationGraph, expectedSimulationGraph);
