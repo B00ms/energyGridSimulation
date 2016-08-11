@@ -172,10 +172,9 @@ public class SimulationMonteCarloDraws {
                             irradiance = sMax * Math.sin(Math.PI * (currentTimeStep - sunrise) / (sunset - sunrise));
 
                         double efficiency = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "panelEfficiency");
-                        // surface array of panels in m², efficiency, irradiance of
-                        // panels on the horizontal plane.
-                        double production = 45 * efficiency * irradiance;
-
+                        // surface array of panels in m², efficiency, irradiance of panels on the horizontal plane.
+                        double production = 550000 * efficiency * irradiance;
+                        production = production /1000000;
                         ((RenewableGenerator) graph.getNodeList()[j]).setProduction(production);
                         // System.out.println("sunRise:" + sunrise + " currentTime:" + currentTimeStep + " sunset:" + sunset + " production:" + production + " max irradiance:" + extratIrradianceMax + " MC draw:" + mcDraw + " nodeId:" + ((RewGenerator)graph.getNodeList()[j]).getNodeId());
 

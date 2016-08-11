@@ -22,6 +22,7 @@ import model.*;
 import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 import model.Generator.GENERATOR_TYPE;
+import model.Storage.StorageStatus;
 
 public class Parser {
 	private ConfigCollection config = new ConfigCollection();
@@ -435,7 +436,6 @@ public class Parser {
 	 * @return updated graph at timestep i
 	 */
 	public Graph parseUpdates(String path, Graph g) {
-		boolean goon = true;
 		Scanner scanner;
 		try {
 			scanner = new Scanner(Paths.get(path, new String[0]));
@@ -446,7 +446,7 @@ public class Parser {
 		}
 
 		scanner.useDelimiter(System.getProperty("line.separator"));
-		while (goon) {
+		while (scanner.hasNext()) {
 			Scanner linescanner = new Scanner(scanner.next());
 			scanner.useLocale(Locale.US);
 			int i = linescanner.nextInt();
@@ -454,18 +454,24 @@ public class Parser {
 			double flow = Float.parseFloat(linescanner.next());
 			g.getEdges()[j].setFlow(flow);
 			for(int y = 0; y < g.getNodeList().length; y++){
-				if(g.getNodeList()[y].getClass() == Storage.class){
+				if(g.getNodeList()[y].getClass() == Storage.class && g.getNodeList()[y].getNodeId() == i){
 					Storage storage = (Storage) g.getNodeList()[y];
-					if(flow > 0)
+					if(flow > 0){
 						storage.discharge(Math.abs(flow));
-					 else if (storage.getCurrentSoC() < storage.getMaximumCharge())
+						g.getNodeList()[y] = storage;
+						break;
+					}else if (flow < 0){
 						storage.charge(Math.abs(flow));
-
-					g.getNodeList()[y] = storage;
+						g.getNodeList()[y] = storage;
+						break;
+					}else{
+						storage.setStatus(StorageStatus.NEUTRAL);
+						storage.setFlow(flow);
+						g.getNodeList()[y] = storage;
+						break;
+					}
 				}
 			}
-
-			goon = scanner.hasNext();
 			linescanner.close();
 		}
 		scanner.close();

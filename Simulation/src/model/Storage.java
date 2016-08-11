@@ -102,7 +102,7 @@ public class Storage extends Node {
 	public double charge(double flowComingIn) {
 		status = StorageStatus.CHARGING;
 		double newSoC = currentSoC + (flowComingIn * chargeEfficiency);
-		flowLimit = (chMax / chargeEfficiency);
+		flowLimit = (chMax * chargeEfficiency);
 
 		if (newSoC > maximumSoC){
 			newSoC = maximumSoC;
@@ -150,7 +150,7 @@ public class Storage extends Node {
 		}
 
 		if(outgoingFlow > flowLimit){
-			double minSoC = currentSoC - flowLimit;
+			double minSoC = currentSoC - flowLimit*dischargeEfficiency;
 			outgoingFlow = flowLimit;
 			tempCurrentCharge = minSoC;
 			flowStorage = outgoingFlow;

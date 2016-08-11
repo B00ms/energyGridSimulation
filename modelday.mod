@@ -74,7 +74,7 @@ subject to genproduction { i in tgen } :
 
 #min production value storage
 subject to flowfromstorageDischarging { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowmaxdischarge[i];
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowmaxdischarge[i];
 
 #max production value storage
 subject to flowfromstorageCharging { i in storage } :
@@ -130,7 +130,7 @@ printf : "\n" >> "sol" & outname & ".txt";
 printf {i in inner} : "I,%d,%.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor) >> "sol" & outname & ".txt";
 printf : "\n" >> "sol" & outname & ".txt";
 
-printf {i in storage} : "Stor,%d,%.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor) >> "sol" & outname & ".txt";
+printf {i in storage} : "Stor,%d,%.4f,%4f, %4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor), flowmaxdischarge[i], flowmaxcharge[i] >> "sol" & outname & ".txt";
 
 printf : "\n" >> "sol" & outname & ".txt";
 

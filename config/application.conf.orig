@@ -1,19 +1,23 @@
 {
   general :{
+<<<<<<< HEAD
     modelday-file: "../modelday.mod",
     modelnight-file: "../modelnight.mod",
+=======
+    model-file-day: "../model_day.mod",
+    model-file-night: "../model_night.mod",
+>>>>>>> 908c89c6da60e95e9a0b944cbe85b1d11b251849
     input-file: "../network.csv",
     output-folder: "../output/",
     graphstate-folder: "../graphstate/",
-    simulation-runs: 1000,
+    simulation-runs: 5,
     numberOfTimeSteps : 24,
     dailyMaxLoadDemand : 9716, # according to season
     durationOfEachStep : 1,
     costLoadShedding : 3000,
     costCurtailment : 1500, #original was 200.0F
     efficiency: 75,
-    EENSConvergenceThreshold: 100,
-    cleanupHourlyOutput: false,
+    EENSConvergenceThreshold: 100
   },
   monte-carlo : {
     //For weibull distribution: alpha = 1.6, beta = 8
@@ -31,10 +35,8 @@
 	  mttr: 60,
     disableCheapGeneratorThresholdMaxP: 60
     load-curves :{
-		spring : "Expected Load spring.csv"
-		summer : "Expected Load summer.csv",
-		fall : "Expected Load fall.csv"
-		winter : "Expected Load winter.csv"
+      summer : "Expected Load summer.csv",
+//      winter : "Expected Load summer.csv"
     },
     oilOffer :{
       percentageFirstIncrease : 0.4,
@@ -85,6 +87,7 @@
     eccentricity: 1.033, // Eccentricity correction Factor
     langitude: 53.218705, //Position of solar parks
     longitude: 6.567793,
+    month: 6,
     year: 2016
   },
   Storage :{
@@ -96,7 +99,7 @@
   glpsol-config :{
     outpath1: "input",
     outpath2: ".mod",
-    solpath1: "glpsol -d ", // adjust this to the correct version of glpsol <= 4.52
+    solpath1: "glpsol -d ",
     solpath2: " -m "
   }
 }

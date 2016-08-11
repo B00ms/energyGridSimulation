@@ -228,9 +228,9 @@ public class DataModelPrint {
 			for (int i = 0; i < g.getNodeList().length; i++) {
 				if(g.getNodeList()[i].getClass() == RenewableGenerator.class){
 					counter++;
-					if (counter != g.getNrGenerators())
+					if (counter != g.getNrGenerators()){
 						strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction()+"\n");
-					else
+					}else
 						strBuilder.append(i + " " + (float)((RenewableGenerator) g.getNodeList()[i]).getProduction() + ";\n");
 				}
 			}
