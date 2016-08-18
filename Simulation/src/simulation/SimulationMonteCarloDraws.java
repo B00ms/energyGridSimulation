@@ -154,13 +154,10 @@ public class SimulationMonteCarloDraws {
                         double extratIrradianceMax = 0;
                         for (int i = 0; i < 24; i++) {
                             GregorianCalendar cal = new GregorianCalendar(year, month, 14, i, 0);
-                            AzimuthZenithAngle azimuthZenithAgnle = Grena3.calculateSolarPosition(cal, langitude, longitude,
-                                    deltaT);
+                            AzimuthZenithAngle azimuthZenithAgnle = Grena3.calculateSolarPosition(cal, langitude, longitude, deltaT);
                             double zenithAngle = azimuthZenithAgnle.getZenithAngle();
 
-                            double extratIrradiance = irradianceConstant * eccentricityCorrFactor
-                                    * Math.cos((2 * Math.PI * calendar.get(Calendar.DAY_OF_YEAR)) / 365)
-                                    * Math.cos(zenithAngle);
+                            double extratIrradiance = irradianceConstant * ( 1 + eccentricityCorrFactor * Math.cos((2 * Math.PI * calendar.get(Calendar.DAY_OF_YEAR)) / 365)) * Math.cos(zenithAngle);
                             if (extratIrradiance > extratIrradianceMax)
                                 extratIrradianceMax = extratIrradiance;
                         }

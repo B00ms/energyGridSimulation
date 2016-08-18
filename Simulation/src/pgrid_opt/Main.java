@@ -4,12 +4,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.swing.event.InternalFrameAdapter;
 
 import com.rits.cloning.Cloner;
 import config.ConfigCollection;
@@ -31,6 +35,8 @@ public class Main {
 	private static SimulationMonteCarloDraws simulationMonteCarloDraws = new SimulationMonteCarloDraws();
 	private static GridBalancer gridBalancer = new GridBalancer();
 	private static OutputFileHandler outputFileHandler = new OutputFileHandler();
+	private static boolean infeasible = false;
+	private static int infeasibleCounter = 0;
 
 	public static void main(String[] args) {
 
@@ -103,7 +109,7 @@ public class Main {
 			else
 				month = 1; //January
 
-			System.out.println("Running simulation for month:" + month);
+			System.out.println("Running simulations for :" + season);
 
 			while((!EENSConvergence && numOfSim <= simLimit)){
 				System.out.println("Simulation: " + numOfSim);
@@ -187,7 +193,18 @@ public class Main {
 						reader.close();
 
 						//Update flow for consumers and renewable generators
-						realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
+						try{
+							realSimulationGraph[currentTimeStep] = realSimulationGraph[currentTimeStep].setFlowFromOutputFile(realSimulationGraph[currentTimeStep], currentTimeStep);
+						} catch(FileSystemException e){
+							System.out.println("SOLUTION IS INFEASIBLE!!!! SKIPPING SIMULATION");
+							e.printStackTrace();
+							File hourlyOutputFolder = new File(solutionPath);
+							File graphStateOutputFolder = new File("../graphstate/"+season+"/simulation"+numOfSim+"/");
+							FileUtils.deleteDirectory(hourlyOutputFolder);
+							FileUtils.deleteDirectory(graphStateOutputFolder);
+							infeasible = true;
+							break; //Stop the while loop because the model is infeasible
+						}
 
 						if (graph.getNstorage() > 0) {
 
@@ -229,6 +246,18 @@ public class Main {
 
 					currentTimeStep++;
 				}
+
+				if(infeasible == true){ //solution is infeasible end of simulation.
+					infeasible = false;
+					infeasibleCounter++;
+
+					if(infeasibleCounter >= 5){//Kills the program when the LP cannot find a solution 5 times in a row.
+						System.out.println("Solution is infeasible, check model files or input files!");
+						System.exit(-1);
+					}
+					continue;
+				} else
+					infeasibleCounter = 0;
 
 				listEENS.add(dailyEENS);
 				System.out.println("Daily EENS: " + dailyEENS);

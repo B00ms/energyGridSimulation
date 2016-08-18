@@ -39,7 +39,7 @@ public class OutputFileHandler {
             if (new File(dirpath + "/update.txt").exists())
                 Files.copy(Paths.get(dirpath + "/update.txt"), Paths.get(solutionPath + "/update" + timeStep + ".txt"),
                         StandardCopyOption.REPLACE_EXISTING);
-            
+
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(0);
@@ -184,8 +184,9 @@ public class OutputFileHandler {
                         Scanner linescanner = new Scanner(next_line);
                         linescanner.useDelimiter(",");
 
-                        if(j == 252){
+                        if(j == edge_count){
                             has_next_line = false;
+                            break;
                         }
 
                         int node = linescanner.nextInt();

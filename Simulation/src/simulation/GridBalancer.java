@@ -27,8 +27,8 @@ public class GridBalancer {
      */
     public Graph checkGridEquilibrium(Graph grid, int timestep) {
         Node[] nodeList = grid.getNodeList();
-        double totalCurrentProduction = 0;
-        double sumLoads = 0;
+
+
         double realLoad = 0;
         double realProduction = 0; //TODO: check that real production is correctly adjusted when production changes.
 
@@ -45,6 +45,7 @@ public class GridBalancer {
 
         // deltaP = 0 needs to be satisfied
         realProduction = productionLoadHandler.calculateProduction(grid);
+        double totalCurrentProduction = realProduction;
         // real load fix when real load is negative
         double deltaP = (realProduction - realLoad);
         //System.out.println("RealProduction: " + realProduction + " " + "realLoad: "+ realLoad);
@@ -72,20 +73,22 @@ public class GridBalancer {
                 Offer offer = offers.get(i);
                 if (deltaP < 0 && offer.getAvailable()) {
                     ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
-                    double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction()
-                            + offer.getProduction();
+                    double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction() + offer.getProduction();
 
-
+                    totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction();
                     if (Math.abs(deltaP) <= newProduction) {
-                        totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(Math.abs(deltaP));
+                    	newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction() + Math.abs(deltaP);
+                        totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
                     } else {
                         totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
                     }
                     offers.remove(i); // remove offer from list
-                    deltaP = (totalCurrentProduction - sumLoads); // update demand
-                }
+                    deltaP = (totalCurrentProduction - realLoad); // update demand
+                }else
+                	break;
             }
 
+            /*
             for (int i = 0; i < offers.size(); i++) {
                 Offer offer = offers.get(i);
                 double offeredProduction = offer.getProduction();
@@ -109,11 +112,11 @@ public class GridBalancer {
                     nodeList[offer.getNodeIndex()] = generator;
                     // disable offer from generator
                     ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeDecreaseOffer(offer.getOfferListId());
-                    deltaP = (realProduction - realLoad); // update deltaP
+                    deltaP = (realProduction - realLoad ); // update deltaP
                 }else{
                     break; // load is satisfied
                 }
-            }
+            }*/
 
         } else if (deltaP > 0) {
             // we need to decrease energy production

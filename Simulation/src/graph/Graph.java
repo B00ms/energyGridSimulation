@@ -1,6 +1,7 @@
 package graph;
 
 import java.io.*;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Scanner;
@@ -392,14 +393,14 @@ public class Graph implements Cloneable {
 	 * For a single graph: copy the flow of the output file to the graph in the simulation
 	 * @return updated graph with adjusted flow after minimizing objective function in simulation
 	 */
-	public Graph setFlowFromOutputFile(Graph graph, int timestep){
+	public Graph setFlowFromOutputFile(Graph graph, int timestep) throws  NoSuchFileException, IOException{
 		ConfigCollection config = new ConfigCollection();
 		String path = config.getConfigStringValue(CONFIGURATION_TYPE.GENERAL, "output-folder");
 
 		path += "sol"+timestep+".txt";
 
 		Scanner scanner;
-		try {
+		//try {
 			scanner = new Scanner(Paths.get(path));
 			scanner.useDelimiter(",");
 			scanner.useLocale(Locale.US);
@@ -433,10 +434,10 @@ public class Graph implements Cloneable {
 				lineScanner.close();
 			}
 			scanner.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
+		//} catch (IOException e) {
+			//e.printStackTrace();
+			//System.exit(0);
+		//}
 		return graph;
 	}
 
