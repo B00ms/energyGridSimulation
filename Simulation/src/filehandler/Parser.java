@@ -1,6 +1,5 @@
 package filehandler;
 
-import java.awt.FlowLayout;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,7 +41,7 @@ public class Parser {
 		try {
 			scanner = new Scanner(Paths.get(path));
 			scanner.useLocale(Locale.US);
-			scanner.useDelimiter(",|\\n");
+			scanner.useDelimiter(",|\\n|\r\\n");
 		}catch (IOException e){
 			e.printStackTrace();
 			System.out.println("Error: Wrong path to input file");
@@ -65,8 +64,8 @@ public class Parser {
 		double storageChargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "chargeEfficiencyOfStorage");
 		double storageDischargeEfficiency = config.getConfigDoubleValue(CONFIGURATION_TYPE.STORAGE, "dischargEfficiencyOfStorage");
 
-		int hydromttf = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttf");
-		int hydromttr = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttr");
+		//int hydromttf = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttf");
+		//int hydromttr = config.getConfigIntValue(CONFIGURATION_TYPE.HYDROELECTRIC_GENERATOR, "mttr");
 
 
 		int mttf = config.getConfigIntValue(CONFIGURATION_TYPE.CONVENTIONAL_GENERATOR, "mttf");
@@ -110,6 +109,7 @@ public class Parser {
 					break;
 				}
 				nodeId = scanner.nextInt();
+
 				minProduction = scanner.nextDouble();
 				maxProduction = scanner.nextDouble();
 				double coef = scanner.nextDouble();
@@ -135,6 +135,7 @@ public class Parser {
 
 				break;
 			case "IN":
+				//System.out.println(scanner.next());
 				nodeId = scanner.nextInt();
 				Node node = new InnerNode(nodeId);
 				nodeList.add(node);
@@ -292,9 +293,7 @@ public class Parser {
 	 * @return List<Double[]> expected production for each node
 	 */
 	public List<double[]> parseExpectedProduction(){
-		/*Config productionConf = conf.getConfig("conventionalGenerator").getConfig("production");
-		String path = productionConf.getString("summer"); //TODO: for each season
-		 */
+
 		String path = config.getConfigStringValue(CONFIGURATION_TYPE.PRODUCTION, "summer");
 		List<double[]> expectedHourlyProduction = new ArrayList<>();
 		try{
@@ -344,7 +343,6 @@ public class Parser {
 		double priceDecreaseStepTwo = 0;
 
 		int nodeIndex = generator.getNodeId();
-		int offerId = 0;
 
 		switch (generatorType){
 		case OIL:

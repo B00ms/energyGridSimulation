@@ -34,7 +34,7 @@ param storagemin {storage};
 param storagemax {storage};
 param mintprod {tgen} >=0;
 param maxtprod {tgen} >=0;
-param loads {consumers} >=0;
+param loads {consumers};
 param production {tgen} >= 0;
 param planned_production{tgen} >=0;
 param rewproduction {rgen};
@@ -47,9 +47,9 @@ var theta {nodes} >= -pi/2, <= pi/2;
 #The function to minimize daily system cost.
 minimize obj :
 	(sum{i in rgen}
-	 	cost_curt * (rprodmax[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) +
+	 	cost_curt * (rewproduction[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) +
 	(sum{i in consumers}
-		cost_sl * (loads[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor));
+		cost_sl * (loads[i] -(sum{j in nodes : capacity[j,i] <> 0} (theta[j]-theta[i])/weight[j,i])*m_factor));
 
 #Subject to these constrains
 subject to anglestability :
@@ -68,27 +68,28 @@ subject to flowcapmin { i in nodes,j in nodes : capacity[i,j] <> 0} :
 subject to flowcons { i in inner } :
 	sum{ j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = sum{ j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor;
 
+
 # traditional production constraint
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
+
 #min production value storage
 subject to flowfromstorageDischarging { i in storage } :
-	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowmaxdischarge[i];
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= flowmaxdischarge[i];
 
 #max production value storage
 subject to flowfromstorageCharging { i in storage } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, >= flowmaxcharge[i];
 
-# renewable production constraint
+#renewable production constraint
 subject to setRewProduction { i in rgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, <= rewproduction[i];
 
-# renewable production constraint
+#renewable production constraint
 subject to minRewProduction { i in rgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, >= 0;
 	
-
 #The amount of energy send to a consumer should be lower or equal to the load of the consumer
 subject to loadfix {i in consumers} :
 	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, <= loads[i];
@@ -97,13 +98,13 @@ subject to loadfix {i in consumers} :
 subject to loadMinValue {i in consumers} :	
 	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, >= 0;
 	
+
 #Balance supply and demand of energy.
 subject to prodloadeq :
 	sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0}
 		((theta[i]-theta[j])/weight[i,j])*m_factor, =
 	sum { i in consumers, j in nodes : capacity[j,i] <> 0}
 		((theta[j]-theta[i])/weight[j,i])*m_factor;
-	
 
 #go ahead and solve the model
 solve;
@@ -123,7 +124,7 @@ printf {i in tgen} : "TG,%d, %.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} 
 printf : "\n" >> "sol" & outname & ".txt";
 
 #Consumers
-printf {i in nodes, j in consumers : capacity[i,j] <> 0} : "C,%d, %.4f \n", j, ((theta[i] - theta[j])/ weight[i,j])*m_factor >> "sol" & outname & ".txt";
+printf {i in nodes, j in consumers : capacity[j,i] <> 0} : "C,%d, %.4f \n", j, ((theta[j] - theta[i])/ weight[j,i])*m_factor >> "sol" & outname & ".txt";
 printf : "\n" >> "sol" & outname & ".txt";
 
 #inner nodes
@@ -134,11 +135,38 @@ printf {i in storage} : "Stor,%d,%.4f,%4f, %4f \n", i, (sum{j in nodes : capacit
 
 printf : "\n" >> "sol" & outname & ".txt";
 
-printf "CURTAILMENT,%.4f \n", (sum{i in rgen} 
-	 	(rprodmax[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
+printf "CURTAILMENT,%.4f \n", (sum{i in rgen} (
+	 	rewproduction[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
 
-printf "EENS,%.4f \n", (sum{i in consumers}
-		(loads[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor))>> "sol" & outname & ".txt";
+printf "balance,%.4f \n", 	(sum { i in (rgen union tgen union storage), j in nodes : capacity[i,j] <> 0}
+		((theta[i]-theta[j])/weight[i,j])*m_factor) -
+	(sum { i in consumers, j in nodes : capacity[j,i] <> 0}
+		((theta[j]-theta[i])/weight[j,i])*m_factor) >> "sol" & outname & ".txt";
+		
+printf "EENS,%.4f \n", 	(sum { i in (consumers)}
+		loads[i]) -
+	(sum { i in consumers, j in nodes : capacity[j,i] <> 0}
+		((theta[j]-theta[i])/weight[j,i])*m_factor) >> "sol" & outname & ".txt";
+		
+
+printf "sumproduction, %.4f \n",
+	sum { i in (tgen union rgen), j in nodes : capacity[i,j] <> 0}
+		((theta[i]-theta[j])/weight[i,j])*m_factor >> "sol" & outname & ".txt";
+	
+		
+printf "production, %.4f \n",
+	sum { i in (tgen), j in nodes : capacity[i,j] <> 0}
+		((theta[i]-theta[j])/weight[i,j])*m_factor >> "sol" & outname & ".txt";
+		
+printf "rewproduction, %.4f \n",
+	sum { i in (rgen), j in nodes : capacity[i,j] <> 0}
+		((theta[i]-theta[j])/weight[i,j])*m_factor >> "sol" & outname & ".txt";		
+		
+printf "consumption, %.4f \n", 	sum { i in consumers, j in nodes : capacity[j,i] <> 0}
+		((theta[j]-theta[i])/weight[j,i])*m_factor >> "sol" & outname & ".txt";
+		
+printf "storage, %.4f \n", 	sum { i in storage, j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor >> "sol" & outname & ".txt";
+
 
 printf : "\n" >> "sol" & outname & ".txt";
 #printf {i in nodes,j in nodes : capacity[j,i] <> 0} : " flow in [ %d , %d ] = %.6f \n", j, i, ((theta[j] - theta[i])/ weight[j,i])*m_factor;

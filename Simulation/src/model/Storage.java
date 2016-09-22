@@ -4,8 +4,6 @@ import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 import graph.Node;
 
-import java.io.Serializable;
-
 public class Storage extends Node {
 	private double currentSoC;
 	private double maximumSoC;
@@ -150,7 +148,7 @@ public class Storage extends Node {
 		}
 
 		if(outgoingFlow > flowLimit){
-			double minSoC = currentSoC - flowLimit*dischargeEfficiency;
+			double minSoC = currentSoC - (flowLimit*dischargeEfficiency);
 			outgoingFlow = flowLimit;
 			tempCurrentCharge = minSoC;
 			flowStorage = outgoingFlow;

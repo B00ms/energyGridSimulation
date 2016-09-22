@@ -13,7 +13,7 @@ import model.Storage;
  */
 public class ProductionLoadHandler {
 
-	private static ConfigCollection config = new ConfigCollection();
+	//private static ConfigCollection config = new ConfigCollection();
     private static SimulationMonteCarloDraws simulationMonteCarloDraws = new SimulationMonteCarloDraws();
 
     /**

@@ -69,23 +69,27 @@ public class GridBalancer {
             // sort offers best value for money
             Collections.sort(offers);
 
-            for (int i = 0; i < offers.size(); i++) {
-                Offer offer = offers.get(i);
-                if (deltaP < 0 && offer.getAvailable()) {
-                    ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).takeIncreaseOffer(offer.getOfferListId());
-                    double newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction() + offer.getProduction();
+            for(int j = 0; j < nodeList.length; j++){
+            	if(nodeList[j].getClass() == ConventionalGenerator.class){
+		            for (int i = 0; i < offers.size(); i++) {
+		                Offer offer = offers.get(i);
+		                if (deltaP < 0 && offer.getAvailable()) {
+		                    ((ConventionalGenerator) nodeList[j]).takeIncreaseOffer(offer.getOfferListId());
+		                    double newProduction = ((ConventionalGenerator) nodeList[j]).getProduction() + offer.getProduction();
 
-                    totalCurrentProduction -= ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction();
-                    if (Math.abs(deltaP) <= newProduction) {
-                    	newProduction = ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).getProduction() + Math.abs(deltaP);
-                        totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
-                    } else {
-                        totalCurrentProduction += ((ConventionalGenerator) nodeList[offer.getNodeIndex()]).setProduction(newProduction);
-                    }
-                    offers.remove(i); // remove offer from list
-                    deltaP = (totalCurrentProduction - realLoad); // update demand
-                }else
-                	break;
+		                    totalCurrentProduction -= ((ConventionalGenerator) nodeList[j]).getProduction();
+		                    if (Math.abs(deltaP) <= newProduction) {
+		                    	newProduction = ((ConventionalGenerator) nodeList[j]).getProduction() + Math.abs(deltaP);
+		                        totalCurrentProduction += ((ConventionalGenerator) nodeList[j]).setProduction(newProduction);
+		                    } else {
+		                        totalCurrentProduction += ((ConventionalGenerator) nodeList[j]).setProduction(newProduction);
+		                    }
+		                    offers.remove(i); // remove offer from list
+		                    deltaP = (totalCurrentProduction - realLoad); // update demand
+		                }else
+		                	break;
+		            }
+            	}
             }
 
             /*
@@ -122,8 +126,6 @@ public class GridBalancer {
             // we need to decrease energy production
             System.out.println("Decreasing production ");
 
-            //TODO: take offers from cheapest nodes to decrease production.
-            //TODO: generate real offers not from input file
             List<Offer> offers = new ArrayList<>();
 
             // find cheapest offers

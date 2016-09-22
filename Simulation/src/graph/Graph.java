@@ -328,8 +328,8 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"failure\":" + convGenerator.getGeneratorFailure()); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"subType\":" + "\"" + convGenerator.getType() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"production\":" + "\"" +convGenerator.getProduction() + "\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"maxProduction\":" + "\"" + convGenerator.getMaxP() + "\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"minProduction\":" + "\"" + convGenerator.getMinP() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"upperGenLimit\":" + "\"" + convGenerator.getMaxP() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + convGenerator.getNodeId() + "\" \"lowerGenLimit\":" + "\"" + convGenerator.getMinP() + "\""); bufferedWriter.newLine();
 
 				}else if (node.getClass() == RenewableGenerator.class){
 					RenewableGenerator renewableGenerator = (RenewableGenerator) nodelist[i];
@@ -367,9 +367,9 @@ public class Graph implements Cloneable {
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"ui.label\":" + "\"" + storageNode.getNodeId() +"\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"ui.class\":" + "\"" + storageNode.getClass().getSimpleName() + "\""); bufferedWriter.newLine();
 
-					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"currentCharge\":" + "\"" + storageNode.getCurrentSoC() + "\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"maxCharge\":" + "\"" + storageNode.getMaximumCharge() + "\""); bufferedWriter.newLine();
-					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"minCharge\":" + "\"" + storageNode.getMinimumCharge() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"currentSoC\":" + "\"" + storageNode.getCurrentSoC() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"maxSoC\":" + "\"" + storageNode.getMaximumCharge() + "\""); bufferedWriter.newLine();
+					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"minSoC\":" + "\"" + storageNode.getMinimumCharge() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"chargeEfficiency\":" + "\"" + storageNode.getChargeEfficiency() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"dischargeEfficiency\":" + "\"" + storageNode.getDischargeEfficiency() + "\""); bufferedWriter.newLine();
 					bufferedWriter.write("cn " + "\"" + storageNode.getNodeId() + "\" \"status\":" + "\"" + storageNode.getStatus() + "\""); bufferedWriter.newLine();

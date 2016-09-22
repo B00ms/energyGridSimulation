@@ -14,7 +14,6 @@ public class ConfigCollection {
 	private Config conventionalGenerator;
 	private Config hydroelectricGenerator;
 	private Config loadCurves;
-	private Config production;
 	private Config windGenerator;
 	private Config solarGenerator;
 	private Config storage;
@@ -118,6 +117,8 @@ public class ConfigCollection {
 			case GLPSOL:
 				confValue = glpsol.getString(configurationKeyWord);
 				break;
+			default:
+				break;
 		}
 
 		return confValue;
@@ -166,6 +167,8 @@ public class ConfigCollection {
 			case GLPSOL:
 				confValue = glpsol.getInt(configurationKeyWord);
 				break;
+		default:
+			break;
 		}
 
 		return confValue;
@@ -214,6 +217,8 @@ public class ConfigCollection {
 			case GLPSOL:
 				confValue = glpsol.getDouble(configurationKeyWord);
 				break;
+		default:
+			break;
 		}
 
 		return confValue;
@@ -227,6 +232,8 @@ public class ConfigCollection {
 			case CLEANUPHOURLY:
 				confValue = generalConfig.getBoolean(configurationKeyWord);
 				break;
+		default:
+			break;
 		}
 
 		return confValue;

@@ -6,9 +6,7 @@ import com.rits.cloning.Cloner;
 import config.ConfigCollection;
 import config.ConfigCollection.CONFIGURATION_TYPE;
 import filehandler.Parser;
-import graph.Edge;
 import graph.Graph;
-import graph.Node;
 import model.Consumer;
 import model.ConventionalGenerator;
 import model.RenewableGenerator;
@@ -132,7 +130,7 @@ public class SimulationStateInitializer {
 		for (int i = 0; i < gDay.length; i++) {
 			for (int j = 0; j < g.getNodeList().length; j++){
 				if(gDay[i].getNodeList()[j].getClass() == Consumer.class){
-					double load = loads[i] / 100 * ((Consumer)g.getNodeList()[j]).getLoad();
+					//double load = loads[i] / 100 * ((Consumer)g.getNodeList()[j]).getLoad();
 					((Consumer)gDay[i].getNodeList()[j]).setLoad(loads[i] / 100 * ((Consumer)g.getNodeList()[j]).getLoad());
 				}
 			}

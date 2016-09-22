@@ -176,6 +176,8 @@ public class SimulationMonteCarloDraws {
                         // System.out.println("sunRise:" + sunrise + " currentTime:" + currentTimeStep + " sunset:" + sunset + " production:" + production + " max irradiance:" + extratIrradianceMax + " MC draw:" + mcDraw + " nodeId:" + ((RewGenerator)graph.getNodeList()[j]).getNodeId());
 
                         break;
+				default:
+					break;
                 }
             }
         }

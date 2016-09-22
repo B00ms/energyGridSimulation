@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.lang3.text.StrBuilder;
 
 import graph.Graph;
 import model.*;
@@ -45,8 +44,8 @@ public class DataModelPrint {
 	 */
 	public void createModelInputFile(Graph g, String filename, String outname) {
 		float chargeEfficiency = g.getChargeEfficiency();
-		float dischargeEfficiency = g.getDischargeEfficiency();
-		float delta = g.getDelta();
+		//float dischargeEfficiency = g.getDischargeEfficiency();
+	//	float delta = g.getDelta();
 //		int current_hour = Integer.getInteger(outname);
 
 		int beginChargeTime = config.getConfigIntValue(CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
@@ -327,6 +326,8 @@ public class DataModelPrint {
 			printChargeLimit(strBuilder, g);
 			printDischargeLimit(strBuilder, g);
 		}
+		//printChargeLimit(strBuilder, g);
+		//printDischargeLimit(strBuilder, g);
 
 	}
 
@@ -376,7 +377,7 @@ public class DataModelPrint {
 						strBuilder.append(i + " " + (float)((Storage) g.getNodeList()[i]).getFlowLimit() + ";\n");
 					}
 				} else{
-					flowLimit = minSoC - currentCharge;
+					flowLimit = Math.abs(minSoC - currentCharge);
 					//System.out.println(flowLimit);
 					if (counter != g.getNstorage()) {
 						strBuilder.append(i + " " + (float)flowLimit+"\n");
