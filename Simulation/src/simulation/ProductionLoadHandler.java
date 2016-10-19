@@ -44,10 +44,13 @@ public class ProductionLoadHandler {
         double sumLoad = 0;
 
         for(int i = 0; i < graph.getNodeList().length; i++){
-            if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.CHARGING )
+            if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.CHARGING ){
                 sumLoad += Math.abs(((Storage)graph.getNodeList()[i]).getFlow());
-            else if (graph.getNodeList()[i].getClass() == Consumer.class)
+                //System.out.println(((Storage)graph.getNodeList()[i]).getNodeId());
+            }else if (graph.getNodeList()[i].getClass() == Consumer.class){
                 sumLoad += ((Consumer)graph.getNodeList()[i]).getLoad();
+                //System.out.println(((Consumer)graph.getNodeList()[i]).getNodeId());
+            }
         }
         return sumLoad;
     }
@@ -61,10 +64,11 @@ public class ProductionLoadHandler {
         double sumLoad = 0;
 
         for(int i = 0; i < graph.getNodeList().length; i++){
-            if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.CHARGING )
+            if(graph.getNodeList()[i].getClass() == Storage.class && ((Storage)graph.getNodeList()[i]).getStatus() == Storage.StorageStatus.CHARGING ){
                 sumLoad += Math.abs(((Storage)graph.getNodeList()[i]).getFlow());
-            else if (graph.getNodeList()[i].getClass() == Consumer.class)
+            }else if (graph.getNodeList()[i].getClass() == Consumer.class){
                 sumLoad += Math.abs(((Consumer)graph.getNodeList()[i]).getFlow());
+            }
         }
         return sumLoad;
     }

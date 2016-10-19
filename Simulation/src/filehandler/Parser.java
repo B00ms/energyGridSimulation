@@ -189,7 +189,7 @@ public class Parser {
 				//Ignores comments
 			}
 		}
-		Collections.sort(generatorList);
+		//Collections.sort(generatorList);
 
 		// add offers to generatorList for conventional generators
 		//List<List<Offer>> offerIncrease = this.parseOfferIncreaseProduction();

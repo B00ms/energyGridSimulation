@@ -242,6 +242,8 @@ public class Main {
 					double hourlyEENS = eensHandler.calculateHourlyEENS(realSimulationGraph[currentTimeStep]);
 					dailyEENS += hourlyEENS;
 
+					double curtailment = productionLoadHandler.calculateRenewableProduction(realSimulationGraph[currentTimeStep]);
+
 					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim, hourlyEENS, season);
 
 					currentTimeStep++;
@@ -273,10 +275,10 @@ public class Main {
 
 				outputFileHandler.compressOutputFiles(hourlyOutputPath, dailyOutputPath, compressedDailyOutputFilename, graph.getEdges().length);
 				outputFileHandler.compressSocFiles(hourlyOutputPath, dailyOutputPath, compressedDailySocFilename, graph.getNstorage());
-//				outputFileHandler.outputSoC(dailyOutputPath, compressedDailySocFilename, graph);
+				//outputFileHandler.outputSoC(dailyOutputPath, compressedDailySocFilename, graph);
 				outputFileHandler.outputDailyEENS(dailyOutputPath, dailyEENS);
 
-//				outputFileHandler.compressProductionLoad(dailyOutputPath, realSimulationGraph, expectedSimulationGraph);
+				outputFileHandler.compressProductionLoad(dailyOutputPath, realSimulationGraph, expectedSimulationGraph);
 
 				if(cleanupHourlyOutput){
 					// remove simRes folders

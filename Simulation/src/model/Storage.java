@@ -141,12 +141,13 @@ public class Storage extends Node {
 		flowStorage = charge;
 
 		if(newSoC < minimumSoC){
-			double minSoC = minimumSoC;
+			double minSoC = currentSoC -  minimumSoC;
 			outgoingFlow = minSoC * dischargeEfficiency;
-			tempCurrentCharge  = minSoC;
+			tempCurrentCharge  = minimumSoC;
 			flowStorage = outgoingFlow;
 		}
 
+		//Check if the outgoing flow does not exceed the flowlimit, if it does change outgoing flow to match flow limit.
 		if(outgoingFlow > flowLimit){
 			double minSoC = currentSoC - (flowLimit*dischargeEfficiency);
 			outgoingFlow = flowLimit;
