@@ -157,6 +157,7 @@ public class SimulationMonteCarloDraws {
                             AzimuthZenithAngle azimuthZenithAgnle = Grena3.calculateSolarPosition(cal, langitude, longitude, deltaT);
                             double zenithAngle = azimuthZenithAgnle.getZenithAngle();
 
+                            //Sung 2016
                             double extratIrradiance = irradianceConstant * ( 1 + eccentricityCorrFactor * Math.cos((2 * Math.PI * calendar.get(Calendar.DAY_OF_YEAR)) / 365)) * Math.cos(zenithAngle);
                             if (extratIrradiance > extratIrradianceMax)
                                 extratIrradianceMax = extratIrradiance;
@@ -166,12 +167,12 @@ public class SimulationMonteCarloDraws {
                         if ((currentTimeStep <= sunrise) || (currentTimeStep >= sunset))
                             irradiance = 0;
                         else
-                            irradiance = sMax * Math.sin(Math.PI * (currentTimeStep - sunrise) / (sunset - sunrise));
+                            irradiance = sMax * Math.sin(Math.PI * (currentTimeStep - sunrise) / (sunset - sunrise)); //Sung 2016
 
                         double efficiency = config.getConfigDoubleValue(ConfigCollection.CONFIGURATION_TYPE.SOLAR_GENERATOR, "panelEfficiency");
                         // surface array of panels in m², efficiency, irradiance of panels on the horizontal plane.
-                        double production = 550000 * efficiency * irradiance;
-                        production = production /1000000;
+                        double production = 550000 * efficiency * irradiance; //Tina 2006
+                        production = production /1000000; //Convert from kilo to megawatt
                         ((RenewableGenerator) graph.getNodeList()[j]).setProduction(production);
                         // System.out.println("sunRise:" + sunrise + " currentTime:" + currentTimeStep + " sunset:" + sunset + " production:" + production + " max irradiance:" + extratIrradianceMax + " MC draw:" + mcDraw + " nodeId:" + ((RewGenerator)graph.getNodeList()[j]).getNodeId());
 

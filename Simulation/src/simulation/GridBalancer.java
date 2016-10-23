@@ -30,7 +30,7 @@ public class GridBalancer {
 
 
         double realLoad = 0;
-        double realProduction = 0; //TODO: check that real production is correctly adjusted when production changes.
+        double realProduction = 0; 
 
         int beginTime = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.STORAGE, "beginChargeTime");
         int endTime = config.getConfigIntValue(ConfigCollection.CONFIGURATION_TYPE.STORAGE, "endChargeTime");
