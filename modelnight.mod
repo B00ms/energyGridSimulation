@@ -46,7 +46,7 @@ var theta {nodes} >= -pi/2, <= pi/2;
 #The function to minimize daily system cost.
 minimize obj :
 	(sum{i in rgen}
-	 	cost_curt * (rprodmax[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) +
+	 	cost_curt * (rewproduction[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) +
 	(sum{i in consumers}
 		cost_sl * (loads[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor));
 
@@ -79,6 +79,9 @@ subject to minRewProduction { i in rgen } :
 subject to genproduction { i in tgen } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
+# traditional production constraint
+subject to minGenproduction { i in tgen } :
+	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = production[i];	
 
 subject to flowfromstorageNight { i in storage } :
 	sum { j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/weight[i,j])*m_factor, = flowfromstorage[i]; 
@@ -91,6 +94,7 @@ subject to loadfix {i in consumers} :
 #Flow to a consumer can never be lower than zero
 subject to loadMinValue {i in consumers} :	
 	sum { j in nodes : capacity[j,i] <> 0} ((theta[j]-theta[i])/weight[j,i])*m_factor, >= 0;
+	
 	
 #Balance supply and demand of energy.
 subject to prodloadeq :
@@ -127,13 +131,15 @@ printf : "\n" >> "sol" & outname & ".txt";
 
 printf {i in storage} : "Stor,%d,%.4f \n", i, (sum{j in nodes : capacity[i,j] <> 0} ((theta[i]-theta[j])/ weight[i,j])*m_factor) >> "sol" & outname & ".txt";
 
+#printf {i in nodes} : "Theta,%.4f \n", theta[i] >> "sol" & outname & ".txt";
+
 printf : "\n" >> "sol" & outname & ".txt";
 
-printf "CURTAILMENT,%.4f \n", (sum{i in rgen} 
-	 	(rprodmax[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
+#printf "CURTAILMENT,%.4f \n", (sum{i in rgen} 
+#	 	(rprodmax[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor)) >> "sol" & outname & ".txt";
 
-printf "EENS,%.4f \n", (sum{i in consumers}
-		(loads[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor))>> "sol" & outname & ".txt";
+#printf "EENS,%.4f \n", (sum{i in consumers}
+#		(loads[i] -(sum{j in nodes : capacity[i,j] <> 0} (theta[i]-theta[j])/weight[i,j])*m_factor))>> "sol" & outname & ".txt";
 
 printf : "\n" >> "sol" & outname & ".txt";
 #printf {i in nodes,j in nodes : capacity[j,i] <> 0} : " flow in [ %d , %d ] = %.6f \n", j, i, ((theta[j] - theta[i])/ weight[j,i])*m_factor;

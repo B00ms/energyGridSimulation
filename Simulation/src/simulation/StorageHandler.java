@@ -93,9 +93,8 @@ public class StorageHandler {
 
         for(int i = 0; i < graph.getNodeList().length; i++){
             if(graph.getNodeList()[i].getClass() == Storage.class){
-            	Storage storage = (Storage)graph.getNodeList()[i];
+            	//Storage storage = (Storage)graph.getNodeList()[i];
                 if(((Storage)graph.getNodeList()[i]).getMaximumCharge() * 0.5 > ((Storage)graph.getNodeList()[i]).getCurrentSoC()){
-                	double test = ((Storage) graph.getNodeList()[i]).getFlow();
                     sumLoads += ((Storage)graph.getNodeList()[i]).charge(Math.abs(((Storage) graph.getNodeList()[i]).getFlow()));
                 }
             }
@@ -113,7 +112,7 @@ public class StorageHandler {
         //Double[] sumProdAndLoad = calcSumProductionSumLoad(graph);
         double totalCurrentProduction = hpl.calculateProduction(graph);
         double sumLoad = hpl.calculateLoad(graph);
-        double rewProd = hpl.calculateRenewableProduction(graph);
+        //double rewProd = hpl.calculateRenewableProduction(graph);
 
         Node[] nodeList = graph.getNodeList();
         if (totalCurrentProduction > sumLoad) {

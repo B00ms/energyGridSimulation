@@ -74,6 +74,7 @@ public class Main {
 		Cloner cloner=new Cloner();
 
 		int numOfSim = 0;
+		int minSimulations = 20;
 		int simLimit = config.getConfigIntValue(CONFIGURATION_TYPE.GENERAL, "simulation-runs");
 		HashMap<String, String> seasons = new HashMap<>();
 		seasons.put("spring", config.getConfigStringValue(CONFIGURATION_TYPE.LOAD_CURVES, "spring"));
@@ -111,7 +112,7 @@ public class Main {
 
 			System.out.println("Running simulations for :" + season);
 
-			while((!EENSConvergence && numOfSim <= simLimit)){
+			while((!EENSConvergence && numOfSim <= simLimit) || numOfSim < minSimulations){
 				System.out.println("Simulation: " + numOfSim);
 				SimulationStateInitializer simulationState = new SimulationStateInitializer();
 
@@ -157,12 +158,13 @@ public class Main {
 						String model = "";
 						if(currentTimeStep >= beginTime || currentTimeStep<= endTime){
 							model = modelNight;
+							//model = modelDay;
 						}else{
 							model = modelDay;
 						}
 
 						String command = "" + String.valueOf(solpath1) + outpath1 + currentTimeStep + outpath2 + solpath2 + model;
-						command = command + " --nopresol --output filename.out ";
+						command = command + " --min --nopresol --gomory --output filename.out ";
 
 						//System.out.println(command);
 						File file = new File(dirpath);
@@ -200,8 +202,8 @@ public class Main {
 							e.printStackTrace();
 							File hourlyOutputFolder = new File(solutionPath);
 							File graphStateOutputFolder = new File("../graphstate/"+season+"/simulation"+numOfSim+"/");
-							FileUtils.deleteDirectory(hourlyOutputFolder);
-							FileUtils.deleteDirectory(graphStateOutputFolder);
+							//FileUtils.deleteDirectory(hourlyOutputFolder);
+							//FileUtils.deleteDirectory(graphStateOutputFolder);
 							infeasible = true;
 							break; //Stop the while loop because the model is infeasible
 						}
@@ -240,31 +242,30 @@ public class Main {
 					double hourlyEENS = eensHandler.calculateHourlyEENS(realSimulationGraph[currentTimeStep]);
 					dailyEENS += hourlyEENS;
 
-
+					double curtailment = productionLoadHandler.calculateRenewableProduction(realSimulationGraph[currentTimeStep]);
 
 					realSimulationGraph[currentTimeStep].printGraph(currentTimeStep, numOfSim, hourlyEENS, season);
 
 					currentTimeStep++;
 				}
-
 				if(infeasible == true){ //solution is infeasible end of simulation.
 					infeasible = false;
 					infeasibleCounter++;
 
-					if(infeasibleCounter >= 5){//Kills the program when the LP cannot find a solution 5 times in a row.
+					if(infeasibleCounter >= 10){//Kills the program when the LP cannot find a solution 5 times in a row.
 						System.out.println("Solution is infeasible, check model files or input files!");
 						System.exit(-1);
 					}
 					continue;
-				} else
+				} else{
 					infeasibleCounter = 0;
+				}
 
 				listEENS.add(dailyEENS);
 				System.out.println("Daily EENS: " + dailyEENS);
 				EENSConvergence = eensHandler.checkEENSConvergence(listEENS, EENSConvergenceThreshold);
 				if(numOfSim == 0)
 					EENSConvergence = false;
-
 
 				// create output file format for Laura
 				String compressedDailyOutputFilename = "line_"+numOfSim+".txt";
@@ -274,10 +275,10 @@ public class Main {
 
 				outputFileHandler.compressOutputFiles(hourlyOutputPath, dailyOutputPath, compressedDailyOutputFilename, graph.getEdges().length);
 				outputFileHandler.compressSocFiles(hourlyOutputPath, dailyOutputPath, compressedDailySocFilename, graph.getNstorage());
-//				outputFileHandler.outputSoC(dailyOutputPath, compressedDailySocFilename, graph);
+				//outputFileHandler.outputSoC(dailyOutputPath, compressedDailySocFilename, graph);
 				outputFileHandler.outputDailyEENS(dailyOutputPath, dailyEENS);
 
-//				outputFileHandler.compressProductionLoad(dailyOutputPath, realSimulationGraph, expectedSimulationGraph);
+				outputFileHandler.compressProductionLoad(dailyOutputPath, realSimulationGraph, expectedSimulationGraph);
 
 				if(cleanupHourlyOutput){
 					// remove simRes folders
